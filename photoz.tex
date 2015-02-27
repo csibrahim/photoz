@@ -1,21 +1,44 @@
-\documentclass[a4paper,12pt]{article}
-\usepackage[utf8]{inputenc}
+\documentclass[useAMS,usenatbib,fleqn]{mn2e}
 \usepackage{amsmath}
 \usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
 \usepackage{times}
 
-\title{Photometric Redshift Estimation}
-\author{Authors}
-\date{February 2015}
+\captionsetup{compatibility=false}
+
+\title[Photometric Redshift Estimation]{Photometric Redshift Estimation}
+\author[Almosallam et al.]
+{\parbox{\textwidth}{Author1,$^1$\thanks{E-mail: ibrahim.almosallam@some.ox.ac.uk} 
+Author2,$^{2}$ etc.
+} 
+\vspace{0.4cm}\\ 
+\parbox{\textwidth}{
+$^1$Oxford Astrophysics, Department of Physics, Keble Road, Oxford, OX1 3RH, UK\\
+$^2$Other institution \\
+}}
+
 
 \begin{document}
 
+\date{\today}
+
+\pagerange{\pageref{firstpage}--\pageref{lastpage}} \pubyear{2015}
+
 \maketitle
+
+\label{first page}
 
 \begin{abstract}
 In this study, a novel sparse regression model for photometric redshift estimation is presented which directly target the requirements for the Euclid Space Mission. Data from a synthesised survey was used to train and test the proposed models. We show that approaches which include careful data preparation and model design, a significant improvement can be achieved when compared with several off the shelf machine learning algorithms. Standard implementation of most regression algorithms has as objective the minimisation of the sum of squared errors. This induces a bias in the posterior mean of the output distribution which can be problematic. In this paper we directly optimise the Euclid mission requirement and compare this with other objective functions, such as minimising the maximum error and maximising the number of data points with a predictive error less than a threshold. The results are compared with other popular machine learning algorithms in the field such as ANNz, stableGP and SPGP. The proposed reached a $\Delta z = 0.0085(1+z)$ for a redshift range of $0.2 < z < 2$, exceeding the requirement for the Euclid mission of $\Delta z = 0.05(1+z)$ for the same redshift range.
 
 \end{abstract}
+
+\begin{keywords}
+methods: data analysis -- galaxies: distances and redshifts
+\end{keywords}
 
 \section{Introduction}
 We introduce a novel sparse kernel regression model that greatly reduces the number of bases functions required to model the data. This os achieved this by allowing each kernel to have its own hyper-parameters, governing its shape. This is in contrast to the standard kernel-based model in which a set of global hyper-parameters are optimised. The complexity cost of such a kernel-based regression model is $O(n^{3})$, where $n$ is the number of bases functions. This cubic time complexity arise from the cost of inverting a $n$ by $n$ covariance matrix. In a basic Gaussian Process model (GP) \cite{rasmussen+williams}, seen as a kernel regression algorithm, we may regard the number of bases, $n$, as equal to the number of points in the training set. This renders such an approach unusable for many large-data applications where scalability is a major concern. Much of the work done to make GPs more scalable \cite{sparseGPcitations} is either to make the inverse computation faster or use smaller representative sample to compute the covariance. Examples of the former includes methods such as structuring the covariance matrix such that it is much easier to invert \cite{}, using Toeplitz and Kronecker decomposition for example, or inverse approximation as an optimisation problem \cite{}. To reduce the number of representative points, an $m << n$ subset of the training set can be selected which maximises the accuracy or the numerical stability of the inversion. Alternatively, one may search for "pseudo" points not necessarily present in the training set to use as bases for the covariance matrix such that it maximises the log marginal likelihood \cite{}. The focus in this paper is on sparse GP modelling where we extend the sparse pseudo-point GP using less, but more flexible kernels. Moreover, a weighting scheme is modelled as an integral part of the process to remove, or introduce, any systematic bias to the model. The results are demonstrated on photometric redshift estimation for the Euclid Space Mission. In particular, we use the weighting scheme to remove any distribution bias and introduce a linear bias to directly target the mission's requirement. The proposed approach reached a $\Delta z = 0.0085(1+z)$ on a simulated catalogue, far exceeding the mission's requirement of $\Delta z = 0.05(1+z)$ The paper is organised as follows, a brief introduction to Gaussian Processes for regression and sparse GPs are presented in sections \ref{sec-gaussian-process} and \ref{sec-sparse-gaussian-process},  then the proposed approach is laid out in Section \ref{sec-proposed-approach}. We discuss other objectives that can be useful for other scientific goals in \ref{sec-other-objectives} then the data set description and experiments are provided in Sections \ref{sec-dataset} and \ref{sec-experiment} respectively. We summarise and conclude in Section \ref{sec-conclusion}.
@@ -93,39 +116,91 @@ In this paper, we extend the sparse GP approach by modeling each basis with its 
 
 \begin{equation}
 \label{eq-squared-exponential-extension}
-k(x_{i},p_{j}) = \sigma_{j}^{2}e^{-\frac{\left\| x_{i}-p_{j}\right\|^{2}}{2\lambda_{j}^{2}}}
+k(x_{i},p_{j}) = e^{-\frac{\left\| x_{i}-p_{j}\right\|^{2}}{2\lambda_{j}^{2}}}
 \end{equation}
 
-Where $P=\{p_{j}\}_{j=1}^{m}$ is the set of bases coordinates in $\mathbb{R}^{d}$, $\sigma_{j}$ is the height variance for basis $j$ and $\lambda_{j}$ is the corresponding length scale for basis $j$. A gradient based optimization is used to find the set of hyper-parameters by computing the derivatives with respect to each variable to compute the search direction, specifically we used a Quasi-Newton optimization using the L-BFGS algorithm \cite{}. The derivative with respect to each variance, length scale and position are provided in equations \eqref{eg-dfds}, \eqref{eg-dfdl} and \eqref{eg-dfdp} respectively. 
+Where $P=\{p_{j}\}_{j=1}^{m}$ is the set of bases coordinates in $\mathbb{R}^{d}$ and $\lambda_{j}$ is the corresponding length scale for basis $j$. Note that the hyper-parameter $\sigma$ has been dropped, as it interferes with the regularization objective. This can be seen from the final prediction equation $f(x_{i},w)=\sum_{j=1}^{m}w_{j}\sigma_{j}^{2}e^{-\left\| x_{i}-p_{j}\right\|^{2}/2\lambda_{j}^{2}}$, the weights are always multiplied by their associated $\sigma$. Therefore, the optimization process will always compensate for decreasing $w_{j}^{2}$ by increasing $\sigma_{j}^{2}$. Dropping the height variance ensures that the kernel functions do not grow beyond control and delegates learning the linear coefficients and regularization to the weights $w_{j}$. A gradient based optimization is used to find the set of hyper-parameters by computing the derivatives with respect to each variable to compute the search direction, specifically we used a Quasi-Newton optimization using the L-BFGS algorithm \cite{}. The derivative with respect to each length scale and position are provided in equations \eqref{eq-dfdl} and \eqref{eq-dfdp} respectively. 
 
 \begin{subequations}
 \begin{align} 
-\label{eg-dfds}
-\frac{\partial f(x,w)}{\partial \sigma_{j}} &= \sum_{i=1}^{n}\left(f(x_{i},w)-y_{i}\right)w_{j}K_{ij}\frac{2}{\sigma_{j}} \\ 
-\label{eg-dfdl}
+\label{eq-dfdl}
 \frac{\partial f(x,w)}{\partial \lambda_{j}} &= \sum_{i=1}^{n}\left(f(x_{i},w)-y_{i}\right)w_{j}K_{ij}\frac{\left\| x_{i}-p_{j}\right\|^{2}}{\lambda_{j}^{3}}\\
-\label{eg-dfdp}
+\label{eq-dfdp}
 \frac{\partial f(x,w)}{\partial p_{jk}} &= \sum_{i=1}^{n}\left(f(x_{i},w)-y_{i}\right)w_{j}K_{ij}\frac{(x_{ik}-p_{jk})}{\lambda_{j}^{2}}
 \end{align}
 \end{subequations}
 
 
-Finding the set of hyper-parameters that optimizes the solution, is in effect finding the set of radial bases defined by their positions $p$, radius $\lambda$ and height variance $\sigma$ that jointly describes the patterns across the input space, and by parameterizing them differently, the model is more capable to accommodate different regions in the space more specifically. The kernel in \eqref{eq-squared-exponential-extension} can be further extended to, not only model each basis with its own radius $\lambda_{j}$, but also model each one with its own covariance defined by $C_{j}$. This enables the bases to have any arbitrary shaped ellipses given it more flexibility. The kernel in \eqref{eq-squared-exponential-extension} can be extended as follows:
-
+Finding the set of hyper-parameters that optimizes the solution, is in effect finding the set of radial bases defined by their positions $p$ and radius $\lambda$ that jointly describes the patterns across the input space, and by parameterizing them differently, the model is more capable to accommodate different regions in the space more specifically. The kernel in \eqref{eq-squared-exponential-extension} can be further extended to, not only model each basis with its own radius $\lambda_{j}$, but also model each one with its own covariance defined by $C_{j}$. This enables the bases to have any arbitrary shaped ellipses given it more flexibility. The kernel in \eqref{eq-squared-exponential-extension} can be extended as follows:
 
 \begin{equation}
 \label{eq-squared-exponential-covariance-extension}
-k(x_{i},p_{j}) = \sigma_{j}^{2}e^{-\frac{1}{2}\left(x_{i}-p_{j}\right)C_{j}^{-1}\left(x_{i}-p_{j}\right)^{T}}
+k(x_{i},p_{j}) = e^{-\frac{1}{2}\left(x_{i}-p_{j}\right)C_{j}^{-1}\left(x_{i}-p_{j}\right)^{T}}
 \end{equation}
 
-To make the optimization process simpler, we set $C_{i}^{-1}=\Lambda_{j}\Lambda_{j}^{T}$ and optimize with respect to $\Lambda_{j}$. Optimizing the objective in this manner ensures that the covariance matrix is positive semi-definite and makes it faster from a computational perspective, as we can set $v_{ij}=\left(x_{i}-p_{j}\right)\Lambda_{j}$ then the kernel function for all the points with respect to a particular basis can be computed more efficiently as follows:
+To make the optimization process faster and simpler, we define the following variables:
+
+\begin{subequations}
+\begin{align} 
+\label{eq-error}
+E &= \left(f(x,w)-y)\right)w^{T}\\
+\label{eq-Cinv}
+C_{j}^{-1} &= \Lambda\Lambda_{j}^{T}\\
+\label{eq-Delta_j}
+\Delta_{j} &= \left(x-\underset{n}{1}p_{j}\right)\\
+\label{eq-V_j}
+V_{j} &= \Delta_{j}\Lambda_{j}
+\end{align}
+\end{subequations}
+
+Where $\underset{n}{1}$ denotes a column vector of length $n$ with all elements set to 1. Optimizing with respect to $\Lambda_{j}$ directly ensures that the covariance matrix is positive semi-definite and makes it faster from a computational perspective, as the kernel functions for all the points with respect to a particular basis can be computed more efficiently as follows:
 
 \begin{equation}
 \label{eq-squared-exponential-covariance-extension-simplified}
-k(x,p_{j}) = \sigma_{j}^{2}e^{-\frac{1}{2}\left(V_{j}\circ V_{j}\right)\underset{d}{1}}
+k(x,p_{j}) = e^{-\frac{1}{2}\left(V_{j}\circ V_{j}\right)\underset{d}{1}}
 \end{equation}
 
-Where $V_{j}$ is an $n$ by $d$ matrix were each row $i$ in $V_{j}$ is equal to $v_{ij}$, $\underset{d}{1}$ is a column vector of length $d$ with all the elements set to 1 and the symbol $\circ$ is denotes the Hadamard product or the element-wise matrix multiplication. The exponent in \eqref{eq-squared-exponential-covariance-extension-simplified} basically reads, square the elements of the matrix $V_{j}$ then compute the sum of each row. This allows for a more efficient computation of the kernel functions for all points in a single matrix operation. 
+The symbol $\circ$ denotes the Hadamard product or the element-wise matrix multiplication. The exponent in \eqref{eq-squared-exponential-covariance-extension-simplified} basically reads, square the elements of the matrix $V_{j}$ then compute the sum of each row. This allows for a more efficient computation of the kernel functions for all points in a single matrix operation. The derivatives with respect to each $\Lambda_{j}$ and $p_{j}$ are shown in \eqref{eq-dfdL} and \eqref{eq-dfdP}
+
+\begin{subequations}
+\begin{align} 
+\label{eq-dfdL}
+\frac{\partial f(x,w)}{\partial \Lambda_{j}} &= -\left( \Delta_{j}^{T}\circ \left(\underset{d}{1}\left(K_{*,j}\circ E_{*,j}\right)^{T}\right) \right)V_{j}\\
+\label{eq-dfdP}
+\frac{\partial f(x,w)}{\partial p_{j}} &= \left( K_{*,j}\circ E_{*,j} \right)^{T}V_{j}\Lambda_{j}^{T}
+\end{align}
+\end{subequations}
+
+Where $K_{*,j}$ is the $j$'th column of matrix $K$, similarly for $E_{*,j}$. To illustrate the differences between the three approaches, an classification example is shown in \ref{fig-toy-example} where all models were initialized with the same set of four bases. The class probability distribution clearly show the advantage of having bases functions with more flexibility. 
+
+\begin{figure*}
+        \centering
+        \begin{subfigure}[b]{110 px}
+                \includegraphics[width=\textwidth]{clouds.jpg}
+                \caption{Dataset}
+                \label{fig:dataset}
+        \end{subfigure}
+        ~
+        \begin{subfigure}[b]{110 px}
+                \includegraphics[width=\textwidth]{clouds1.jpg}
+                \caption{Global Length Scale}
+                \label{fig:global}
+        \end{subfigure}
+        ~
+        \begin{subfigure}[b]{110 px}
+                \includegraphics[width=\textwidth]{clouds2.jpg}
+                \caption{Variable Length Scale}
+                \label{fig:variable-lambda}
+        \end{subfigure}
+        ~
+        \begin{subfigure}[b]{110 px}
+                \includegraphics[width=\textwidth]{clouds3.jpg}
+                \caption{Variable Covariance}
+                \label{fig:variable-covariance}
+        \end{subfigure}
+        \caption{A comparisons between different sparse GP approaches}
+        \label{toy-example}
+\end{figure*}
 
 \subsection{Simple to Complex Modeling}
 
@@ -143,5 +218,10 @@ Where $V_{j}$ is an $n$ by $d$ matrix were each row $i$ in $V_{j}$ is equal to $
 
 \section{Conclusion}
 \label{sec-conclusion}
+
+\footnotesize{
+\bibliographystyle{mn2e}
+\bibliography{biblio.bib}	
+}
 
 \end{document}
