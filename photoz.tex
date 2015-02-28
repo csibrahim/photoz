@@ -2,11 +2,9 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{graphicx}
-\usepackage{graphicx}
 \usepackage{caption}
 \usepackage{subcaption}
-\usepackage{times}
-
+  
 \captionsetup{compatibility=false}
 
 \title[Photometric Redshift Estimation]{Photometric Redshift Estimation}
@@ -165,44 +163,86 @@ The symbol $\circ$ denotes the Hadamard product or the element-wise matrix multi
 \begin{subequations}
 \begin{align} 
 \label{eq-dfdL}
-\frac{\partial f(x,w)}{\partial \Lambda_{j}} &= -\left( \Delta_{j}^{T}\circ \left(\underset{d}{1}\left(K_{*,j}\circ E_{*,j}\right)^{T}\right) \right)V_{j}\\
+\frac{\partial f(x,w)}{\partial \Lambda_{j}} &= -\left( \Delta_{j}\circ \left(\left(K_{*,j}\circ E_{*,j}\right)\underset{d}{1}\right) \right)^{T}V_{j}\\
 \label{eq-dfdP}
 \frac{\partial f(x,w)}{\partial p_{j}} &= \left( K_{*,j}\circ E_{*,j} \right)^{T}V_{j}\Lambda_{j}^{T}
 \end{align}
 \end{subequations}
 
-Where $K_{*,j}$ is the $j$'th column of matrix $K$, similarly for $E_{*,j}$. To illustrate the differences between the three approaches, an classification example is shown in \ref{fig-toy-example} where all models were initialized with the same set of four bases. The class probability distribution clearly show the advantage of having bases functions with more flexibility. 
+Where $K_{*,j}$ is the $j$'th column of matrix $K$, similarly for $E_{*,j}$. The differences between the three approaches using a different number of bases functions are demonstrated on a toy classification example shown in figure \ref{fig-toy-example} and the results are shown in figure \ref{fig-toy-comparison}. The class probability distribution clearly show the advantage of having bases functions with more flexibility. 
 
+\begin{figure}
+       \centering
+       \includegraphics[trim = 25px 12px 10px 10px, clip=true,width=\columnwidth]{clouds.jpg}
+        \caption{A toy classification dataset. }       
+       \label{fig-toy-example}
+\end{figure}
+
+  
 \begin{figure*}
         \centering
-        \begin{subfigure}[b]{110 px}
-                \includegraphics[width=\textwidth]{clouds.jpg}
-                \caption{Dataset}
-                \label{fig:dataset}
+        \begin{subfigure}[b]{90 px}
+                \includegraphics[trim = 150px 100px 150px 70px, clip=true,width=\textwidth]{global1.jpg}
         \end{subfigure}
         ~
-        \begin{subfigure}[b]{110 px}
-                \includegraphics[width=\textwidth]{clouds1.jpg}
-                \caption{Global Length Scale}
-                \label{fig:global}
+         \begin{subfigure}[b]{90 px}
+                \includegraphics[trim = 150px 100px 150px 70px, clip=true,width=\textwidth]{VL1.jpg}
         \end{subfigure}
         ~
-        \begin{subfigure}[b]{110 px}
-                \includegraphics[width=\textwidth]{clouds2.jpg}
-                \caption{Variable Length Scale}
-                \label{fig:variable-lambda}
+        \begin{subfigure}[b]{90 px}
+                \includegraphics[trim = 150px 100px 150px 70px, clip=true,width=\textwidth]{VC1.jpg}
+        \end{subfigure}
+       
+         \begin{subfigure}[b]{90 px}
+                \includegraphics[trim = 150px 100px 150px 70px, clip=true,width=\textwidth]{global2.jpg}
         \end{subfigure}
         ~
-        \begin{subfigure}[b]{110 px}
-                \includegraphics[width=\textwidth]{clouds3.jpg}
-                \caption{Variable Covariance}
-                \label{fig:variable-covariance}
+         \begin{subfigure}[b]{90 px}
+                \includegraphics[trim = 150px 100px 150px 70px, clip=true,width=\textwidth]{VL2.jpg}
         \end{subfigure}
-        \caption{A comparisons between different sparse GP approaches}
-        \label{toy-example}
+        ~
+        \begin{subfigure}[b]{90 px}
+                \includegraphics[trim = 150px 100px 150px 70px, clip=true,width=\textwidth]{VC2.jpg}
+        \end{subfigure}
+       
+         \begin{subfigure}[b]{90 px}
+                \includegraphics[trim = 150px 100px 150px 70px, clip=true,width=\textwidth]{global3.jpg}
+        \end{subfigure}
+        ~
+         \begin{subfigure}[b]{90 px}
+                \includegraphics[trim = 150px 100px 150px 70px, clip=true,width=\textwidth]{VL3.jpg}
+        \end{subfigure}
+        ~
+        \begin{subfigure}[b]{90 px}
+                \includegraphics[trim = 150px 100px 150px 70px, clip=true,width=\textwidth]{VC3.jpg}
+        \end{subfigure}
+       
+         \begin{subfigure}[b]{90 px}
+                \includegraphics[trim = 150px 100px 150px 70px, clip=true,width=\textwidth]{global4.jpg}
+                \caption{Global length scale}
+        \end{subfigure}
+        ~
+         \begin{subfigure}[b]{90 px}
+                \includegraphics[trim = 150px 100px 150px 70px, clip=true,width=\textwidth]{VL4.jpg}
+                \caption{Variable length scale}
+        \end{subfigure}
+        ~
+        \begin{subfigure}[b]{90 px}
+                \includegraphics[trim = 150px 100px 150px 70px, clip=true,width=\textwidth]{VC4.jpg}
+                \caption{Variable covariance}
+        \end{subfigure}
+               
+        \caption{A comparisons between different sparse GP approaches with 1 to 4 bases functions using (a) a global length scale, (b) variable length scales and (c) variable covariances }
+        \label{fig-toy-comparison}
 \end{figure*}
 
-\subsection{Simple to Complex Modeling}
+\subsection{Linear Regression Prior}
+
+GPs tend to perform well in interpolation but not as well in extrapolating. The regression function will fall back to the prior mean in areas where there is no training data. A common preprocessing technique is to subtract the mean of the output prior to training then adding it to the prediction of the model. Another way is to subtract a simple linear regression model and train the GP to learn the variation from that. This way, the GP will fall back to the linear regression prediction as a way of last resort instead of falling back to 0. We can incorporate this directly into the optimization objective instead of having it as a separate preprocessing step by redefining $K$ as concatenation of the linear and non-linear features, or in other words setting $K=[K|X|\underset{n}{1}]$. Furthermore, the regularization matrix in \eqref{eq-linear-regression-objective-rectangular} can be modified so that it penalizes for leaning high coefficients for the non-linear terms but no cost for learning linear terms by setting the corresponding elements in the diagonal of $I$ to 0, or the last $d+1$ elements. Therefore, as $\sigma_{n}^{2}$ goes to infinity, the model will get closer to a simple linear regression model.
+
+\subsection{Sample Weighting and Bias Control}
+
+So far the objective is to minimize the sum of squared errors, which is a suitable objective for most applications. However, this objective is naturally biased to the mean of the input and output distribution, therefore sacrificing data samples in less represented regions of space. This is not always a desired effect
 
 \section{Other Objectives}
 \label{sec-other-objectives}
