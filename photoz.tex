@@ -414,6 +414,29 @@ In this test, the extrapolation performance of the GP-VC model was tested using 
 \end{figure}
 
 
+\subsection{Weighted Sample}
+In this experiment, a comparison between the cost sensitive learning and the normal sum of squares for the GP-VC model is presented. Two different weight configurations will be tested, the first is to assign an error cost to each sample $i$ equals to $1/\left(1+z_{spec}^{(i)}\right)^{2}$ to directly target the Euclid mission requirement (Weighted), and the second experiment is to weigh each sample according to the frequency of their true redshift to insure balanced learning (Balanced).  Two additional measures are reported, the maximum $\Delta z$ and the maximum $\Delta z_{norm}$. The samples were grouped into bins of uniformly spaced intervals of 0.01, the mean error and the 1 standard deviation confidence bars are shown in Figure \ref{fig-normal} for the normal weighting scheme and Figure \ref{fig-balanced} shows the results of the balanced training. The results from the figures show that the cost sensitive learning is more consistent across the redshift range as oppose to the normal sum of squares, especially in the high redshift regions were there is less data the confidence intervals are considerably smaller.
+
+
+\begin{figure}
+        \centering
+        \begin{subfigure}[b]{1\columnwidth}
+                \includegraphics[trim = 35px 15px 50px 25px, clip=true,width=\textwidth]{Zspec-Zphot_normal.jpg}
+                \caption{Normal}
+                \label{fig-normal}
+        \end{subfigure}
+
+        \begin{subfigure}{1\columnwidth}
+                \includegraphics[trim = 35px 15px 50px 25px, clip=true,width=\textwidth]{Zspec-Zphot_balanced.jpg}
+                \caption{Balanced}
+                \label{fig-balanced}
+        \end{subfigure}
+        
+       \caption{The error as a function of redshift for the (a) normal sum of squared errors and (b) for the balanced cost sensitive learning for the GV-VC model when trained with $m=10$ basis functions}
+	\label{fig-normal-balanced}
+\end{figure}
+
+
 \section{Conclusion}
 \label{sec-conclusion}
 
