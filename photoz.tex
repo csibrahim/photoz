@@ -29,7 +29,7 @@ $^2$Other institution \\
 \label{first page}
 
 \begin{abstract}
-In this study, a novel sparse regression model for photometric redshift estimation is presented which directly target the requirements for the Euclid Space Mission. Data from a synthesised survey was used to train and test the proposed models. We show that approaches which include careful data preparation and model design, a significant improvement can be achieved when compared with several off the shelf machine learning algorithms. Standard implementation of most regression algorithms has as objective the minimisation of the sum of squared errors. This induces a bias in the posterior mean of the output distribution which can be problematic. In this paper we directly optimise the Euclid mission requirement and compare this with other objective functions, such as minimising the maximum error and maximising the number of data points with a predictive error less than a threshold. The results are compared with other popular machine learning algorithms in the field such as ANNz, stableGP and SPGP. The proposed reached a $\Delta z = 0.0085(1+z)$ for a redshift range of $0.2 < z < 2$, exceeding the requirement for the Euclid mission of $\Delta z = 0.05(1+z)$ for the same redshift range.
+In this study, a novel sparse regression model for photometric redshift estimation is presented which directly target the requirements for the Euclid Space Mission. Data from a synthesised survey was used to train and test the proposed models. We show that approaches which include careful data preparation and model design, a significant improvement can be achieved when compared with several off the shelf machine learning algorithms. Standard implementation of most regression algorithms has as objective the minimisation of the sum of squared errors. This induces a bias in the posterior mean of the output distribution which can be problematic. In this paper we directly optimise the Euclid mission requirement and compare this with other objective functions, such as minimising the maximum error and maximising the number of data points with a predictive error less than a threshold. The results are compared with other popular machine learning algorithms in the field such as Artificial Neural Networks, stableGP and sparse GP. The proposed reached a $\Delta z = 0.003(1+z_{spec})$ for a redshift range of $0.2 < z_{spec} < 2$, exceeding the requirement for the Euclid mission of $\Delta z = 0.05(1+z_{spec})$ for the same redshift range.
 
 \end{abstract}
 
@@ -38,14 +38,19 @@ methods: data analysis -- galaxies: distances and redshifts
 \end{keywords}
 
 \section{Introduction}
-We introduce a novel sparse kernel regression model that greatly reduces the number of basis functions required to model the data. This is achieved by allowing each kernel to have its own hyper-parameters, governing its shape. This is in contrast to the standard kernel-based model in which a set of global hyper-parameters are optimised. The complexity cost of such a kernel-based regression model is $O(n^{3})$, where $n$ is the number of basis functions. This cubic time complexity arise from the cost of inverting an $n$ by $n$ covariance matrix. In a basic Gaussian Process model (GP) \cite{rasmussen+williams}, seen as a kernel regression algorithm, we may regard the basis functions, as the $n$ points in the training set. This renders such an approach unusable for many large-data applications where scalability is a major concern. Much of the work done to make GPs more scalable \cite{sparseGPcitations} is either to make the inverse computation faster or use smaller representative sample to compute the covariance. Examples of the former includes methods such as structuring the covariance matrix such that it is much easier to invert \cite{}, using Toeplitz and Kronecker decomposition for example, or inverse approximation as an optimisation problem \cite{}. To reduce the number of representative points, an $m \ll n$ subset of the training set can be selected which maximises the accuracy or the numerical stability of the inversion. Alternatively, one may search for ``pseudo'' points not necessarily present in the training set to use as basis for the covariance matrix such that it maximises the log marginal likelihood \cite{}. The focus in this paper is on sparse GP modelling where we extend the sparse pseudo GP method using less, but more flexible kernels. Moreover, a weighting scheme is modelled as an integral part of the process to remove, or introduce, any systematic bias to the model. The results are demonstrated on photometric redshift estimation for the Euclid Space Mission. In particular, we use the weighting scheme to remove any distribution bias and introduce a linear bias to directly target the mission's requirement. The proposed approach reached a $\Delta z = 0.0085(1+z)$ on a simulated catalogue, far exceeding the mission's requirement of $\Delta z = 0.05(1+z)$ The paper is organised as follows, a brief introduction to Gaussian Processes for regression and sparse GPs are presented in sections \ref{sec-gaussian-process} and \ref{sec-sparse-gaussian-process},  then the proposed approach is laid out in Section \ref{sec-proposed-approach}. The data set description and experiments are provided in Sections \ref{sec-dataset} and \ref{sec-experiments} respectively. We summarise and conclude in Section \ref{sec-conclusion}.
+We introduce a novel sparse kernel regression model that greatly reduces the number of basis functions required to model the data. This is achieved by allowing each kernel to have its own hyper-parameters, governing its shape. This is in contrast to the standard kernel-based model in which a set of global hyper-parameters are optimised. The complexity cost of such a kernel-based regression model is $O(n^{3})$, where $n$ is the number of basis functions. This cubic time complexity arise from the cost of inverting an $n$ by $n$ covariance matrix. In a basic Gaussian Process model (GP) \cite{rasmussen+williams}, seen as a kernel regression algorithm, we may regard the basis functions, as the $n$ points in the training set. This renders such an approach unusable for many large-data applications where scalability is a major concern. Much of the work done to make GPs more scalable \cite{sparseGPcitations} is either to make the inverse computation faster or use smaller representative sample to compute the covariance. Examples of the former include methods such as structuring the covariance matrix such that it is much easier to invert \cite{}, using Toeplitz and Kronecker decomposition for example, or inverse approximation as an optimisation problem \cite{}. To reduce the number of representative points, an $m \ll n$ subset of the training set can be selected which maximises the accuracy or the numerical stability of the inversion. Alternatively, one may search for ``pseudo'' points not necessarily present in the training set to use as basis for the covariance matrix such that it maximises the log marginal likelihood \cite{}. The focus in this paper is on sparse GP modelling where we extend the sparse pseudo GP method using less, but more flexible kernels. Moreover, a weighting scheme is modelled as an integral part of the process to remove, or introduce, any systematic bias to the model. The results are demonstrated on photometric redshift estimation for the Euclid Space Mission. In particular, we use the weighting scheme to remove any distribution bias and introduce a linear bias to directly target the mission's requirement. The proposed approach reached a $\Delta z = 0.003(1+z_{spec})$ on a simulated catalogue, far exceeding the mission's requirement of $\Delta z = 0.05(1+z_{spec})$. The paper is organised as follows, a brief introduction to Gaussian Processes for regression and sparse GPs are presented in sections \ref{sec-gaussian-process} and \ref{sec-sparse-gaussian-process},  then the proposed approach is laid out in Section \ref{sec-proposed-approach}. An application to photometric redshift estimation is presented in section \ref{sec-application} where the details of the dataset and the experiments are described. Finally, we summarise and conclude in Section \ref{sec-conclusion}. The contributions of this paper are as follows:
 
-\textit{TO ADD: The contributions of this paper are as follows....}
+\begin{itemize}
+  \item Increasing sparse gaussian processes' modelling complexity via the use of more flexible kernels and fewer basis functions, therefore enhancing the computational complexity without sacrificing accuracy.
+  \item Incorporating a weighting scheme directly to the objective to counteract any undesired bias and/or to control the bias of the model. In this paper it was used to directly target the Euclid Space Mission objective.
+  \item A prior linear regression mean function is jointly optimized to enhance the model's extrapolation performance
+  \item The proposed approach was applied to a simulated catalogue and achieved  a $\Delta z = 0.003(1+z_{spec})$ exceeding the requirement for the mission which is $\Delta z \le 0.05(1+z_{spec})$
+\end{itemize}
 
 \section{Gaussian Processes}
 \label{sec-gaussian-process}
 In many modelling problems, we have little prior knowledge of the explicit functional form of the function which maps our observable variables into the variable of interest. Imposing, albeit sensible, parametric models, such as polynomials, makes a tacit bias. For this reason, much of modern function modelling is performed using \emph{non-parametric} techniques. For regression, the most widely used approach is that of \emph{Gaussian Processes}.
-A Gaussian Process is a supervised non-linear regression algorithm that makes few explicit \emph{parametric} assumptions about the nature of the function fit. For this reason, Gaussian Processes are seen as lying within the class of Bayesian non-parametric models. The main underlying assumption in a GP is that the joint probability of the input variable $x$ and the output variable $y$ is a multivariate Gaussian with mean $\mu=\begin{bmatrix} \mu_{x}\\ \mu_{y}\end{bmatrix}$ and covariance $\Sigma=\begin{bmatrix}\Sigma_{xx} & \Sigma_{xy}\\\Sigma_{yx} & \Sigma_{yy} \end{bmatrix}$, where $\Sigma_{xy}=(x-\mu_{x})(y-\mu_{y})^{T}$. The input variables $x$ is an $n$ by $d$ matrix, where $n$ is the number of data points and $d$ is the dimensionality of the input. Without loss of generality, the output variable $y$ is assumed to be a vector of length $n$ of target outputs but the same concept holds for multiple variable output.
+A Gaussian Process is a supervised non-linear regression algorithm that makes few explicit \emph{parametric} assumptions about the nature of the function fit. For this reason, Gaussian Processes are seen as lying within the class of Bayesian non-parametric models. The main underlying assumption in a GP is that the joint probability of the input variable $x$ and the output variable $y$ is a multivariate Gaussian with mean $\mu=\begin{bmatrix} \mu_{x} & \mu_{y}\end{bmatrix}^{T}$ and covariance $\Sigma=\begin{bmatrix}\Sigma_{xx} & \Sigma_{xy}\\\Sigma_{yx} & \Sigma_{yy} \end{bmatrix}$, where $\Sigma_{xy}=(x-\mu_{x})(y-\mu_{y})^{T}$. The input variables $x$ is an $n$ by $d$ matrix, where $n$ is the number of data points and $d$ is the dimensionality of the input. Without loss of generality, the output variable $y$ is assumed to be a vector of length $n$ of target outputs but the same concept holds for multiple variable output.
 
 \begin{equation}
 p\left ( x,y\right) \sim \mathcal{N} \left ( \begin{bmatrix}\mu_{x}\\\mu_{y} \end{bmatrix}, \begin{bmatrix}\Sigma_{xx} & \Sigma_{xy}\\\Sigma_{yx} & \Sigma_{yy} \end{bmatrix}\right )
@@ -54,9 +59,9 @@ p\left ( x,y\right) \sim \mathcal{N} \left ( \begin{bmatrix}\mu_{x}\\\mu_{y} \en
 The mean and covariance of the conditional probability $p(y|x)$ therefore is Gaussian distributed as follows:
 \begin{equation}
 \begin{array}{rcl}
-p(y|x)		&\sim&	\mathcal{N} \left ( \mu, \Sigma \right )\\
-\mu		&=&		\mu_{x}+\Sigma_{yx}\Sigma_{xx}^{-1}\left ( y-\mu_{y}\right )\\
-\Sigma		&=&		\Sigma_{yy}-\Sigma_{yx}\Sigma_{xx}^{-1}\Sigma_{xy}
+p(y|x)		&	\sim		&	\mathcal{N} \left ( \mu, \Sigma \right )\\
+\mu			&	=		&	\mu_{x}+\Sigma_{yx}\Sigma_{xx}^{-1}\left ( y-\mu_{y}\right )\\
+\Sigma		&	=		&	\Sigma_{yy}-\Sigma_{yx}\Sigma_{xx}^{-1}\Sigma_{xy}
 \end{array}
 \end{equation}
 
@@ -65,8 +70,8 @@ The calculation can be simplified by subtracting the mean of the input and the o
 \begin{equation}
 \label{eq-conditional-zero-mean}
 \begin{array}{rcl}
-\mu &=& \Sigma_{yx}\Sigma_{xx}^{-1}y\\
-\Sigma &=& \Sigma_{yy}-\Sigma_{yx}\Sigma_{xx}^{-1}\Sigma_{xy}
+\mu 		&=&		\Sigma_{yx}\Sigma_{xx}^{-1}y\\
+\Sigma 	&=& 	\Sigma_{yy}-\Sigma_{yx}\Sigma_{xx}^{-1}\Sigma_{xy}
 \end{array}
 \end{equation}
 
@@ -84,11 +89,7 @@ For our current definition of the covariance matrix $\Sigma$, the predictive mea
 
 Since the solution is entirely defined in terms of inner products of the input space, one can utilize the so called ``kernel trick'' to learn non-linear models by replacing the covariance matrix $\Sigma$ with a covariance function $K$, where $K_{ij} = k(x_{i},x_{j})$.
 
-The kernel function $k$ is defined such that the matrix $K$ will be a positive definite matrix. The concept behind the kernel trick is to compute the covariance matrix of high dimensional mapping of the input into a higher dimensional space without explicitly mapping them to that space. The choice of kernel is largely a modelling decision based on the definition of similarity for a given application. In this paper, the squared exponential kernel defined in \eqref{eq-squared-exponential} is used but the concepts introduced here applies to any other kernel function.
-
-\textit{COMMENT: in general I think a more full description is needed. Reading the above feels like the choice of kernel is arbitrary}
-
-\textit{TO ADD: explain why the SE is used - what assumptions does it impose and what advantages does it have.}
+The kernel function $k$ is defined such that the matrix $K$ will be a positive definite matrix. The concept behind the kernel trick is to compute the covariance matrix of high dimensional mapping of the input into a higher dimensional space without explicitly mapping them to that space. The choice of kernel is largely a modelling decision based on the definition of similarity for a given application. In this paper, the squared exponential kernel defined in \eqref{eq-squared-exponential} is used but the concepts introduced here applies to any other kernel function. One attractive feature of this kernel function is that it assumes that similarity is a function of the Euclidean distance, which is a reasonable assumption in most applications. Furthermore, the basis functions' dimensionality are similar to that of the input space, meaning they can be interpreted as ``pseudo points'' where their features can be analyzed. Moreover, as we will show latter in this paper, that the squared exponential kernel can be very flexible allowing us to learn more complex patterns using less basis functions.
 
 \begin{equation}
 \label{eq-squared-exponential}
@@ -125,7 +126,7 @@ w = \left(K^{T}K+I\sigma_{n}^{2} \right)^{-1}K^{T}y
 
 Even though these models improve the computational cost greatly, very little is done to compensate for the reduction in modeling complexity. The selection method is always bounded by the full GP's accuracy. On the other hand, the sparse GP's ability to place the basis freely across the input space does compensate for the basis set size reduction as they can be better positioned to describe the distribution of the data. However, in both cases a global set of hyper-parameters is used for all basis functions therefore limiting the algorithm's capability to model patterns in the data with the number of basis and their locations. Moreover, the objective in \eqref{eq-linear-regression-objective} by definition minimizes the sum of squared errors, therefore for any non-uniformly distributed output, the optimization routine will bias the model towards the mean of the output distribution and will seek to fit the region of space where there is more data.
 
-In the next section, the proposed method is described which addresses the above issues by defining each basis with its own hyper-parameters to account for variable density and/or pattern across the input space and allows the algorithm to learn more complex models with a fewer number of basis functions. In addition, a weighting mechanism to remove any distribution bias from the model is directly incorporated into the objective.
+In the next section, the proposed method is described which addresses the above issues by parameterizing each basis with its own hyper-parameters to account for variable density and/or pattern across the input space and allows the algorithm to learn more complex models with a fewer number of basis functions. In addition, a weighting mechanism to remove any distribution bias from the model is directly incorporated into the objective.
 
 \section{Proposed Approach}
 \label{sec-proposed-approach}
@@ -177,7 +178,7 @@ Where $\underset{n}{1}$ denotes a column vector of length $n$ with all elements 
 k(x,p_{j}) = \exp{\left(-\frac{1}{2}\left(V_{j}\circ V_{j}\right)\underset{d}{1}\right)}
 \end{equation}
 
-The symbol $\circ$ denotes the Hadamard product or the element-wise matrix multiplication. The exponent in \eqref{eq-squared-exponential-covariance-extension-simplified} basically computes the sum of squares in each row of $V_{j}$. This allows for a more efficient computation of the kernel functions for all points in a single matrix operation. The derivatives with respect to each $\Lambda_{j}$ and $p_{j}$ are shown in \eqref{eq-dfdL} and \eqref{eq-dfdP}.
+The symbol $\circ$ denotes the Hadamard product or the element-wise matrix multiplication. The exponent in \eqref{eq-squared-exponential-covariance-extension-simplified} basically computes the sum of squares in each row of $V_{j}$. This allows for a more efficient computation of the kernel functions for all the points in a single matrix operation. The derivatives with respect to each $\Lambda_{j}$ and $p_{j}$ are shown in \eqref{eq-dfdL} and \eqref{eq-dfdP}.
 
 \begin{subequations}
 \begin{align} 
@@ -188,65 +189,65 @@ The symbol $\circ$ denotes the Hadamard product or the element-wise matrix multi
 \end{align}
 \end{subequations}
 
-Where $K_{*,j}$ is the $j$'th column of matrix $K$, similarly for $E_{*,j}$. The differences between the three approaches using a different number of basis functions are demonstrated on a toy classification example shown in Figure \ref{fig-toy-example} and the results are shown in Figure \ref{fig-toy-comparison}. The class probability distribution clearly show the advantage of having basis functions with more flexibility. 
+Where $K_{*,j}$ is the $j$'th column of matrix $K$, similarly for $E_{*,j}$. The differences between the three approaches using a different number of basis functions are demonstrated on a toy classification example shown in Figure \ref{fig-toy-example} and the results are shown in Figure \ref{fig-toy-comparison}. The class probability distribution clearly show the advantage of having basis functions with more flexible kernels. 
 
 \begin{figure}
        \centering
-       \includegraphics[trim = 25px 12px 10px 10px, clip=true,width=0.75\columnwidth]{clouds.jpg}
+         \frame{\includegraphics[trim = 30px 20px 20px 20px, clip=true,width=0.75\columnwidth]{clouds.jpg}}
         \caption{A toy classification dataset. }       
        \label{fig-toy-example}
 \end{figure}
   
 \begin{figure}
         \centering
-        \begin{subfigure}[b]{70 px}
-                \includegraphics[trim = 150px 100px 150px 70px, clip=true,width=\textwidth]{global1.jpg}
+        \begin{subfigure}[b]{0.3\columnwidth}
+                \frame{\includegraphics[trim = 160px 100px 150px 70px, clip=true,width=\textwidth]{global1.jpg}}
         \end{subfigure}
         ~
-         \begin{subfigure}[b]{70 px}
-                \includegraphics[trim = 150px 100px 150px 70px, clip=true,width=\textwidth]{VL1.jpg}
+         \begin{subfigure}[b]{0.3\columnwidth}
+                \frame{\includegraphics[trim = 160px 100px 150px 70px, clip=true,width=\textwidth]{VL1.jpg}}
         \end{subfigure}
         ~
-        \begin{subfigure}[b]{70 px}
-                \includegraphics[trim = 150px 100px 150px 70px, clip=true,width=\textwidth]{VC1.jpg}
+        \begin{subfigure}[b]{0.3\columnwidth}
+               \frame{ \includegraphics[trim = 160px 100px 150px 70px, clip=true,width=\textwidth]{VC1.jpg}}
         \end{subfigure}
        
-         \begin{subfigure}[b]{70 px}
-                \includegraphics[trim = 150px 100px 150px 70px, clip=true,width=\textwidth]{global2.jpg}
+         \begin{subfigure}[b]{0.3\columnwidth}
+               \frame{ \includegraphics[trim = 160px 100px 150px 70px, clip=true,width=\textwidth]{global2.jpg}}
         \end{subfigure}
         ~
-         \begin{subfigure}[b]{70 px}
-                \includegraphics[trim = 150px 100px 150px 70px, clip=true,width=\textwidth]{VL2.jpg}
+         \begin{subfigure}[b]{0.3\columnwidth}
+               \frame{ \includegraphics[trim = 160px 100px 150px 70px, clip=true,width=\textwidth]{VL2.jpg}}
         \end{subfigure}
         ~
-        \begin{subfigure}[b]{70 px}
-                \includegraphics[trim = 150px 100px 150px 70px, clip=true,width=\textwidth]{VC2.jpg}
+        \begin{subfigure}[b]{0.3\columnwidth}
+                \frame{\includegraphics[trim = 160px 100px 150px 70px, clip=true,width=\textwidth]{VC2.jpg}}
         \end{subfigure}
        
-         \begin{subfigure}[b]{70 px}
-                \includegraphics[trim = 150px 100px 150px 70px, clip=true,width=\textwidth]{global3.jpg}
+         \begin{subfigure}[b]{0.3\columnwidth}
+                \frame{\includegraphics[trim = 160px 100px 150px 70px, clip=true,width=\textwidth]{global3.jpg}}
         \end{subfigure}
         ~
-         \begin{subfigure}[b]{70 px}
-                \includegraphics[trim = 150px 100px 150px 70px, clip=true,width=\textwidth]{VL3.jpg}
+         \begin{subfigure}[b]{0.3\columnwidth}
+                \frame{\includegraphics[trim = 160px 100px 150px 70px, clip=true,width=\textwidth]{VL3.jpg}}
         \end{subfigure}
         ~
-        \begin{subfigure}[b]{70 px}
-                \includegraphics[trim = 150px 100px 150px 70px, clip=true,width=\textwidth]{VC3.jpg}
+        \begin{subfigure}[b]{0.3\columnwidth}
+                \frame{\includegraphics[trim = 160px 100px 150px 70px, clip=true,width=\textwidth]{VC3.jpg}}
         \end{subfigure}
        
-         \begin{subfigure}[b]{70 px}
-                \includegraphics[trim = 150px 100px 150px 70px, clip=true,width=\textwidth]{global4.jpg}
+         \begin{subfigure}[b]{0.3\columnwidth}
+                \frame{\includegraphics[trim = 160px 100px 150px 70px, clip=true,width=\textwidth]{global4.jpg}}
                 \caption{Global length scale}
         \end{subfigure}
         ~
-         \begin{subfigure}[b]{70 px}
-                \includegraphics[trim = 150px 100px 150px 70px, clip=true,width=\textwidth]{VL4.jpg}
+         \begin{subfigure}[b]{0.3\columnwidth}
+                \frame{\includegraphics[trim = 160px 100px 150px 70px, clip=true,width=\textwidth]{VL4.jpg}}
                 \caption{Variable length scale}
         \end{subfigure}
         ~
-        \begin{subfigure}[b]{70 px}
-                \includegraphics[trim = 150px 100px 150px 70px, clip=true,width=\textwidth]{VC4.jpg}
+        \begin{subfigure}[b]{0.3\columnwidth}
+                \frame{\includegraphics[trim = 160px 100px 150px 70px, clip=true,width=\textwidth]{VC4.jpg}}
                 \caption{Variable covariance}
         \end{subfigure}
                
@@ -269,7 +270,7 @@ So far the objective is to minimize the sum of squared errors, which is a suitab
 \end{array}
 \end{equation}
 
-The only difference between the objectives in \eqref{eq-linear-regression-objective} and \eqref{eq-weighted-linear-regression-objective} is the introduction of the diagonal matrix $W$, where each element $W_{ii}$ is the corresponding cost for sample $i$. The first term in \eqref{eq-weighted-linear-regression-objective} is a matrix form for a weighted sum of squares $\sum_{i=1}^{n}W_{ii}\left(K_{i,*}w-y_{i}\right)^{2}$. The solution to can be found analytically as follows:
+The only difference between the objectives in \eqref{eq-linear-regression-objective} and \eqref{eq-weighted-linear-regression-objective} is the introduction of the diagonal matrix $W$, where each element $W_{ii}$ is the corresponding cost for sample $i$. The first term in \eqref{eq-weighted-linear-regression-objective} is a matrix form for a weighted sum of squares $\sum_{i=1}^{n}W_{ii}\left(K_{i,*}w-y_{i}\right)^{2}$. The solution to \eqref{eq-weighted-linear-regression-objective} can be found analytically as follows:
 
 \begin{equation}
 \label{eq-weighted-linear-regression-objective-rectangular}
@@ -284,13 +285,52 @@ Here we consider the problem of redshift estimation from photometric data. The a
 \subsection{Dataset}
 \label{sec-dataset}
 
-The dataset consist of the g, r, i, z, RIZ, Y, J and H magnitudes for 156,904 simulated sources along with their spectroscopic redshift. They cover a redshift range of $0.2 \le z_{spec} \le 2$ to target the requirement set by the Euclid Space Mission. All sources with any missing measurement in any of their detectors were removed prior to training. Not limits on any of the bands were used, although some will be explicitly removed to test the extrapolation performance of the models. The distribution of the bands and the spectroscopic redshift are provided in Figures \ref{fig-bands-hostograms} and \ref{fig-zpec-hostogram} respectively. For all experiments reported in this paper, we ignore the error bars associated with each band and train only on the magnitudes. In all experiments reported in this paper, the data is preprocessed using Principle Component Analysis (PCA) \cite{} to de-correlate the features prior to learning. De-correlation is known to accelerate the convergence rate specially when using a logistic-type kernel machines like Neural Networks \cite{}, and a similar effect is noticed with the squared exponential kernel here.
+The dataset consist of the g, r, i, z, RIZ, Y, J and H magnitudes for 156,904 simulated sources along with their spectroscopic redshift. They cover a redshift range of $0.2 \le z_{spec} \le 2$ to target the requirement set by the Euclid Space Mission. All sources with any missing measurement in any of their detectors were removed prior to training. Not limits on any of the bands were used, although some will be explicitly removed to test the extrapolation performance of the models. The distribution of the bands and the spectroscopic redshift are provided in Figures \ref{fig-bands-histograms} and \ref{fig-zpec-hostogram} respectively. For all experiments reported in this paper, we ignore the error bars associated with each band and train only on the magnitudes. In all experiments reported in this paper, the data is preprocessed using Principle Component Analysis (PCA) \cite{} to de-correlate the features prior to learning. De-correlation is known to accelerate the convergence rate specially when using a logistic-type kernel machines like Neural Networks \cite{}, and a similar effect is noticed with the squared exponential kernel here.
 
 \begin{figure*}
-       \centering
-       \includegraphics[width=0.75\textwidth]{bands.jpg}
-        \caption{The magnitude distribution for each band in the dataset.} 
-       \label{fig-bands-hostograms}
+        \centering
+        \begin{subfigure}[b]{0.2\textwidth}
+                \includegraphics[trim = 35px 15px 50px 25px, clip=true,width=\textwidth]{g.jpg}
+                \caption{g}
+        \end{subfigure}
+        ~
+        \begin{subfigure}[b]{0.2\textwidth}
+                \includegraphics[trim = 35px 15px 50px 25px, clip=true,width=\textwidth]{r.jpg}
+                \caption{r}
+        \end{subfigure}
+         ~
+        \begin{subfigure}[b]{0.2\textwidth}
+                \includegraphics[trim = 35px 15px 50px 25px, clip=true,width=\textwidth]{i.jpg}
+                \caption{i}
+        \end{subfigure}
+         ~
+        \begin{subfigure}[b]{0.2\textwidth}
+                \includegraphics[trim = 35px 15px 50px 25px, clip=true,width=\textwidth]{z.jpg}
+                \caption{z}
+        \end{subfigure}
+        
+        \begin{subfigure}[b]{0.2\textwidth}
+                \includegraphics[trim = 35px 15px 50px 25px, clip=true,width=\textwidth]{RIZ.jpg}
+                \caption{RIZ}
+        \end{subfigure}
+        ~
+        \begin{subfigure}[b]{0.2\textwidth}
+                \includegraphics[trim = 35px 15px 50px 25px, clip=true,width=\textwidth]{Y.jpg}
+                \caption{Y}
+        \end{subfigure}
+         ~
+        \begin{subfigure}[b]{0.2\textwidth}
+                \includegraphics[trim = 35px 15px 50px 25px, clip=true,width=\textwidth]{J.jpg}
+                \caption{J}
+        \end{subfigure}
+         ~
+        \begin{subfigure}[b]{0.2\textwidth}
+                \includegraphics[trim = 35px 15px 50px 25px, clip=true,width=\textwidth]{H.jpg}
+                \caption{H}
+        \end{subfigure}
+        
+       \caption{The magnitude distribution for each band in the dataset.} 
+	\label{fig-bands-histograms}
 \end{figure*}
 
 \begin{figure}
@@ -314,36 +354,36 @@ $\Delta z$ is the standard Root Mean Squared Error (RMSE), while $\Delta z_{norm
 
 \subsection{Modelling Performance}
 
-In the first test, all models were trained using a fixed $m=10$ to cross compare the performance of the methods using the same number of basis functions. The number of basis was set deliberately low to highlight the modelling capabilities of each algorithm, as for large values of $m$ the performance gap between the algorithms is very small to distinguish the difference. The standard sum of squared objective was used , without cost sensitive training or assuming a linear regression model as a prior. The $z_{spec}$ vs $z_{phot}$ density scatter plots are shown in Figure \ref{fig-experiment-1} and their performance scores are reported in Table \ref{table-experiment-1}
+In the first test, all models were trained using a fixed $m=10$ to cross compare the performance of the methods using the same number of basis functions. The number of basis was set deliberately low to highlight the modelling capabilities of each algorithm, as for large values of $m$ the performance gap between the algorithms is very small to distinguish the difference. The standard sum of squares objective was used , without cost sensitive training or assuming a linear regression model as a prior. The $z_{spec}$ vs $z_{phot}$ density scatter plots are shown in Figure \ref{fig-experiment-1} and their performance scores are reported in Table \ref{table-experiment-1}
 
 \begin{figure}
         \centering
-        \begin{subfigure}[b]{110px}
-                \includegraphics[trim = 35px 15px 50px 25px, clip=true,width=\textwidth]{ANN.jpg}
+        \begin{subfigure}[b]{0.45\columnwidth}
+                \frame{\includegraphics[trim = 35px 15px 50px 35px, clip=true,width=\textwidth]{ANN.jpg}}
                 \caption{ANN}
         \end{subfigure}
         ~
-        \begin{subfigure}[b]{110px}
-                \includegraphics[trim = 35px 15px 50px 25px, clip=true,width=\textwidth]{stableGP.jpg}
+        \begin{subfigure}[b]{0.45\columnwidth}
+                \frame{\includegraphics[trim = 35px 15px 50px 35px, clip=true,width=\textwidth]{stableGP.jpg}}
                 \caption{stableGP}
         \end{subfigure}
         ~
-        \begin{subfigure}[b]{110px}
-                \includegraphics[trim = 35px 15px 50px 25px, clip=true,width=\textwidth]{GPGL.jpg}
+        \begin{subfigure}[b]{0.45\columnwidth}
+                \frame{\includegraphics[trim = 35px 15px 50px 35px, clip=true,width=\textwidth]{GPGL.jpg}}
                 \caption{GP-GL}
         \end{subfigure}
         ~
-        \begin{subfigure}[b]{110px}
-                \includegraphics[trim = 35px 15px 50px 25px, clip=true,width=\textwidth]{GPVL.jpg}
+        \begin{subfigure}[b]{0.45\columnwidth}
+               \frame{ \includegraphics[trim = 35px 15px 50px 35px, clip=true,width=\textwidth]{GPVL.jpg}}
                 \caption{GP-VL}
         \end{subfigure}
         ~
-        \begin{subfigure}[b]{110px}
-                \includegraphics[trim = 35px 15px 50px 25px, clip=true,width=\textwidth]{GPVC.jpg}
+        \begin{subfigure}[b]{0.45\columnwidth}
+                \frame{\includegraphics[trim = 35px 15px 50px 35px, clip=true,width=\textwidth]{GPVC.jpg}}
                 \caption{GP-VC}
         \end{subfigure}
         
-        \caption{Scatter density plots of the true $z_{spec}$ vs the predicted $z_{phot}$ for (a) ANN, (b) stableGP, (c) GP-GL, (d) GP-VL and (e) GP-VC using $m=10$ basis functions}
+        \caption{Density scatter plots of the true $z_{spec}$ vs the predicted $z_{phot}$ for (a) ANN, (b) stableGP, (c) GP-GL, (d) GP-VL and (e) GP-VC using $m=10$ basis functions}
         \label{fig-experiment-1}
 \end{figure}
 
@@ -355,8 +395,8 @@ In the first test, all models were trained using a fixed $m=10$ to cross compare
 	ANN		&	0.0415		&	0.0251				\\	 
 	stableGP	&	0.2138		&	0.1304				\\ 
 	GP-GL		&	0.0679		&	0.0415				\\
-	GP-GL		&	0.0595		&	0.0370				\\
-	GP-VC	&	0.0233		&	0.0134				\\	\hline
+	GP-VL		&	0.0595		&	0.0370				\\
+	GP-VC		&	0.0233		&	0.0134				\\	\hline
   \end{tabular}
   \label{table-experiment-1}
 \end{center}
@@ -364,7 +404,7 @@ In the first test, all models were trained using a fixed $m=10$ to cross compare
 
 \subsection{Prior Mean}
 
-In this test, the extrapolation performance of the GP-VC model was tested using different prior means, namely a zeros mean, a linear regression mean and learning the linear and non-linear features simultaneously while regularizing the non-linear features more aggressively than linear features. To test this more effectively,  the models were trained using sources with $RIZ<23$ (36,244 objects) and tested on the unseen samples with $RIZ\ge23$, a similar test was also conducted using a split of $RIZ<22$ (15,067 objects). The results are reported in Table \ref{table-RIZ-splits} and the density scatter plots are shown for comparison in Figure \ref{fig-RIZ-splits}. The results from Table \ref{table-RIZ-splits} shows that the ``Joint'' method consistently outperforms the other methods especially when trained with a small sample size as in the $RIZ<22$ case. The Linear regression prior was not always better than the zero prior mean in terms of performance measures, in the $RIZ<22$ case for example, but upon examining the density scatter plots in Figure \ref{fig-RIZ-splits}, the zero mean prior has more systematic and catastrophic errors.
+In this test, the extrapolation performance of the GP-VC model was tested using different prior means, namely a zero mean, a linear regression mean and learning the linear and non-linear features simultaneously while regularizing the non-linear features more aggressively than linear features. To test this more effectively,  the models were trained using sources with $RIZ<23$ (36,244 objects) and tested on the unseen samples with $RIZ\ge23$, a similar test was also conducted using a split of $RIZ<22$ (15,067 objects). The results are reported in Table \ref{table-RIZ-splits} and the density scatter plots are shown for comparison in Figure \ref{fig-RIZ-splits}. The results from Table \ref{table-RIZ-splits} show that the ``Joint'' method consistently outperformed the other methods especially when trained with a small sample size as in the $RIZ<22$ case. The Linear regression prior was not always better than the zero mean prior in terms of performance measures, in the $RIZ<22$ case for example, but upon examining the density scatter plots in Figure \ref{fig-RIZ-splits}, the zero mean prior has more systematic and catastrophic errors.
 
  \begin{table}
 \caption{Performance measures for each algorithm trained using $m=10$ basis functions}
@@ -373,7 +413,7 @@ In this test, the extrapolation performance of the GP-VC model was tested using 
   							& 	\multicolumn{2}{|c|}{$RIZ<23$}	& 	\multicolumn{2}{c}{$RIZ<22$} \\ \cline{2-5}
      	Prior					&	$\Delta z$	&	$\Delta z_{norm}$&	$\Delta z$	&	$\Delta z_{norm}$	\\	\hline
 	Zero					&	0.0807		&	0.0315				&	0.1436		&	0.0547					\\	 
-	Linear Regression	&	0.0393		&	0.0188				&	0.1784		&	0.0689					\\ 
+	Linear Regression		&	0.0393		&	0.0188				&	0.1784		&	0.0689					\\ 
 	Joint					&	0.0371		&	0.0167				&	0.0560		&	0.0264					\\	\hline
   \end{tabular}
   \label{table-RIZ-splits}
@@ -382,30 +422,30 @@ In this test, the extrapolation performance of the GP-VC model was tested using 
 
 \begin{figure}
         \centering
-        \begin{subfigure}[b]{73px}
-                \includegraphics[trim = 35px 15px 50px 25px, clip=true,width=\textwidth]{23_0.jpg}
+        \begin{subfigure}[b]{0.3\columnwidth}
+                \includegraphics[trim = 35px 15px 50px 35px, clip=true,width=\textwidth]{23_0.jpg}
         \end{subfigure}
         ~
-        \begin{subfigure}[b]{73px}
-                \includegraphics[trim = 35px 15px 50px 25px, clip=true,width=\textwidth]{23_L.jpg}
+        \begin{subfigure}[b]{0.3\columnwidth}
+                \includegraphics[trim = 35px 15px 50px 35px, clip=true,width=\textwidth]{23_L.jpg}
         \end{subfigure}
         ~
-        \begin{subfigure}[b]{73px}
-                \includegraphics[trim = 35px 15px 50px 25px, clip=true,width=\textwidth]{23_J.jpg}
+        \begin{subfigure}[b]{0.3\columnwidth}
+                \includegraphics[trim = 35px 15px 50px 35px, clip=true,width=\textwidth]{23_J.jpg}
         \end{subfigure}
         
-       \begin{subfigure}[b]{73px}
-                \includegraphics[trim = 35px 15px 50px 25px, clip=true,width=\textwidth]{22_0.jpg}
+       \begin{subfigure}[b]{0.3\columnwidth}
+                \includegraphics[trim = 35px 15px 50px 35px, clip=true,width=\textwidth]{22_0.jpg}
                 \caption{Zero mean}
         \end{subfigure}
         ~
-        \begin{subfigure}[b]{73px}
-                \includegraphics[trim = 35px 15px 50px 25px, clip=true,width=\textwidth]{22_L.jpg}
+        \begin{subfigure}[b]{0.3\columnwidth}
+                \includegraphics[trim = 35px 15px 50px 35px, clip=true,width=\textwidth]{22_L.jpg}
                 \caption{Linear}
         \end{subfigure}
         ~
-        \begin{subfigure}[b]{73px}
-                \includegraphics[trim = 35px 15px 50px 25px, clip=true,width=\textwidth]{22_J.jpg}
+        \begin{subfigure}[b]{0.3\columnwidth}
+                \includegraphics[trim = 35px 15px 50px 35px, clip=true,width=\textwidth]{22_J.jpg}
                 \caption{Joint}
         \end{subfigure}
         
@@ -414,9 +454,8 @@ In this test, the extrapolation performance of the GP-VC model was tested using 
 \end{figure}
 
 
-\subsection{Weighted Sample}
-In this experiment, a comparison between the cost sensitive learning and the normal sum of squares for the GP-VC model is presented. Two different weight configurations will be tested, the first is to assign an error cost to each sample $i$ equals to $1/\left(1+z_{spec}^{(i)}\right)^{2}$ to directly target the Euclid mission requirement (Weighted), and the second experiment is to weigh each sample according to the frequency of their true redshift to insure balanced learning (Balanced).  Two additional measures are reported, the maximum $\Delta z$ and the maximum $\Delta z_{norm}$. The samples were grouped into bins of uniformly spaced intervals of 0.01, the mean error and the 1 standard deviation confidence bars are shown in Figure \ref{fig-normal} for the normal weighting scheme and Figure \ref{fig-balanced} shows the results of the balanced training. The results from the figures show that the cost sensitive learning is more consistent across the redshift range as oppose to the normal sum of squares, especially in the high redshift regions were there is less data the confidence intervals are considerably smaller.
-
+\subsection{Weighted Samples}
+In this experiment, a comparison between the cost sensitive learning and the normal sum of squares for the GP-VC model is presented. Two different weight configurations are tested, the first is to assign an error cost to each sample equals to $1/\left(1+z_{spec}\right)^{2}$ to directly target the Euclid mission requirement (Normalized), and the second experiment is to weigh each sample according to the frequency of their true redshift to insure balanced learning (Balanced).  Two additional measures are reported, the maximum $\Delta z$ and the maximum $\Delta z_{norm}$. The samples were grouped into bins of uniformly spaced intervals of 0.01, the mean error and the 1 standard deviation confidence bars are shown in Figure \ref{fig-normal} for the normal weighting scheme and Figure \ref{fig-balanced} shows the results of the balanced training. The results from the figures show that the cost sensitive learning is more consistent across the redshift range as oppose to the normal sum of squares, especially in the high redshift regions were there is less data the confidence intervals are considerably smaller. The performance comparison for the normal, balanced and normalized training are summerized in Table \ref{table-normal-balanced}. The balanced training showed a better generlaization performance, as it out performed the normal sum of squares objective on the test set and has lower maximum errors.
 
 \begin{figure}
         \centering
@@ -425,8 +464,8 @@ In this experiment, a comparison between the cost sensitive learning and the nor
                 \caption{Normal}
                 \label{fig-normal}
         \end{subfigure}
-
-        \begin{subfigure}{1\columnwidth}
+	
+        \begin{subfigure}[b]{1\columnwidth}
                 \includegraphics[trim = 35px 15px 50px 25px, clip=true,width=\textwidth]{Zspec-Zphot_balanced.jpg}
                 \caption{Balanced}
                 \label{fig-balanced}
@@ -436,6 +475,128 @@ In this experiment, a comparison between the cost sensitive learning and the nor
 	\label{fig-normal-balanced}
 \end{figure}
 
+ \begin{table}
+\caption{Performance measures of training the GP-VC model using $m=10$ basis functions and different weighting schemes}
+\begin{center}
+  \begin{tabular}{| l | c | c | c | c |}
+     				&	$\Delta z$	&	$max(\Delta z)$		&	$\Delta z_{norm}$		&	$max(\Delta z_{norm})$	\\	\hline
+	Normal		&	0.0233		&	0.6879				&	0.0134				&	0.2316					\\	 
+	Balanced	&	0.0215		&	0.3466				&	0.0136				&	0.2818					\\ 
+	Normalized	&	0.0216		&	0..2695				&	0.0119				&	0.2191					\\	\hline
+  \end{tabular}
+  \label{table-normal-balanced}
+\end{center}
+\end{table}
+
+\subsection{Kernel Analysis}
+In this experiment, we study the resulted kernels and their learned basis functions. Figure \ref{fig-kernel-activations} shows the patterns for the learned kernels after training GP-VC with $m=10$ basis functions and their activation as a function of redshift. 
+
+\textit{COMMENT: Is there anything interesting to say here?}
+
+\begin{figure*}
+        \centering
+        
+        \begin{subfigure}[b]{0.075\textwidth}
+                \includegraphics[trim = 35px 15px 50px 25px, clip=true,width=\textwidth]{basis_01.jpg}
+        \end{subfigure}
+	~
+        \begin{subfigure}[b]{0.075\textwidth}
+                \includegraphics[trim = 35px 15px 50px 25px, clip=true,width=\textwidth]{basis_02.jpg}
+        \end{subfigure}
+        ~
+        \begin{subfigure}[b]{0.075\textwidth}
+                \includegraphics[trim = 35px 15px 50px 25px, clip=true,width=\textwidth]{basis_03.jpg}
+        \end{subfigure}
+        ~
+        \begin{subfigure}[b]{0.075\textwidth}
+                \includegraphics[trim = 35px 15px 50px 25px, clip=true,width=\textwidth]{basis_04.jpg}
+        \end{subfigure}
+        ~
+        \begin{subfigure}[b]{0.075\textwidth}
+                \includegraphics[trim = 35px 15px 50px 25px, clip=true,width=\textwidth]{basis_05.jpg}
+        \end{subfigure}
+        ~
+        \begin{subfigure}[b]{0.075\textwidth}
+                \includegraphics[trim = 35px 15px 50px 25px, clip=true,width=\textwidth]{basis_06.jpg}
+        \end{subfigure}
+        ~
+        \begin{subfigure}[b]{0.075\textwidth}
+                \includegraphics[trim = 35px 15px 50px 25px, clip=true,width=\textwidth]{basis_07.jpg}
+        \end{subfigure}
+        ~
+        \begin{subfigure}[b]{0.075\textwidth}
+                \includegraphics[trim = 35px 15px 50px 25px, clip=true,width=\textwidth]{basis_08.jpg}
+        \end{subfigure}
+        ~
+        \begin{subfigure}[b]{0.075\textwidth}
+                \includegraphics[trim = 35px 15px 50px 25px, clip=true,width=\textwidth]{basis_09.jpg}
+        \end{subfigure}
+        ~
+        \begin{subfigure}[b]{0.075\textwidth}
+                \includegraphics[trim = 35px 15px 50px 25px, clip=true,width=\textwidth]{basis_10.jpg}
+        \end{subfigure}
+        
+        \begin{subfigure}[b]{0.075\textwidth}
+                \includegraphics[trim = 35px 15px 50px 25px, clip=true,width=\textwidth]{activation_01.jpg}
+        \end{subfigure}
+	~
+        \begin{subfigure}[b]{0.075\textwidth}
+                \includegraphics[trim = 35px 15px 50px 25px, clip=true,width=\textwidth]{activation_02.jpg}
+        \end{subfigure}
+        ~
+        \begin{subfigure}[b]{0.075\textwidth}
+                \includegraphics[trim = 35px 15px 50px 25px, clip=true,width=\textwidth]{activation_03.jpg}
+        \end{subfigure}
+        ~
+        \begin{subfigure}[b]{0.075\textwidth}
+                \includegraphics[trim = 35px 15px 50px 25px, clip=true,width=\textwidth]{activation_04.jpg}
+        \end{subfigure}
+        ~
+        \begin{subfigure}[b]{0.075\textwidth}
+                \includegraphics[trim = 35px 15px 50px 25px, clip=true,width=\textwidth]{activation_05.jpg}
+        \end{subfigure}
+        ~
+        \begin{subfigure}[b]{0.075\textwidth}
+                \includegraphics[trim = 35px 15px 50px 25px, clip=true,width=\textwidth]{activation_06.jpg}
+        \end{subfigure}
+        ~
+        \begin{subfigure}[b]{0.075\textwidth}
+                \includegraphics[trim = 35px 15px 50px 25px, clip=true,width=\textwidth]{activation_07.jpg}
+        \end{subfigure}
+        ~
+        \begin{subfigure}[b]{0.075\textwidth}
+                \includegraphics[trim = 35px 15px 50px 25px, clip=true,width=\textwidth]{activation_08.jpg}
+        \end{subfigure}
+        ~
+        \begin{subfigure}[b]{0.075\textwidth}
+                \includegraphics[trim = 35px 15px 50px 25px, clip=true,width=\textwidth]{activation_09.jpg}
+        \end{subfigure}
+        ~
+        \begin{subfigure}[b]{0.075\textwidth}
+                \includegraphics[trim = 35px 15px 50px 25px, clip=true,width=\textwidth]{activation_10.jpg}
+        \end{subfigure}
+        
+        
+       \caption{The learned basis (top) and their corresponding activation as a function of redshift (bottom) after training GP-VC with $m=10$ basis functions}
+	\label{fig-kernel-activations}
+\end{figure*}
+
+\subsection{Size of the basis set}
+In this test, all the models are cross compared by varying the number of basis functions $m$ to 10, 25, 50, 100 and 200. The plot of the $\Delta z$ as a function of $m$ is shown in Figure \ref{fig-different-basis}. The stable GP showed the worst performance across the board, especially when the number of basis was low, while GP-VC on the other hand consistently outperformed the rest and most significantly when trained with a few number of basis. ANN outperformed GP-GL and GP-VL for small number of basis, but it did not scale well with complexity as it converged around $m=100$. All the models were trained using a sum of squares objective with no cost sensitive learning or prior mean function. The final GP-VC model to target the Euclid Space Mission was trained with $m=200$ basis functions normalized, balanced and with a joint mean optimization reached a $\Delta z_{norm}=0.003$ and a  $max(\Delta z_{norm})=0.044$ and the scatter plot for the final model is shown in Figure \ref{fig-final-model}.
+
+\begin{figure}
+       \centering
+        \includegraphics[trim = 30px 10px 20px 20px, clip=true,width=1\columnwidth]{different-basis.jpg}
+        \caption{The root mean squares ($\Delta z$) as a function of $m$ for all the models. }       
+       \label{fig-different-basis}
+\end{figure}
+
+\begin{figure}
+       \centering
+        \includegraphics[trim = 30px 10px 20px 20px, clip=true,width=1\columnwidth]{final-model.jpg}
+        \caption{The density scatter plot for the final GP-VC model trained using $m=200$ basis functions with a jointly optimized linear mean function, a balanced and normalizwd weights. } 
+       \label{fig-final-model}
+\end{figure}
 
 \section{Conclusion}
 \label{sec-conclusion}
