@@ -93,7 +93,7 @@ For the rest of this paper, the prior mean is assumed to be zero unless otherwis
 
 For our current definition of the covariance matrix $\bm{\Sigma}$, the predictive mean is equivalent to a linear regression model, in fact, one can reach the same conclusion by finding the linear regression model that minimises the sum of squared errors. In other words, the model that minimises the sum of squared errors also maximises the probability of the data. For in depth discussion on Gaussian processes and its Bayesian interpretation, the reader is referred to \citep{rasmussen2006gaussian}.
 
-Since the solution is entirely defined in terms of inner products of the input space, one can utilise the so called ``kernel trick'' to learn non-linear models by replacing the covariance matrix $\bm{\Sigma}$ with a covariance function $\bm{K}$, where $\bm{K}_{ij} = k(x_{i},x_{j})$.
+Since the solution is entirely defined in terms of inner products of the input space, one can utilise the so called ``kernel trick'' to learn non-linear models by replacing the covariance matrix $\bm{\Sigma}$ with a covariance function $\bm{K}$, where $\bm{K}_{i,j} = k(x_{i},x_{j})$.
 
 The kernel function $k$ is defined such that the matrix $\bm{K}$ will be a positive definite matrix. The kernel trick allows the computation of the covariance matrix of some high dimensional mapping of the input into a higher dimensional space without explicitly requiring the mapping of the data to that space. The choice of kernel is largely a modelling decision based on the definition of similarity for a given application. In this paper, the squared exponential kernel defined in  Eq. \eqref{eq-squared-exponential} is used but the concepts introduced here apply to any other kernel function. One attractive feature of this kernel function is that it assumes that similarity is a function of the Euclidean distance, which is a reasonable assumption in most applications. Furthermore, the basis functions' dimensionality are similar to that of the input space, meaning they can be interpreted as ``pseudo points'' where their features can be analysed. Moreover, as we will show latter in this paper, that the squared exponential kernel can be very flexible allowing us to learn more complex patterns using less basis functions.
 
@@ -142,58 +142,56 @@ In this paper, we extend the sparse GP approach by modelling each basis with its
 \begin{equation}
 \label{eq-squared-exponential-extension}
 k(x_{i},p_{j}) = \exp{\left(-\frac{1}{2\lambda_{j}^{2}}\left\| x_{i}-p_{j}\right\|^{2}\right)}
-\end{equation} where $\bm{P}=\{p_{j}\}_{j=1}^{m} \in \mathbb{R}^{d}$ are the set of basis coordinates and $\lambda_{j}$ is the corresponding length scale for basis $j$. The multivariate input is denoted as $\bm{X}=\{x_{i}\}_{i=1}^{n} \in \mathbb{R}^{d}$. Throughout the rest of the paper, $x_{i}$ refers to the $i$-th row of $\bm{X}$ and $x_{ij}$ refer to the element at row $i$ and column $j$ in $\bm{X}$, and similarly for $\bm{P}$. Note that the hyper-parameter $\sigma$ has been dropped, as it interferes with the regularisation objective. This can be seen from the final prediction equation $f(x_{i},w)=\sum_{j=1}^{m}w_{j}\sigma_{j}^{2}\exp{\left(-\left\| x_{i}-p_{j}\right\|^{2}/2\lambda_{j}^{2}\right)}$, the weights are always multiplied by their associated $\sigma$. Therefore, the optimisation process will always compensate for decreasing $w_{j}^{2}$ by increasing $\sigma_{j}^{2}$. Dropping the height variance ensures that the kernel functions do not grow beyond control and delegates learning the linear coefficients and regularisation to the weights $w_{j}$. The derivatives with respect to each length scale and position are provided in equations Eq. \eqref{eq-dfdl} and Eq. \eqref{eq-dfdp} respectively. 
+\end{equation} where $\bm{P}=\{p_{j}\}_{j=1}^{m} \in \mathbb{R}^{d}$ are the set of basis coordinates and $\lambda_{j}$ is the corresponding length scale for basis $j$. The multivariate input is denoted as $\bm{X}=\{x_{i}\}_{i=1}^{n} \in \mathbb{R}^{d}$. Throughout the rest of the paper, $\bm{X}_{i,*}$ denotes the $i$-th row of matrix $\bm{X}$, or $x_{i}$ for short, whereas $\bm{X}_{*,i}$ denotes the $i$-th column and $\bm{X}_{i,j}$ refers to the element at row $i$ and column $j$ in matrix $\bm{X}$, and similarly for other matrices. Note that the hyper-parameter $\sigma$ has been dropped, as it interferes with the regularisation objective. This can be seen from the final prediction equation $f(x_{i},y,w)=\sum_{j=1}^{m}w_{j}\sigma_{j}^{2}\exp{\left(-\left\| x_{i}-p_{j}\right\|^{2}/2\lambda_{j}^{2}\right)}$, the weights are always multiplied by their associated $\sigma$. Therefore, the optimisation process will always compensate for decreasing $w_{j}^{2}$ by increasing $\sigma_{j}^{2}$. Dropping the height variance ensures that the kernel functions do not grow beyond control and delegates learning the linear coefficients and regularisation to the weights $w_{j}$. The derivatives with respect to each length scale and position are provided in equations Eq. \eqref{eq-dfdl} and Eq. \eqref{eq-dfdp} respectively. 
 
 \begin{subequations}
 \begin{align} 
 \label{eq-dfdl}
-\frac{\partial f(\bm{X},w)}{\partial \lambda_{j}} &= \sum_{i=1}^{n}\left(\bm{K}_{i}w-y_{i}\right)w_{j}\bm{K}_{ij}\frac{\left\| x_{i}-p_{j}\right\|^{2}}{\lambda_{j}^{3}}\\
+\frac{\partial f(\bm{X},y,w)}{\partial \lambda_{j}} &=\bm{E}_{*,j}^{T}\bm{D}_{*,j}\lambda_{j}^{-3}\\
 \label{eq-dfdp}
-\frac{\partial f(\bm{X},w)}{\partial p_{jk}} &= \sum_{i=1}^{n}\left(\bm{K}_{i}w-y_{i}\right)w_{j}\bm{K}_{ij}\frac{(x_{ik}-p_{jk})}{\lambda_{j}^{2}}
+\frac{\partial f(\bm{X},y,w)}{\partial p_{j}} &=\bm{E}_{*,j}^{T}\bm{\Delta}_{j}\lambda_{j}^{-2}\\
+\bm{E}\phantom{_{i,j}} &= \left(\left(\bm{K}w-y\right)w^{T}\right)\circ\bm{K}\\
+\bm{\Delta}_{j\phantom{,i}} &= \bm{X}-\underset{n}{1}p_{j}\\
+\bm{D}_{i,j} &= \left \| x_{i}-p_{j}\right\|^{2}
 \end{align}
-\end{subequations}
-
-Finding the set of hyper-parameters that optimises the solution, is in effect finding the set of radial basis defined by their positions $p$ and radius $\lambda$ that jointly describe the patterns across the input space, and by parameterising them differently, the model is more capable to accommodate different regions of the space more specifically. The kernel in Eq. \eqref{eq-squared-exponential-extension} can be further extended to, not only model each basis with its own radius $\lambda_{j}$, but also model each one with its own covariance defined by $\bm{C}_{j}$. This enables the basis to have any arbitrary shaped ellipses given it more flexibility. The kernel in Eq. \eqref{eq-squared-exponential-extension} can be extended as follows:
+\end{subequations} 
+The symbol $\circ$ denotes the Hadamard product or the element-wise matrix multiplication, and $\underset{n}{1}$ denotes a column vector of length $n$ with all elements set to 1. Finding the set of hyper-parameters that optimises the solution, is in effect finding the set of radial basis defined by their positions $p$ and radius $\lambda$ that jointly describe the patterns across the input space, and by parameterising them differently, the model is more capable to accommodate different regions of the space more specifically. The kernel in Eq. \eqref{eq-squared-exponential-extension} can be further extended to, not only model each basis with its own radius $\lambda_{j}$, but also model each one with its own covariance defined by $\bm{C}_{j}$. This enables the basis to have any arbitrary shaped ellipses given it more flexibility. The kernel in Eq. \eqref{eq-squared-exponential-extension} can be extended as follows:
 
 \begin{equation}
 \label{eq-squared-exponential-covariance-extension}
 k(x_{i},p_{j}) = \exp{\left(-\frac{1}{2}\left(x_{i}-p_{j}\right)\bm{C}_{j}^{-1}\left(x_{i}-p_{j}\right)^{T}\right)}
 \end{equation}
 
-To make the optimisation process faster and simpler, we define the following variables:
+To make the optimisation process faster and simpler, we define the additional variables:
 
 \begin{subequations}
 \begin{align} 
-\label{eq-error}
-\bm{E} &= \left(\bm{K}w-y\right)w^{T}\\
 \label{eq-Cinv}
 \bm{C}_{j}^{-1} &= \bm{\Lambda}_{j}\bm{\Lambda}_{j}^{T}\\
-\label{eq-Delta_j}
-\bm{\Delta}_{j} &= \left(\bm{X}-\underset{n}{1}p_{j}\right)\\
 \label{eq-V_j}
 \bm{V}_{j} &= \bm{\Delta}_{j}\bm{\Lambda}_{j}
 \end{align}
 \end{subequations}
 
-Where $\underset{n}{1}$ denotes a column vector of length $n$ with all elements set to 1. Optimising with respect to $\bm{\Lambda}_{j}$ directly ensures that the covariance matrix is positive definite and makes it faster from a computational perspective, as the kernel functions for all the points with respect to a particular basis can be computed more efficiently as follows:
+Optimising with respect to $\bm{\Lambda}_{j}$ directly ensures that the covariance matrix is positive definite and makes it faster from a computational perspective, as the kernel functions for all the points with respect to a particular basis can be computed more efficiently as follows:
 
 \begin{equation}
 \label{eq-squared-exponential-covariance-extension-simplified}
 k(\bm{X},p_{j}) = \exp{\left(-\frac{1}{2}\left(\bm{V}_{j}\circ \bm{V}_{j}\right)\underset{d}{1}\right)}
 \end{equation}
 
-The symbol $\circ$ denotes the Hadamard product or the element-wise matrix multiplication. The exponent in Eq. \eqref{eq-squared-exponential-covariance-extension-simplified} basically computes the sum of squares in each row of $\bm{V}_{j}$. This allows for a more efficient computation of the kernel functions for all the points in a single matrix operation. The derivatives with respect to each $\bm{\Lambda}_{j}$ and $p_{j}$ are shown in Eq. \eqref{eq-dfdL} and Eq. \eqref{eq-dfdP}.
+The exponent in Eq. \eqref{eq-squared-exponential-covariance-extension-simplified} basically computes the sum of squares in each row of $\bm{V}_{j}$. This allows for a more efficient computation of the kernel functions for all the points in a single matrix operation. The derivatives with respect to each $\bm{\Lambda}_{j}$ and $p_{j}$ are shown in Eq. \eqref{eq-dfdL} and Eq. \eqref{eq-dfdP}.
 
 \begin{subequations}
 \begin{align} 
 \label{eq-dfdL}
-\frac{\partial f(\bm{X},w)}{\partial \bm{\Lambda}_{j}} &= -\left( \bm{\Delta}_{j}\circ \left(\left(\bm{K}_{*,j}\circ \bm{E}_{*,j}\right)\underset{d}{1}\right) \right)^{T}\bm{V}_{j}\\
+\frac{\partial f(\bm{X},y,w)}{\partial \bm{\Lambda}_{j}} &= -\left( \bm{\Delta}_{j}^{T}\circ \left(\underset{d}{1}\bm{E}_{*,j}^{T}\right) \right)\bm{V}_{j}\\
 \label{eq-dfdP}
-\frac{\partial f(\bm{X},w)}{\partial p_{j}} &= \left( \bm{K}_{*,j}\circ \bm{E}_{*,j} \right)^{T}\bm{V}_{j}\bm{\Lambda}_{j}^{T}
+\frac{\partial f(\bm{X},y,w)}{\partial p_{j}} &= \bm{E}_{*,j}^{T}\bm{V}_{j}\bm{\Lambda}_{j}^{T}
 \end{align}
 \end{subequations}
 
-Where $\bm{K}_{*,j}$ is the $j$'th column of matrix $\bm{K}$, and similarly for $\bm{E}_{*,j}$. The differences between the three approaches using a different number of basis functions are demonstrated on a toy 2D regression example shown in Figure \ref{fig-toy-example} and the results are shown in Figure \ref{fig-toy-comparison}, which clearly shows the advantage of having basis functions with more flexible kernels. Moreover, setting up the problem in this manner allows the setting of matrix $\bm{\Lambda}_{j}$ to be of any size $d$ by $q$, where $q<d$ which can be considered as a low rank approximation to $\bm{C}_{j}^{-1}$ without affecting the gradient calculations. In addition, the inverse of the covariance can be set to  $\bm{C}_{j}^{-1}=\bm{\Lambda}_{j}\bm{\Lambda}_{j}^{T}+diag(\lambda_{j})^{-2}$ in the low rank approximation case to ensure that the final covariance can model a diagonal covariance. This is referred to as \emph{factor analysis distance} \citep[p. 107]{rasmussen2006gaussian}  but previously used to model a global covariance as opposed to variable covariance here.
+The differences between the three approaches using different numbers of basis functions are demonstrated on a toy 2D regression example shown in Figure \ref{fig-toy-example} and the results are shown in Figure \ref{fig-toy-comparison}, which clearly shows the advantage of having basis functions with more flexible kernels. Moreover, setting up the problem in this manner allows the setting of matrix $\bm{\Lambda}_{j}$ to be of any size $d$ by $q$, where $q<d$ which can be considered as a low rank approximation to $\bm{C}_{j}^{-1}$ without affecting the gradient calculations. In addition, the inverse of the covariance can be set to  $\bm{C}_{j}^{-1}=\bm{\Lambda}_{j}\bm{\Lambda}_{j}^{T}+diag(\lambda_{j})^{-2}$ in the low rank approximation case to ensure that the final covariance can model a diagonal covariance. This is referred to as \emph{factor analysis distance} \citep[p. 107]{rasmussen2006gaussian}  but previously used to model a global covariance as opposed to variable covariance here.
 
 \begin{figure}
         \centering
@@ -288,6 +286,8 @@ The only difference between the objectives in Eq. \eqref{eq-linear-regression-ob
 w = \left(\bm{K}^{T}\bm{WK}+\bm{I}\sigma_{n}^{2} \right)^{-1}\bm{K}^{T}\bm{W}y
 \end{equation}
 
+The only modification to the gradient calculation is to set the matrix $\bm{E}=\bm{W}\left(\left(\bm{K}w-y\right)w^{T}\right)\circ\bm{K}$.
+
 \section{Application to Photometric Redshift Estimation}
 \label{sec-application}
 
@@ -381,7 +381,7 @@ $\Delta z$ is the standard Root Mean Squared Error (RMSE), while $\Delta z_{norm
 
 \subsection{Modelling Performance}
 
-In the first test, all models were trained using a fixed $m=10$ to cross compare the performance of the methods using the same number of basis functions. The number of basis was set deliberately low to highlight the modelling capabilities of each algorithm, as for large values of $m$ the performance gap between the algorithms is very small to distinguish the difference. The standard sum of squares objective was used , without cost sensitive training or assuming a linear regression model as a prior. The $z_{spec}$ vs $z_{phot}$ density scatter plots are shown in Figure \ref{fig-experiment-1} and their performance scores are reported in Table \ref{table-experiment-1}
+In the first test, all models were trained using a fixed $m=10$ to cross compare the performance of the methods using the same number of basis functions. The number of basis was set deliberately low to highlight the modelling capabilities of each algorithm, as for large values of $m$ the performance gap between the algorithms is very small to distinguish the difference. The standard sum of squares objective was used, without cost sensitive training or a prior mean function. The $z_{spec}$ vs $z_{phot}$ density scatter plots are shown in Figure \ref{fig-experiment-1} and their performance scores are reported in Table \ref{table-experiment-1}
 
 \begin{figure*}
         \centering
