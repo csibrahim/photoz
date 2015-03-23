@@ -259,42 +259,37 @@ We highlight the differences between the three approaches, using different numbe
         \label{fig-toy-comparison}
 \end{figure}
 
-% SR : EDITED UP TO HERE
-
 \subsection{Linear Regression Prior}
 
-GPs tend to perform well in interpolation but not as well in extrapolating. The regression function will fall back to the prior mean in areas where there is no training data. A common preprocessing technique is to subtract the mean of the output prior to training then adding it to the prediction of the model. Another way is to subtract a simple linear regression model and train the GP to learn the variation from that. This way, the GP will fall back to the linear regression prediction as a way of last resort instead of falling back to zero. We can incorporate this directly into the optimisation objective instead of having it as a separate preprocessing step by redefining $\bm{K}$ as a concatenation of the linear and non-linear features, or setting $\bm{K}=[\bm{K}|\bm{X}|\underset{n}{1}]$. Furthermore, the regularisation matrix in Eq. \eqref{eq-linear-regression-objective-rectangular} can be modified so that it penalises for learning high coefficients for the non-linear terms but no or little cost for learning linear terms by setting the corresponding elements in the diagonal of $I$ to 0, or the last $d+1$ elements. Therefore, as $\sigma_{n}^{2}$ goes to infinity, the model will get closer to a simple linear regression model.
+In the absence of observations, all Bayesian models, Gaussian processes included, rely on their priors to provide function estimation. For the case of Gaussian processes this requires us to consider the prior over the function, especially the prior mean. For example, we may consider a mean function that is itself a simple linear regression from the independent to dependent variable. The parameters of this function are thence inferred and the GP infers non-linear deviations. In the absence of data, e.g. in extrapolative regions, the GP will fall back to the linear regression prediction \citep{roberts2012rs}. We can incorporate this directly into the optimisation objective instead of having it as a separate preprocessing step by redefining $\bm{K}$ as a concatenation of the linear and non-linear features, or setting $\bm{K}=[\bm{K}|\bm{X}|\underset{n}{1}]$. Furthermore, the regularisation matrix in Eq. \eqref{eq-linear-regression-objective-rectangular} can be modified so that it penalises for learning high coefficients for the non-linear terms but no or little cost for learning linear terms by setting the corresponding elements in the diagonal of $I$ to 0, or the last $d+1$ elements. Therefore, as $\sigma_{n}^{2}$ goes to infinity, the model will get closer to a simple linear regression model.
 
 \subsection{Cost Sensitive Learning}
 
-So far the objective is to minimise the sum of squared errors, which is a suitable objective for most applications. However, this objective is naturally biased to the mean of the input and output distributions, therefore sacrificing data samples in less represented regions of the space. This is not always a desired effect, ideally we would like to train with well balanced data to avoid any bias, but this is a luxury that we often do not have. A common technique is to either over-sample or under-sample the data to achieve balance \citep{weiss2007}. In under-sampling, samples are removed from highly represented regions to achieve balance, over-sampling on the other hand duplicates under represented samples. Both approaches come with a cost, in the former good data is being wasted and in the latter more computation is introduced due to the data size increase. In this paper, we used what is known as cost-sensitive learning, which increases the error cost for low represented samples to mimic over-sampling balance. In classification tasks, a cost per sample is introduced such that the sum of the weights for each class are equal. In regression tasks, the output can be either discretised and treated as classes for the purpose of cost assignment, or a probability function is fitted to the output then samples are weighted in proportion to their inverse probability. After the weights have been assigned, they can be incorporated directly into the objective as follows:
-
+Thus far in the discussion, we make the tacit assumption that the objective of the inference process is to minimise the sum of squared errors between the model and target function values. Although this is a suitable objective for many applications, it is intrinsically biased by uneven distributions of training data in input and output, sacrificing accuracy in less represented regions of the space. Ideally we would like to train a model with distribution balanced data to avoid such bias. This, however, is a luxury that we often do not have. A common technique is to either over-sample or under-sample the data to achieve balance \citep{weiss2007}. In under-sampling, samples are removed from highly represented regions to achieve balance, over-sampling on the other hand duplicates under represented samples. Both approaches come with a cost; in the former good data is wasted and in the latter more computation is introduced due to the data size increase. In this paper, we perform cost-sensitive learning, which increases the intrinsic error function in under-represented regions. In regression tasks, such as we consider here, the output can be either discretised and treated as classes for the purpose of cost assignment, or a probability function is fitted to the output then samples are weighted in proportion to their inverse probability. After the weights have been assigned, they can be incorporated directly into the objective via:
 \begin{equation}
 \label{eq-weighted-linear-regression-objective}
 \begin{array}{lcl}
-\underset{w}{\text{min}} &\frac{1}{2}\left ( \bm{K}w-y \right )^{T} \bm{W}\left( \bm{K}w-y \right )+\frac{1}{2}\sigma_{n}^{2}w^{T}w
+\underset{w}{\text{min}} &\frac{1}{2}\left ( \bm{K}w-y \right )^{T} \bm{W}\left( \bm{K}w-y \right )+\frac{1}{2}\sigma_{n}^{2}w^{T}w.
 \end{array}
 \end{equation}
 
-The only difference between the objectives in Eq. \eqref{eq-linear-regression-objective} and Eq. \eqref{eq-weighted-linear-regression-objective} is the introduction of the diagonal matrix $\bm{W}$, where each element $\bm{W}_{ii}$ is the corresponding cost for sample $i$. The first term in Eq. \eqref{eq-weighted-linear-regression-objective} is a matrix form for a weighted sum of squares $\sum_{i=1}^{n}\bm{W}_{ii}\left(\bm{K}_{i,*}w-y_{i}\right)^{2}$, where the solution can be found analytically as follows:
-
+The difference between the objectives in Eq. \eqref{eq-linear-regression-objective} and Eq. \eqref{eq-weighted-linear-regression-objective} is the introduction of the diagonal matrix $\bm{W}$, where each element $\bm{W}_{ii}$ is the corresponding cost for sample $i$. The first term in Eq. \eqref{eq-weighted-linear-regression-objective} is a matrix form for a weighted sum of squares $\sum_{i=1}^{n}\bm{W}_{ii}\left(\bm{K}_{i,*}w-y_{i}\right)^{2}$, where the solution can be found analytically as follows:
 \begin{equation}
 \label{eq-weighted-linear-regression-objective-rectangular}
-w = \left(\bm{K}^{T}\bm{WK}+\bm{I}\sigma_{n}^{2} \right)^{-1}\bm{K}^{T}\bm{W}y
+w = \left(\bm{K}^{T}\bm{WK}+\bm{I}\sigma_{n}^{2} \right)^{-1}\bm{K}^{T}\bm{W}y.
 \end{equation}
-
 The only modification to the gradient calculation is to set the matrix $\bm{E}=\bm{W}\left(\left(\bm{K}w-y\right)w^{T}\right)\circ\bm{K}$.
+
 
 \section{Application to Photometric Redshift Estimation}
 \label{sec-application}
 
-Here we consider the problem of redshift estimation from photometric data. The aim is to predict the spectroscopic redshift from the magnitudes of different colour bands omitted by a source using photometry, the light for each band is filtered to measure the magnitude of a certain wavelength range. We specifically target the photometric configuration designed for the Euclid Space Mission, namely the g, r, i, z, RIZ, Y, J and H bands and their associated expected errors.
+Here we consider the problem of redshift estimation from photometric data. The aim of this approach is to predict accurately the spectroscopic redshift from the magnitudes of different colour bands emitted by a source using photometry. The light for each band is filtered to measure the magnitude of a particular wavelength range. We specifically target the photometric configuration designed for the Euclid Space Mission, namely the g, r, i, z, RIZ, Y, J and H bands and their associated expected errors (SR: add cite here).
 
 \subsection{Dataset}
 \label{sec-dataset}
 
-The dataset consist of the g, r, i, z, RIZ, Y, J and H magnitudes for 156,904 simulated sources along with their spectroscopic redshift. They cover a redshift range of $0.2 \le z_{spec} \le 2$ to target the requirement set by the Euclid Space Mission. All sources with any missing measurement in any of their detectors were removed prior to training. Not limits on any of the bands were used, although some will be explicitly removed to test the extrapolation performance of the models. The distribution of the bands and the spectroscopic redshift are provided in Figures \ref{fig-bands-histograms} and \ref{fig-zspec-hostogram} respectively. For all experiments reported in this paper, we ignore the error bars associated with each band and train only on the magnitudes. In all experiments reported in this paper, the data is preprocessed using Principle Component Analysis (PCA) \citep{jolliffe1986} to de-correlate the features prior to learning. De-correlation accelerates the convergence rate of the optimisation routine especially when using a logistic-type kernel machines like Neural Networks \citep{lecun1998}. To see this, consider a simple linear regression example where we would like to solve for $w$ in $Aw=b$, the solution for this is $w=\left(A^{T}A\right)^{-1}A^{T}b$. Note that if $A$ is de-correlated $A^{T}A=I$, therefore learning $w_{i}$ depends only on the $i$-th column of $A$ and it is independent from learning $w_{j}$, where $i\ne j$. In an optimisation approach, the convergence rate is a function of the condition of the $A^{T}A$ matrix, which is minimised in the case of de-correlated data. This essentially translate into a quadratic error surface which helps accelerate the search. An example of applying a simple coordinate-descent to optimise a linear regression model was applied to the toy data set and the results are shown in Figure \ref{fig-error-surface}.
-
+The dataset consist of the g, r, i, z, RIZ, Y, J and H magnitudes for 156,904 simulated sources along with their spectroscopic redshift. They cover a redshift range of $0.2 \le z_{spec} \le 2$ to target the requirement set by the Euclid Space Mission. All sources with any missing measurement in any of their detectors were removed prior to training. No limits on any of the bands were used, although some will be explicitly removed to test the extrapolation performance of the models. The distribution of the bands and the spectroscopic redshift are provided in Figures \ref{fig-bands-histograms} and \ref{fig-zspec-hostogram} respectively. For all experiments reported in this paper, we ignore the error bars associated with each band and train only on the magnitudes. In all experiments reported in this paper, the data is preprocessed using Principle Component Analysis (PCA) \citep{jolliffe1986} to de-correlate the features prior to learning. De-correlation accelerates the convergence rate of the optimisation routine especially when using a logistic-type kernel machines such as Neural Networks \citep{lecun1998}. To understand this, we consider a simple linear regression example where we would like to solve for $w$ in $Aw=b$, the solution for this is $w=\left(A^{T}A\right)^{-1}A^{T}b$. Note that if $A$ is de-correlated $A^{T}A=I$, therefore learning $w_{i}$ depends only on the $i$-th column of $A$ and it is independent from learning $w_{j}$, where $i\ne j$. In an optimisation approach, the convergence rate is a function of the condition number of the $A^{T}A$ matrix, which is minimised in the case of de-correlated data. This represents a quadratic error surface which helps accelerate the search. An example of applying a simple coordinate-descent to optimise a linear regression model was applied to the toy data set and the results are shown in Figure \ref{fig-error-surface}.
 
 \begin{figure*}
         \centering
@@ -353,32 +348,30 @@ The dataset consist of the g, r, i, z, RIZ, Y, J and H magnitudes for 156,904 si
                  \includegraphics[width=\textwidth]{figures/decorrelated.eps}
                  \caption{De-correlated}
         \end{subfigure}
-       \caption{Using coordinate-descent to optimise the linear regression objective on the toy dataset shown in Figure \ref{fig-toy-example}. Subfigure (a) shows the steps taken when the data has some correlation, while subfigure (b) shows the steps taken when the data was de-correlated.}
+       \caption{Using coordinate-descent to optimise the linear regression objective on the synthetic dataset shown in Figure \ref{fig-toy-example}. Subfigure (a) shows the steps taken when the data has some correlation, while subfigure (b) shows the steps taken when the data was de-correlated.}
 	\label{fig-error-surface}
 \end{figure}
 
 \begin{figure}
        \centering
        \includegraphics[width=\columnwidth]{figures/zspec.eps}
-        \caption{The spectroscopic redshift distribution in the dataset.}
+        \caption{The spectroscopic redshift distribution of the full dataset.}
        \label{fig-zspec-hostogram}
 \end{figure}
 
 \section{Experiments and Results}
 \label{sec-experiments}
 
-Five algorithms are considered to model the data, Artificial Neural Networks (ANN), GP with low rank approximation or stableGP , sparse GP with global length scale (GP-GL), GP with variable length scale (GP-VL) and  GP with variable covariances (GP-VC). For ANN, a single layer network is used with hyperbolic tangent hidden activations and linear output activations, for low rank approximation we use the SR-VP method proposed in \citep{foster2009}. In subsequent tests, the variable $m$ refers to the number of hidden units in ANN, the rank in stableGP, and the number of basis functions in GP-GL, GP-VL and GP-VC. The data was split into \%90 for training and \%10 for testing, the following performance measures on the test set are reported for each experiment:
-
+Five algorithms are considered to model the data; Artificial Neural Networks (ANN), a GP with low rank approximation (stableGP), a sparse GP with global length scale (GP-GL), a GP with variable length scale (GP-VL) and a GP with variable covariances (GP-VC). For the ANN, a single layer network is used with hyperbolic tangent hidden activations and linear output activations, for the low rank approximation GP we use the SR-VP method proposed in \citep{foster2009}. In subsequent tests, the variable $m$ refers to the number of hidden units in ANN, the rank in stableGP, and the number of basis functions in GP-GL, GP-VL and GP-VC. The data was split into 90\% for training and 10\% for hold-out testing. The following performance measures on the test set are reported for each experiment:
 \begin{itemize}
   \item $\Delta z_{\phantom{norm}} = \sqrt{\frac{1}{n}\sum_{i=1}^{n}\left(z_{spec}-z_{phot}\right)^{2}}$
-  \item $\Delta z_{norm} = \sqrt{\frac{1}{n}\sum_{i=1}^{n}\left(\frac{z_{spec}-z_{phot}}{1+z_{spec}}\right)^{2}}$
+  \item $\Delta z_{norm} = \sqrt{\frac{1}{n}\sum_{i=1}^{n}\left(\frac{z_{spec}-z_{phot}}{1+z_{spec}}\right)^{2}}$,
 \end{itemize}
-
-$\Delta z$ is the standard Root Mean Squared Error (RMSE), while $\Delta z_{norm}$ is a normalised version that weighs low redshift objects more aggressively than higher redshift objects. The scientific goal of the Euclid mission is to reach a $\Delta z_{norm} \le 0.05$
+in which $\Delta z$ is the standard Root Mean Squared Error (RMSE) and $\Delta z_{norm}$ is a normalised version that weights low redshift objects more aggressively than higher redshift objects. The scientific goal of the Euclid mission is to reach a $\Delta z_{norm} \le 0.05$. (SR: add cite here)
 
 \subsection{Modelling Performance}
 
-In the first test, all models were trained using a fixed $m=10$ to cross compare the performance of the methods using the same number of basis functions. The number of basis was set deliberately low to highlight the modelling capabilities of each algorithm, as for large values of $m$ the performance gap between the algorithms is very small to distinguish the difference. The standard sum of squares objective was used, without cost sensitive training or a prior mean function. The $z_{spec}$ vs $z_{phot}$ density scatter plots are shown in Figure \ref{fig-experiment-1} and their performance scores are reported in Table \ref{table-experiment-1}
+In the first test, all models were trained using a fixed $m=10$ to cross compare the performance of the methods using the same number of basis functions. The number of basis functions was set deliberately low to highlight the modelling capabilities of each algorithm, as for large values of $m$ the performance gap between the algorithms is very small. The standard sum of squares objective was used, without cost sensitive training or a prior mean function. The $z_{spec}$ vs $z_{phot}$ density scatter plots are shown in Figure \ref{fig-experiment-1} and their performance scores are reported in Table \ref{table-experiment-1}.
 
 \begin{figure*}
         \centering
@@ -407,12 +400,12 @@ In the first test, all models were trained using a fixed $m=10$ to cross compare
                 \caption{GP-VC}
         \end{subfigure}
         
-        \caption{Density scatter plots of the true $z_{spec}$ vs the predicted $z_{phot}$ for (a) ANN, (b) stableGP, (c) GP-GL, (d) GP-VL and (e) GP-VC using $m=10$ basis functions}
+        \caption{Density scatter plots of the true $z_{spec}$ vs the predicted $z_{phot}$ for (a) ANN, (b) stableGP, (c) GP-GL, (d) GP-VL and (e) GP-VC using $m=10$ basis functions.}
         \label{fig-experiment-1}
 \end{figure*}
 
  \begin{table}
-\caption{Performance measures for each algorithm trained using $m=10$ basis functions}
+\caption{Performance measures for each algorithm trained using $m=10$ basis functions.}
 \begin{center}
   \begin{tabular}{| l | c | c | }
      				&	$\Delta z$	&	$\Delta z_{norm}$	\\	\hline
@@ -479,7 +472,7 @@ In this test, the extrapolation performance of the GP-VC model was tested using 
 
 
 \subsection{Weighted Samples}
-In this experiment, a comparison between the cost sensitive learning and the normal sum of squares for the GP-VC model is presented. Two different weight configurations are tested, the first is to assign an error cost to each sample equals to $1/\left(1+z_{spec}\right)^{2}$ to directly target the Euclid mission requirement (Normalised), and the second experiment is to weigh each sample according to the frequency of their true redshift to insure balanced learning (Balanced).  Two additional measures are reported, the maximum $\Delta z$ and the maximum $\Delta z_{norm}$. The samples were grouped into bins of uniformly spaced intervals of 0.01, the mean error and the 1 standard deviation confidence bars are shown in Figure \ref{fig-normal} for the normal weighting scheme and Figure \ref{fig-balanced} shows the results of the balanced training. The results from the figures show that the cost sensitive learning is more consistent across the redshift range as oppose to the normal sum of squares, especially in the high redshift regions were there is less data the confidence intervals are considerably smaller. The performance comparison for the normal, balanced and normalised training are summarised in Table \ref{table-normal-balanced}. Balanced training showed a better generalisation performance, as it out performed the normal sum of squares objective on the test set and has lower maximum errors.
+In this experiment, a comparison between the cost sensitive learning and the normal sum of squares for the GP-VC model is presented. Two different weight configurations are tested, the first is to assign an error cost to each sample equals to $1/\left(1+z_{spec}\right)^{2}$ to directly target the Euclid mission requirement (Normalised), and the second experiment is to weigh each sample according to the frequency of their true redshift to insure balanced learning (Balanced).  Two additional measures are reported, the maximum $\Delta z$ and the maximum $\Delta z_{norm}$. The samples were grouped into bins of uniformly spaced intervals of 0.01, the mean error and the 1 standard deviation confidence bars are shown in Figure \ref{fig-normal} for the normal weighting scheme and Figure \ref{fig-balanced} shows the results of the balanced training. The results from the figures show that the cost sensitive learning is more consistent across the redshift range as opposed to the normal sum of squares, especially in the high redshift regions were there is less data the confidence intervals are considerably smaller. The performance comparison for the normal, balanced and normalised training are summarised in Table \ref{table-normal-balanced}. Balanced training showed a better generalisation performance, as it outperformed the normal sum of squares objective on the test set and has lower maximum errors.
 
 \begin{figure}
         \centering
@@ -494,13 +487,12 @@ In this experiment, a comparison between the cost sensitive learning and the nor
                 \caption{Balanced}
                 \label{fig-balanced}
         \end{subfigure}
-        
-       \caption{The error as a function of redshift for the (a) normal sum of squared errors and (b) for the balanced cost sensitive learning for the GV-VC model when trained with $m=10$ basis functions}
+       \caption{The error as a function of redshift for the (a) normal sum of squared errors and (b) for the balanced cost sensitive learning for the GV-VC model when trained with $m=10$ basis functions.}
 	\label{fig-normal-balanced}
 \end{figure}
 
  \begin{table}
-\caption{Performance measures of training the GP-VC model using $m=10$ basis functions and different weighting schemes}
+\caption{Performance measures of training the GP-VC model using $m=10$ basis functions and different weighting schemes.}
 \begin{center}
   \begin{tabular}{| l | c | c | c | c |}
      				&	$\Delta z$	&	$max(\Delta z)$		&	$\Delta z_{norm}$		&	$max(\Delta z_{norm})$	\\	\hline
@@ -561,7 +553,7 @@ In this experiment, we study the resulted kernels and their learned basis functi
                 \includegraphics[width=\textwidth]{figures/activation_05.eps}
         \end{subfigure}
         
-       \caption{The top 5 basis (top) and their corresponding average activation as a function of redshift (bottom) after training GP-VC with $m=10$ basis functions}
+       \caption{The top 5 basis (top) and their corresponding average activation as a function of redshift (bottom) after training GP-VC with $m=10$ basis functions.}
 	\label{fig-kernel-activations}
 \end{figure*}
 
@@ -603,7 +595,9 @@ The final GP-VC model to target the Euclid Space Mission was trained with $m=200
 
 
 \section{Conclusion}
-In this paper a sparse gaussian process framework was presented and applied to photometric redshift estimation. The framework was able to out perform Artificial Neural Networks and sparse gaussian processes with a global set of hyper-parameters. The performance increase is attributed to the handling of distribution bias via a weighting scheme integrated as part of the optimisation objective, parameterising each basis function with different covariances, and integrating the learning of the prior mean function to enhance the extrapolation performance of the model. The methods were applied to a simulated data set and the proposed approach consistently outperformed the other models on all measures while maintaining a low ration of model complexity to accuracy as scored by the Bayesian Information Criterion.
+SR: needs extra work here
+
+In this paper a sparse Gaussian process framework was presented and applied to photometric redshift estimation. The framework was able to out perform Artificial Neural Networks and sparse Gaussian processes with a global set of hyper-parameters. The performance increase is attributed to the handling of distribution bias via a weighting scheme integrated as part of the optimisation objective, parameterising each basis function with different covariances, and integrating the learning of the prior mean function to enhance the extrapolation performance of the model. The methods were applied to a simulated data set and the proposed approach consistently outperformed the other models on all measures while maintaining a low ration of model complexity to accuracy as scored by the Bayesian Information Criterion.
 \label{sec-conclusion}
 
 \footnotesize{
