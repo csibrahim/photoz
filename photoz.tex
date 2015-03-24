@@ -31,7 +31,7 @@ $^2$Other institution \\
 
 \maketitle
 
-\label{first page}
+\label{firstpage}
 
 \begin{abstract}
 In this study, a novel sparse regression framework for photometric redshift estimation is presented which directly targets the requirements of the Euclid Space Mission. Data from a synthesised survey was used to train and test the proposed models. We show that approaches which include careful data preparation and model design offer a significant improvement in comparison with several competing machine learning algorithms. Standard implementation of most regression algorithms has as objective the minimisation of the sum of squared errors. For redshift inference, this induces a bias in the posterior mean of the output distribution, which can be problematic. In this paper we directly optimise the Euclid mission requirement and address the bias problem via a distribution-based weighting scheme, incorporated as part of the optimisation objective. The results are compared with other popular machine learning algorithms in the field such as Artificial Neural Networks, Gaussian Processes (GPs) and sparse GPs. The proposed framework reached a $\Delta z = 0.003(1+z_{spec})$, with a maximum absolute error of 0.044, over the redshift range of $0.2 < z_{spec} < 2$. These results considerably exceed the requirement for the Euclid mission of $\Delta z = 0.05(1+z_{spec})$ over the same redshift range.
@@ -55,7 +55,7 @@ We introduce a novel sparse kernel regression model that greatly reduces the num
 
 \section{Gaussian Processes}
 \label{sec-gaussian-process}
-In many modelling problems, we have little prior knowledge of the explicit functional form of the function which maps our observable variables into the variable of interest. Imposing, albeit sensible, parametric models, such as polynomials, makes a tacit bias. For this reason, much of modern function modelling is performed using \emph{non-parametric} techniques. For regression, the most widely used approach is that of \emph{Gaussian Processes} (\citep{rasmussen2006gaussian}).
+In many modelling problems, we have little prior knowledge of the explicit functional form of the function which maps our observable variables into the variable of interest. Imposing, albeit sensible, parametric models, such as polynomials, makes a tacit bias. For this reason, much of modern function modelling is performed using \emph{non-parametric} techniques. For regression, the most widely used approach is that of \emph{Gaussian Processes} \citep{rasmussen2006gaussian}.
 A Gaussian Process is a supervised non-linear regression algorithm that makes few explicit \emph{parametric} assumptions about the nature of the function fit. For this reason, Gaussian Processes are seen as lying within the class of Bayesian non-parametric models. The main underlying assumption in a GP is that the joint probability of the input variable $x$ and the output variable $y$ is a multivariate Gaussian with mean $\mu=\begin{bmatrix} \mu_{x} & \mu_{y}\end{bmatrix}^{T}$ and covariance $\bm{\Sigma}=\begin{bmatrix}\bm{\Sigma}_{xx} & \bm{\Sigma}_{xy}\\\bm{\Sigma}_{yx} & \bm{\Sigma}_{yy} \end{bmatrix}$, where $\bm{\Sigma}_{xy}=(x-\mu_{x})(y-\mu_{y})^{T}$. The input variables $x$ is an $n$ by $d$ matrix, where $n$ is the number of data points and $d$ is the dimensionality of the input. Without loss of generality, the output variable $y$ is assumed to be a vector of length $n$ of target outputs but the same concept holds for multiple variable output. The joint distribution is hence:
 
 \begin{equation}
@@ -427,11 +427,11 @@ In this test, the extrapolation performance of the GP-VC model was tested using 
 \caption{Performance measures for each algorithm trained using $m=10$ basis functions}
 \begin{center}
   \begin{tabular}{| l | c | c | c | c | }
-  								& 	\multicolumn{2}{|c|}{$RIZ<23$}		& 	\multicolumn{2}{c}{$RIZ<22$} \\ \cline{2-5}
-     	Prior						&	$\Delta z$	&	$\Delta z_{norm}$	&	$\Delta z$	&	$\Delta z_{norm}$	\\	\hline
+  							& 	\multicolumn{2}{|c|}{$RIZ<23$}				& 	\multicolumn{2}{c}{$RIZ<22$} \\ \cline{2-5}
+     	Prior						&	$\Delta z$		&	$\Delta z_{norm}$		&	$\Delta z$		&	$\Delta z_{norm}$	\\	\hline
 	Zero						&	0.0807		&	0.0315				&	0.1436		&	0.0547					\\
-	Linear Regression		&	0.0393		&	0.0188				&	0.1784		&	0.0689					\\
-	Joint						&	0.0371		&	0.0167				&	0.0560		&	0.0264					\\	\hline
+	Linear Regression			&	0.0393		&	0.0188				&	0.1784		&	0.0689					\\
+	Joint						&	0.0371		&	0.0167				&	0.0803		&	0.0380					\\	\hline
   \end{tabular}
   \label{table-RIZ-splits}
 \end{center}
@@ -585,7 +585,6 @@ The final GP-VC model to target the Euclid Space Mission was trained with $m=200
        \caption{The root mean squares (a) and the BIC scores (b) as a function of $m$ for all the models.}
 	
 \end{figure}
-
 \begin{figure}
        \centering
         \includegraphics[width=\columnwidth]{figures/final-model.eps}
@@ -593,16 +592,16 @@ The final GP-VC model to target the Euclid Space Mission was trained with $m=200
        \label{fig-final-model}
 \end{figure}
 
-
 \section{Conclusion}
+\label{sec-conclusion}
 SR: needs extra work here
 
 In this paper a sparse Gaussian process framework was presented and applied to photometric redshift estimation. The framework was able to out perform Artificial Neural Networks and sparse Gaussian processes with a global set of hyper-parameters. The performance increase is attributed to the handling of distribution bias via a weighting scheme integrated as part of the optimisation objective, parameterising each basis function with different covariances, and integrating the learning of the prior mean function to enhance the extrapolation performance of the model. The methods were applied to a simulated data set and the proposed approach consistently outperformed the other models on all measures while maintaining a low ration of model complexity to accuracy as scored by the Bayesian Information Criterion.
-\label{sec-conclusion}
 
 \footnotesize{
 \bibliographystyle{mn2e}
 \bibliography{sources}
 }
 
+\label{lastpage}
 \end{document}
