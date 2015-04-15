@@ -265,66 +265,7 @@ Here we consider the problem of redshift estimation from photometric data. The a
 \subsection{Dataset}
 \label{sec-dataset}
 
-The dataset consist of the g, r, i, z, RIZ, Y, J and H magnitudes for 156,904 simulated sources along with their spectroscopic redshift. They cover a redshift range of $0.2 \le z_{spec} \le 2$ to target the requirement set by the Euclid Space Mission. All sources with any missing measurement in any of their detectors were removed prior to training. No limits on any of the bands were used, although some will be explicitly removed to test the extrapolation performance of the models. The distribution of the bands and the spectroscopic redshift are provided in Figures \ref{fig-bands-histograms} and \ref{fig-zspec-hostogram} respectively. For all experiments reported in this paper, we ignore the error bars associated with each band and train only on the magnitudes. In all experiments reported in this paper, the data is preprocessed using Principle Component Analysis (PCA) \citep{jolliffe1986} to de-correlate the features prior to learning. De-correlation accelerates the convergence rate of the optimisation routine especially when using a logistic-type kernel machines such as Neural Networks \citep{lecun1998}. To understand this, we consider a simple linear regression example where we would like to solve for $w$ in $Aw=b$, the solution for this is $w=\left(A^{T}A\right)^{-1}A^{T}b$. Note that if $A$ is de-correlated $A^{T}A=I$, therefore learning $w_{i}$ depends only on the $i$-th column of $A$ and it is independent from learning $w_{j}$, where $i\ne j$. In an optimisation approach, the convergence rate is a function of the condition number of the $A^{T}A$ matrix, which is minimised in the case of de-correlated data. This represents a quadratic error surface which helps accelerate the search. This is particularly important in the application addressed in this paper as the colour bands are strongly correlated with each other. An example of applying a simple coordinate-descent to optimise a linear regression model was applied to the toy data set and the results are shown in Figure \ref{fig-error-surface}.
-\begin{figure*}
-        \centering
-        \begin{subfigure}[b]{0.15\textwidth}
-                \includegraphics[width=\columnwidth]{figures/g.eps}
-                \caption{g}
-        \end{subfigure}
-        ~
-        \begin{subfigure}[b]{0.15\textwidth}
-                \includegraphics[width=\columnwidth]{figures/r.eps}
-                \caption{r}
-        \end{subfigure}
-         ~
-        \begin{subfigure}[b]{0.15\textwidth}
-                \includegraphics[width=\columnwidth]{figures/i.eps}
-                \caption{i}
-        \end{subfigure}
-         ~
-        \begin{subfigure}[b]{0.15\textwidth}
-                \includegraphics[width=\columnwidth]{figures/z.eps}
-                \caption{z}
-        \end{subfigure}
-        
-        \begin{subfigure}[b]{0.15\textwidth}
-                \includegraphics[width=\columnwidth]{figures/RIZ.eps}
-                \caption{RIZ}
-        \end{subfigure}
-        ~
-        \begin{subfigure}[b]{0.15\textwidth}
-                \includegraphics[width=\columnwidth]{figures/Y.eps}
-                \caption{Y}
-        \end{subfigure}
-         ~
-        \begin{subfigure}[b]{0.15\textwidth}
-                \includegraphics[width=\columnwidth]{figures/J.eps}
-                \caption{J}
-        \end{subfigure}
-         ~
-        \begin{subfigure}[b]{0.15\textwidth}
-                \includegraphics[width=\columnwidth]{figures/H.eps}
-                \caption{H}
-        \end{subfigure}
-        
-       \caption{The magnitude distribution for each band in the dataset.}
-	\label{fig-bands-histograms}
-\end{figure*}
-\begin{figure}
-        \centering
-        \begin{subfigure}[b]{0.45\columnwidth}
-                 \includegraphics[width=\textwidth]{figures/correlated.eps}
-                 \caption{Correlated}
-        \end{subfigure}
-        ~
-        \begin{subfigure}[b]{0.45\columnwidth}
-                 \includegraphics[width=\textwidth]{figures/decorrelated.eps}
-                 \caption{De-correlated}
-        \end{subfigure}
-       \caption{Using coordinate-descent to optimise the linear regression objective on the synthetic dataset shown in Figure \ref{fig-toy-example}. Subfigure (a) shows the steps taken when the data has some correlation, while subfigure (b) shows the steps taken when the data was de-correlated.}
-	\label{fig-error-surface}
-\end{figure}
+The dataset consist of the g, r, i, z, RIZ, Y, J and H magnitudes for 156,904 simulated sources along with their spectroscopic redshift. They cover a redshift range of $0.2 \le z_{spec} \le 2$ to target the requirement set by the Euclid Space Mission. All sources with any missing measurement in any of their detectors were removed prior to training. No limits on any of the bands were used, although some will be explicitly removed to test the extrapolation performance of the models. The distribution of the spectroscopic redshift is provided in Figure \ref{fig-zspec-hostogram}. For all experiments reported in this paper, we ignore the error bars associated with each band and train only on the magnitudes. In all experiments reported in this paper, the data is preprocessed using Principle Component Analysis (PCA) \citep{jolliffe1986} to de-correlate the features prior to learning. De-correlation accelerates the convergence rate of the optimisation routine especially when using a logistic-type kernel machines such as Neural Networks \citep{lecun1998}. To understand this, we consider a simple linear regression example where we would like to solve for $w$ in $Aw=b$, the solution for this is $w=\left(A^{T}A\right)^{-1}A^{T}b$. Note that if $A$ is de-correlated $A^{T}A=I$, therefore learning $w_{i}$ depends only on the $i$-th column of $A$ and it is independent from learning $w_{j}$, where $i\ne j$. In an optimisation approach, the convergence rate is a function of the condition number of the $A^{T}A$ matrix, which is minimised in the case of de-correlated data. This represents a quadratic error surface which helps accelerate the search. This is particularly important in the application addressed in this paper as the colour bands are strongly correlated with each other. An example of applying a simple coordinate-descent to optimise a linear regression model was applied to the toy data set and the results are shown in Figure \ref{fig-error-surface}.
 
 \begin{figure}
        \centering
@@ -475,68 +416,8 @@ In this experiment, a comparison between the cost sensitive learning and the nor
 \label{table-normal-balanced}
 \end{table}
 
-\subsection{Kernel Analysis}
-
-In this experiment, we study the resulted kernels and their learned basis functions. Figure \ref{fig-kernel-activations} shows the patterns for the top five kernels after training GP-VC with $m=10$ basis functions and their activation as a function of redshift. The kernels were ranked based on the difference between the maximum and minimum mean activations per bin (uniformly spaced by 0.01).
-
-(\textbf{SR: Is there anything interesting to say here from the Astro perspective? Do these 'filters' into the data space have any 'meaning'?})
-
-\begin{figure*}
-        \centering
-        
-        \begin{subfigure}[b]{0.175\textwidth}
-                \includegraphics[width=\textwidth]{figures/basis_01.eps}
-        \end{subfigure}
-	~
-        \begin{subfigure}[b]{0.175\textwidth}
-                \includegraphics[width=\textwidth]{figures/basis_02.eps}
-        \end{subfigure}
-        ~
-        \begin{subfigure}[b]{0.175\textwidth}
-                \includegraphics[width=\textwidth]{figures/basis_03.eps}
-        \end{subfigure}
-        ~
-        \begin{subfigure}[b]{0.175\textwidth}
-                \includegraphics[width=\textwidth]{figures/basis_04.eps}
-        \end{subfigure}
-        ~
-        \begin{subfigure}[b]{0.175\textwidth}
-                \includegraphics[width=\textwidth]{figures/basis_05.eps}
-        \end{subfigure}
-
-        
-        \begin{subfigure}[b]{0.175\textwidth}
-                \includegraphics[width=\textwidth]{figures/activation_01.eps}
-        \end{subfigure}
-	~
-        \begin{subfigure}[b]{0.175\textwidth}
-                \includegraphics[width=\textwidth]{figures/activation_02.eps}
-        \end{subfigure}
-        ~
-        \begin{subfigure}[b]{0.175\textwidth}
-                \includegraphics[width=\textwidth]{figures/activation_03.eps}
-        \end{subfigure}
-        ~
-        \begin{subfigure}[b]{0.175\textwidth}
-                \includegraphics[width=\textwidth]{figures/activation_04.eps}
-        \end{subfigure}
-        ~
-        \begin{subfigure}[b]{0.175\textwidth}
-                \includegraphics[width=\textwidth]{figures/activation_05.eps}
-        \end{subfigure}
-        
-       \caption{The top 5 basis (top) and their corresponding average activation as a function of redshift (bottom) after training GP-VC with $m=10$ basis functions.}
-	\label{fig-kernel-activations}
-\end{figure*}
-
 \subsection{Size of the basis set}
-In this test, all the models are cross compared by varying the number of basis functions $m$ from 5 to 200 by an increment of 5 to study the relationship between accuracy, complexity and speed. The plot of the $\Delta z$ as a function of $m$ is shown in Figure \ref{fig-rmses}, the $y$-axis is shown on a log scale for the purpose of visualization. The stable GP showed the worst performance across the board, especially when the number of basis was low, while GP-VC on the other hand consistently outperformed the rest and most significantly when trained with a few number of basis. ANN outperformed GP-GL and GP-VL, but it did not scale well with complexity as it converged around $m=100$. All the models were trained using a sum of squares objective with no cost sensitive learning or prior mean function in this experiment. GP-VC satisfied the Euclid Mission's requirement was only $m=5$ basis, and when using $m=200$ was able to guarantee  a maximum normalised error less then the required for the mission. The  time complexities for each algorithm are shown in Table \ref{table-time-complexity} and the clock time in seconds, for a single iteration, are shown for various number of basis functions are shown in Figure \ref{fig-time-seconds}. The time experiment was conducted on a machine with a 3.0 GHz Intel Core i7 processor using Matlab 2014a. \footnote{Note that even though stableGP has a lower theoretical time complexity compared to GP-VC, it is significantly slower. This has to do with the particular choice of implementation and the development environment. The partial Cholesky decomposition implementation in stableGP \citep{stableGP} uses repeated loops which tends to perform poorly as it cannot exploit parallelised operations. The other methods on the other hand are based on matrix operations which utilise all the cores of the CPU by parallelising the operations.} We see from Figure \ref{fig-rmses} that all algorithms converged around $m=50$ with very little return in accuracy for the time spent beyond this point.
-%To determine the best number of basis functions, the models were scored using the Bayesian Information Criterion (BIC) \citep{schwarz1978}  that takes into account both the accuracy and the complexity of each model Eq. \eqref{eq-bic} and the results are reported in Figure \ref{fig-bic}. The scores are plotted against the number of basis functions for the sake of visualisation, but the values were scored based on the number of free parameters, or the degree of freedom $\mathcal{D}$. The GP-VC approach had the best BIC score using the least number of basis functions ($m=25$).
-
-%\begin{equation}
-%\label{eq-bic}
-%BIC = n \cdot \log(\Delta z)+\mathcal{D}\cdot \log(n)
-%\end{equation}
+In this test, all the models are cross compared by varying the number of basis functions $m$ from 5 to 200 by an increment of 5 to study the relationship between accuracy, complexity and speed. The plot of the $\Delta z$ as a function of $m$ is shown in Figure \ref{fig-rmses}, the $y$-axis is shown on a log scale for the purpose of visualisation. The stable GP showed the worst performance across the board, especially when the number of basis was low, while GP-VC on the other hand consistently outperformed the rest and most significantly when trained with a few number of basis. ANN outperformed GP-GL and GP-VL, but it did not scale well with complexity as it converged around $m=100$. All the models were trained using a sum of squares objective with no cost sensitive learning or prior mean function in this experiment. GP-VC satisfied the Euclid Mission's requirement was only $m=5$ basis, and when using $m=200$ was able to guarantee  a maximum normalised error less then the required for the mission. The  time complexities for each algorithm are shown in Table \ref{table-time-complexity} and the clock time in seconds, for a single iteration, are shown for various number of basis functions are shown in Figure \ref{fig-time-seconds}. The time experiment was conducted on a machine with a 3.0 GHz Intel Core i7 processor using Matlab 2014a. \footnote{Note that even though stableGP has a lower theoretical time complexity compared to GP-VC, it is significantly slower. This has to do with the particular choice of implementation and the development environment. The partial Cholesky decomposition implementation in stableGP \citep{stableGP} uses repeated loops which tends to perform poorly as it cannot exploit parallelised operations. The other methods on the other hand are based on matrix operations which utilise all the cores of the CPU by parallelising the operations.} We see from Figure \ref{fig-rmses} that all algorithms converged around $m=50$ with very little return in accuracy for the time spent beyond this point.
 
 We note that although the \emph{training} complexity costs require effort for large numbers of basis functions, once all parameters are inferred we enjoy effectively a linear basis model performance running over unseen (test) data. We therefore consider the performance for a realistic, yet large, number of functions. The final GP-VC model to target the Euclid Space Mission was trained with $m=200$ basis functions normalised, balanced and with a joint mean optimisation reached a mean $\Delta z_{norm}=0.004$ and a $max\left(\Delta z_{norm}\right)=0.0416$ on the test set. The density scatter plot for the final model is shown in Figure \ref{fig-final-model}.
 
@@ -569,12 +450,6 @@ We note that although the \emph{training} complexity costs require effort for la
                  \caption{Time.}
                  \label{fig-time-seconds}
         \end{subfigure}
-        ~
-%       \begin{subfigure}[b]{0.3\textwidth}
-%                \includegraphics[width=\textwidth]{figures/BIC.eps}
-%                 \caption{Bayesian Information Criterion.}
-%                 \label{fig-bic}
-%        \end{subfigure}
 
        \caption{The root mean squares (a) and the time in seconds per iteration (b) as a function of $m$ for all the models.}	
 \end{figure}
