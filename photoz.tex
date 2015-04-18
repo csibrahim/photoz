@@ -30,7 +30,7 @@ $^2$Information Engineering, Parks Road, Oxford, OX1 3PJ, UK\\=
 \label{firstpage}
 
 \begin{abstract}
-In this study, a novel sparse regression framework for photometric redshift estimation is presented which directly targets the requirements of the Euclid Space Mission. Data from a synthesised survey was used to train and test the proposed models. We show that approaches which include careful data preparation and model design offer a significant improvement in comparison with several competing machine learning algorithms. Standard implementation of most regression algorithms has as objective the minimisation of the sum of squared errors. For redshift inference, however, this induces a bias in the posterior mean of the output distribution, which can be problematic. In this paper we directly optimise the Euclid mission requirement and address the bias problem via a distribution-based weighting scheme, incorporated as part of the optimisation objective. The results are compared with other popular machine learning algorithms in the field such as Artificial Neural Networks, Gaussian Processes (GPs) and sparse GPs. The proposed framework reached a mean absolute $\Delta z = 0.004(1+z_{spec})$, with a maximum absolute error of 0.0416, over the redshift range of $0.2 < z_{spec} < 2$. These results considerably exceed the requirement for the Euclid mission of mean $\Delta z = 0.05(1+z_{spec})$ over the same redshift range.	
+In this study, a novel sparse regression framework for photometric redshift estimation is presented which directly targets the requirements of the Euclid Space Mission. Data from a synthesised survey was used to train and test the proposed models. We show that approaches which include careful data preparation and model design offer a significant improvement in comparison with several competing machine learning algorithms. Standard implementation of most regression algorithms has as objective the minimisation of the sum of squared errors. For redshift inference, however, this induces a bias in the posterior mean of the output distribution, which can be problematic. In this paper we directly optimise the Euclid mission requirement and address the bias problem via a distribution-based weighting scheme, incorporated as part of the optimisation objective. The results are compared with other popular machine learning algorithms in the field such as Artificial Neural Networks, Gaussian Processes (GPs) and sparse GPs. The proposed framework reached a mean absolute $\Delta z = 0.003(1+z_{spec})$, with a maximum absolute error of 0.0416, over the redshift range of $0.2 < z_{spec} < 2$. These results considerably exceed the requirement for the Euclid mission of mean $\Delta z = 0.05(1+z_{spec})$ over the same redshift range.	
 \end{abstract}
 
 \begin{keywords}
@@ -38,13 +38,13 @@ methods: data analysis -- galaxies: distances and redshifts
 \end{keywords}
 
 \section{Introduction}
-We introduce a novel sparse kernel regression model that greatly reduces the number of basis (kernel) functions required to model the data considered in this paper. This is achieved by allowing each kernel to have its own hyper-parameters, governing its shape. This is in contrast to the standard kernel-based model in which a set of global hyper-parameters are optimised (such as is typical in Gaussian Process (GP) methods). The complexity cost of such a kernel-based regression model is $O\left(n^{3}\right)$, where $n$ is the number of basis functions. This cubic time complexity arise from the cost of inverting a $n$ by $n$ covariance matrix. In a standard Gaussian Process model \citep{rasmussen2006gaussian}, seen as a kernel regression algorithm, we may regard the basis functions, as located at the $n$ points in the training set. This renders such an approach unusable for many large training data applications where scalability is a major concern. Much of the work done to make GPs more scalable is either to make the inverse computation faster or use a smaller representative training data sample or a set of ``inducing points" to reduce the rank and ease the computation of the training data covariance matrix. Examples of the former include methods such as structuring the covariance matrix such that it is much easier to invert, using Toeplitz  \citep{zhang2005time} or Kronecker decomposition \citep{tsiligkaridis2013}, or inverse approximation as an optimisation problem \citep{gibbs97}. To reduce the number of representative points, an $m \ll n$ subset of the training set can be selected which maximises the accuracy or the numerical stability of the inversion \citep{foster2009}. Alternatively, one may search for ``pseudo'' points not necessarily present in the training set to use as basis for the covariance matrix such that it maximises the log marginal likelihood \citep{snelson2005}. The focus in this paper is on sparse GP modelling where we extend the sparse pseudo GP method using a smaller number of kernels. Moreover, a weighting scheme is modelled as an integral part of the process to remove, or introduce, any systematic bias to the model. The results are demonstrated on photometric redshift estimation for the Euclid Space Mission \citep{laureijs2011}. In particular, we use the weighting scheme to remove any distribution bias and introduce a linear bias to directly target the mission's requirement. The proposed approach reached a mean $\Delta z = 0.004(1+z_{spec})$ on a simulated catalogue, far exceeding the mission's requirement of mean $\Delta z = 0.05(1+z_{spec})$ \citep{laureijs2011}. The paper is organised as follows, a brief introduction to Gaussian Processes for regression is presented in section \ref{sec-gaussian-process} followed by an introduction to sparse GPs in section \ref{sec-sparse-gaussian-processes}. The proposed approach is described in Section \ref{sec-proposed-approach} followed by an application to photometric redshift estimation is presented in section \ref{sec-application}, where the details of the dataset and the experiments are described. Finally, we summarise and conclude in Section \ref{sec-conclusion}. The contributions of this paper are as follows:
+We introduce a novel sparse kernel regression model that greatly reduces the number of basis (kernel) functions required to model the data considered in this paper. This is achieved by allowing each kernel to have its own hyper-parameters, governing its shape. This is in contrast to the standard kernel-based model in which a set of global hyper-parameters are optimised (such as is typical in Gaussian Process (GP) methods). The complexity cost of such a kernel-based regression model is $O\left(n^{3}\right)$, where $n$ is the number of basis functions. This cubic time complexity arise from the cost of inverting a $n$ by $n$ covariance matrix. In a standard Gaussian Process model \citep{rasmussen2006gaussian}, seen as a kernel regression algorithm, we may regard the basis functions, as located at the $n$ points in the training set. This renders such an approach unusable for many large training data applications where scalability is a major concern. Much of the work done to make GPs more scalable is either to make the inverse computation faster or use a smaller representative training data sample or a set of ``inducing points" to reduce the rank and ease the computation of the training data covariance matrix. Examples of the former include methods such as structuring the covariance matrix such that it is much easier to invert, using Toeplitz  \citep{zhang2005time} or Kronecker decomposition \citep{tsiligkaridis2013}, or inverse approximation as an optimisation problem \citep{gibbs97}. To reduce the number of representative points, an $m \ll n$ subset of the training set can be selected which maximises the accuracy or the numerical stability of the inversion \citep{foster2009}. Alternatively, one may search for ``pseudo'' points not necessarily present in the training set to use as basis for the covariance matrix such that it maximises the log marginal likelihood \citep{snelson2005}. The focus in this paper is on sparse GP modelling where we extend the sparse pseudo GP method using a smaller number of kernels. Moreover, a weighting scheme is modelled as an integral part of the process to remove, or introduce, any systematic bias to the model. The results are demonstrated on photometric redshift estimation for the Euclid Space Mission \citep{laureijs2011}. In particular, we use the weighting scheme to remove any distribution bias and introduce a linear bias to directly target the mission's requirement. The proposed approach reached a mean $\Delta z = 0.003(1+z_{spec})$ on a simulated catalogue, far exceeding the mission's requirement of mean $\Delta z = 0.05(1+z_{spec})$ \citep{laureijs2011}. The paper is organised as follows, a brief introduction to Gaussian Processes for regression is presented in section \ref{sec-gaussian-process} followed by an introduction to sparse GPs in section \ref{sec-sparse-gaussian-processes}. The proposed approach is described in Section \ref{sec-proposed-approach} followed by an application to photometric redshift estimation is presented in section \ref{sec-application}, where the details of the dataset and the experiments are described. Finally, we summarise and conclude in Section \ref{sec-conclusion}. The contributions of this paper are as follows:
 \begin{enumerate}
   \item Increasing the modelling capability of sparse GPs via the use of more flexible kernels and fewer basis functions, thereby enhancing computational complexity without sacrificing accuracy.
   \item Development of an efficient computational procedure to compute the gradients for both full covariance matrix and low rank approximations.
   \item Incorporating a weighting scheme directly to the objective to counteract any undesired bias and/or to control the bias of the model. In this paper the approach was used to directly target the Euclid Space Mission objective.
   \item A linear regression prior mean function is jointly optimised to enhance the model's extrapolation performance.
-  \item The proposed approach was applied to a simulated catalogue and achieved  a mean $\Delta z = 0.004(1+z_{spec})$ exceeding the requirement for the Euclid mission.
+  \item The proposed approach was applied to a simulated catalogue and achieved  a mean $\Delta z = 0.003(1+z_{spec})$ exceeding the requirement for the Euclid mission.
 \end{enumerate}
 
 \section{Gaussian Processes}
@@ -74,7 +74,7 @@ The calculation can be simplified by subtracting the mean of the input and the o
 \end{array}
 \end{equation}
 
-For the rest of this paper, the prior mean is assumed to be zero unless otherwise stated (this can readily be achieved without loss of generality). This far, the analysis has assumed that no noise (uncertainty) exists in the set of observed $y$ data. It is readily shown that assuming some noise $\epsilon \sim \mathcal{N}\left(0,\sigma_{n}^{2}\right)$ on the output variable $y$, yields the following updated mean and covariance (\citep{rasmussen2006gaussian}):
+For the rest of this paper, the prior mean is assumed to be zero unless otherwise stated (this can readily be achieved without loss of generality). This far, the analysis has assumed that no noise (uncertainty) exists in the set of observed $y$ data. It is readily shown that assuming some noise $\epsilon \sim \mathcal{N}\left(0,\sigma_{n}^{2}\right)$ on the output variable $y$, yields the following updated mean and covariance \citep{rasmussen2006gaussian}:
 \begin{equation}
 \label{eq-mean-variance-noise}
 \begin{array}{rcl}
@@ -108,7 +108,7 @@ Gaussian processes are often described as non-parametric regression models due t
 \underset{w}{\text{min}} &\frac{1}{2}\left ( \bmath{K}w-y \right )^{T}\left( \bmath{K}w-y \right )+\frac{1}{2}\sigma_{n}^{2}w^{T}w.
 \end{array}
 \end{equation}
-where $w$ are the set of coefficients for the linear regression model that maps the transformed features $\bmath{K}$ to the desired output $y$. The feature transformation $\bmath{K}$ evaluate how ``similar'' a datum is to every point in the training set, where the similarity measure is defined by the kernel function. If two points have a high kernel response via  Eq. \eqref{eq-squared-exponential}, this will result in very correlated features, adding extra computational cost for very little or no added information. Selecting a subset of the training set that maximises the preserved information is a research question addressed in \citep{foster2009}, whereas in \citep{snelson2005} the basis functions are treated as a search problem rather than a selection problem and their locations are treated as hyper-parameters which are optimised. These approaches result in a transformation $x\in \mathbb{R}^{d}:\rightarrow \bmath{K}\in \mathbb{R}^{m}$, in which $m\ll n$ is the number of basis used. The transformation matrix $\bmath{K}$ will therefore be a rectangular $n$ by $m$ matrix and the solution for $w$ in  Eq. \eqref{eq-linear-regression-objective} is calculated via standard linear algebra as:
+where $w$ are the set of coefficients for the linear regression model that maps the transformed features $\bmath{K}$ to the desired output $y$. The feature transformation $\bmath{K}$ evaluate how ``similar'' a datum is to every point in the training set, where the similarity measure is defined by the kernel function. If two points have a high kernel response via  Eq. \eqref{eq-squared-exponential}, this will result in very correlated features, adding extra computational cost for very little or no added information. Selecting a subset of the training set that maximises the preserved information is a research question addressed in \citep{foster2009}, whereas in \citep{snelson2005} the basis functions are treated as a search problem rather than a selection problem and their locations are treated as hyper-paraxmeters which are optimised. These approaches result in a transformation $x\in \mathbb{R}^{d}:\rightarrow \bmath{K}\in \mathbb{R}^{m}$, in which $m\ll n$ is the number of basis used. The transformation matrix $\bmath{K}$ will therefore be a rectangular $n$ by $m$ matrix and the solution for $w$ in  Eq. \eqref{eq-linear-regression-objective} is calculated via standard linear algebra as:
 \begin{equation}
 \label{eq-linear-regression-objective-rectangular}
 w = \left(\bmath{K}^{T}\bmath{K}+\bmath{I}\sigma_{n}^{2} \right)^{-1}\bmath{K}^{T}y.
@@ -260,13 +260,27 @@ The only modification to the gradient calculation is to set the matrix $\bmath{E
 \section{Application to Photometric Redshift Estimation}
 \label{sec-application}
 
-Here we consider the problem of redshift estimation from photometric data. The aim of this approach is to predict accurately the spectroscopic redshift from the magnitudes of different colour bands emitted by a source using photometry. The light for each band is filtered to measure the magnitude of a particular wavelength range. We specifically target the photometric configuration designed for the Euclid Space Mission, namely the g, r, i, z, RIZ, Y, J and H bands and their associated expected errors (SR: add cite here).
+Here we consider the problem of redshift estimation from photometric data. The aim of this approach is to predict accurately the redshift from the magnitudes of different colour bands emitted by a source using photometry. The light for each band is filtered to measure the magnitude of a particular wavelength range. We specifically target the photometric configuration designed for the Euclid Space Mission, namely the g, r, i, z, RIZ, Y, J and H bands and their associated expected errors (SR: add cite here).
 
 \subsection{Dataset}
 \label{sec-dataset}
 
 The dataset consist of the g, r, i, z, RIZ, Y, J and H magnitudes for 156,904 simulated sources along with their spectroscopic redshift. They cover a redshift range of $0.2 \le z_{spec} \le 2$ to target the requirement set by the Euclid Space Mission. All sources with any missing measurement in any of their detectors were removed prior to training. No limits on any of the bands were used, although some will be explicitly removed to test the extrapolation performance of the models. The distribution of the spectroscopic redshift is provided in Figure \ref{fig-zspec-hostogram}. For all experiments reported in this paper, we ignore the error bars associated with each band and train only on the magnitudes. In all experiments reported in this paper, the data is preprocessed using Principle Component Analysis (PCA) \citep{jolliffe1986} to de-correlate the features prior to learning. De-correlation accelerates the convergence rate of the optimisation routine especially when using a logistic-type kernel machines such as Neural Networks \citep{lecun1998}. To understand this, we consider a simple linear regression example where we would like to solve for $w$ in $Aw=b$, the solution for this is $w=\left(A^{T}A\right)^{-1}A^{T}b$. Note that if $A$ is de-correlated $A^{T}A=I$, therefore learning $w_{i}$ depends only on the $i$-th column of $A$ and it is independent from learning $w_{j}$, where $i\ne j$. In an optimisation approach, the convergence rate is a function of the condition number of the $A^{T}A$ matrix, which is minimised in the case of de-correlated data. This represents a quadratic error surface which helps accelerate the search. This is particularly important in the application addressed in this paper as the colour bands are strongly correlated with each other. An example of applying a simple coordinate-descent to optimise a linear regression model was applied to the toy data set and the results are shown in Figure \ref{fig-error-surface}.
 
+\begin{figure}
+        \centering
+        \begin{subfigure}[b]{0.45\columnwidth}
+                 \includegraphics[width=\textwidth]{figures/correlated.eps}
+                 \caption{Correlated}
+        \end{subfigure}
+        ~
+        \begin{subfigure}[b]{0.45\columnwidth}
+                 \includegraphics[width=\textwidth]{figures/decorrelated.eps}
+                 \caption{De-correlated}
+        \end{subfigure}
+       \caption{Using coordinate-descent to optimise the linear regression objective on the synthetic dataset shown in Figure \ref{fig-toy-example}. Subfigure (a) shows the steps taken when the data has some correlation, while subfigure (b) shows the steps taken when the data was de-correlated.}
+	\label{fig-error-surface}
+\end{figure}
 \begin{figure}
        \centering
        \includegraphics[width=\columnwidth]{figures/zspec.eps}
@@ -289,27 +303,27 @@ in which $\Delta z$ is the standard Root Mean Squared Error (RMSE) and $\Delta z
 In the first test, all models were trained using a fixed $m=10$ to cross compare the performance of the methods using the same number of basis functions. The number of basis functions was set deliberately low to highlight the sparse-limit modelling capabilities of each algorithm, as for large values of $m$ the performance gap between the algorithms naturally becomes less. The standard sum of squares objective was used, without cost sensitive training or a prior mean function to keep the comparison as simple as possible. The $z_{spec}$ vs $z_{phot}$ density scatter plots are shown in Figure \ref{fig-experiment-1} and their performance scores are reported in Table \ref{table-experiment-1}.
 \begin{figure*}
         \centering
-        \begin{subfigure}[b]{0.175\textwidth}
+        \begin{subfigure}[b]{0.3\textwidth}
                 \includegraphics[width=\textwidth]{figures/ANN.eps}
                 \caption{ANN}
         \end{subfigure}
         ~
-        \begin{subfigure}[b]{0.175\textwidth}
+        \begin{subfigure}[b]{0.3\textwidth}
                 \includegraphics[width=\textwidth]{figures/stableGP.eps}
                 \caption{stableGP}
         \end{subfigure}
         ~
-        \begin{subfigure}[b]{0.175\textwidth}
+        \begin{subfigure}[b]{0.3\textwidth}
                 \includegraphics[width=\textwidth]{figures/GPGL.eps}
                 \caption{GP-GL}
         \end{subfigure}
-        ~
-        \begin{subfigure}[b]{0.175\textwidth}
+        
+        \begin{subfigure}[b]{0.3\textwidth}
                \includegraphics[width=\textwidth]{figures/GPVL.eps}
                 \caption{GP-VL}
         \end{subfigure}
         ~
-        \begin{subfigure}[b]{0.175\textwidth}
+        \begin{subfigure}[b]{0.3\textwidth}
                 \includegraphics[width=\textwidth]{figures/GPVC.eps}
                 \caption{GP-VC}
         \end{subfigure}
@@ -335,58 +349,59 @@ In the first test, all models were trained using a fixed $m=10$ to cross compare
 
 \subsection{Prior Mean}
 
-In this test, the extrapolation performance of the GP-VC model was tested using different prior means, namely a zero mean, a linear regression mean and a joint optimisation approach which learns the linear and non-linear features simultaneously by regularising the non-linear features more aggressively than linear features. To test this more effectively,  the models were trained using sources with $RIZ<23$ (36,244 objects) and tested on the unseen samples with $RIZ\ge23$, a similar test was also conducted using a split of $RIZ<22$ (15,067 objects). The results are reported in Table \ref{table-RIZ-splits} and the density scatter plots are shown for comparison in Figure \ref{fig-RIZ-splits}. The results from Table \ref{table-RIZ-splits} show that the ``Joint'' method consistently outperformed the other methods especially when trained with a small sample size as in the $RIZ<22$ case. The Linear regression prior was not always better than the zero mean prior in terms of performance measures, in the $RIZ<22$ case for example, but upon examining the density scatter plots in Figure \ref{fig-RIZ-splits}, the zero mean prior has more systematic and catastrophic errors.
+In this test, the extrapolation performance of the GP-VC model was tested using different prior means, namely a zero mean, a linear regression mean and a joint optimisation approach which learns the linear and non-linear features simultaneously by regularising the non-linear features more aggressively than linear features. To test this more effectively,  the models were trained using sources, with $RIZ<23$ (26,367 objects from the training set) and tested on the unseen samples with $RIZ\ge23$, $RIZ<23$ and the entire test set. A similar test was also conducted using a split of $RIZ<22$ (10,629 objects  from the training set). The results are reported in Table \ref{table-RIZ-splits} and the density scatter plots are shown for comparison in Figure \ref{fig-RIZ-splits}. The results from Table \ref{table-RIZ-splits} show that the ``Joint'' method consistently outperformed the other methods in extrapolation as well as in interpolation especially when trained with a small sample size as in the $RIZ<22$ case, and upon examining the density scatter plots in Figure \ref{fig-RIZ-splits}, it has less systematic and catastrophic errors.
 
- \begin{table}
-\caption{Performance measures for each algorithm trained using $m=10$ basis functions}
+ \begin{table*}
+\caption{The $\Delta z$ for each algorithm trained using $m=10$ basis functions}
 \begin{center}
-  \begin{tabular}{| l | c | c | c | c | }
-  							& 	\multicolumn{2}{|c|}{$RIZ<23$}				& 	\multicolumn{2}{c}{$RIZ<22$} \\ \cline{2-5}
-     	Prior						&	$\Delta z$		&	$\Delta z_{norm}$		&	$\Delta z$		&	$\Delta z_{norm}$	\\	\hline
-	Zero						&	0.0765		&	0.0301				&	0.1404		&	0.0531					\\
-	Linear Regression			&	0.0387		&	0.0186				&	0.1823		&	0.0701					\\
-	Joint						&	\textbf{0.0354}	&	\textbf{0.0160}			&	\textbf{0.0535}	&	\textbf{0.0245}				\\	\hline
+  \begin{tabular}{| l | c | c | c | c | c | c | c | }
+  							& 	\multicolumn{3}{|c|}{Trained on $RIZ<22$}				&	& 	\multicolumn{3}{c}{Trained on $RIZ<23$} \\ \cline{2-4} \cline{6-8} 
+     	Tested on					&	$<22$			&	$\ge 22$		&	All				&	&	$<23$	&	$\ge 23$	&	All	\\	\hline
+	Zero						&	0.0196			&	0.3462			&	0.3311			&	&	0.0239	&	0.0771	&	0.0693					\\
+	Linear Regression			&	0.0158			&	0.2394			&	0.2289			&	&	0.0157	&	0.0502	&	0.0452				\\
+	Joint						&	\textbf{0.0129}	&	\textbf{0.1144}	&	\textbf{0.1095}	&	&	\textbf{0.0145}	&	\textbf{0.0385}	&	\textbf{0.0349}			\\	\hline
   \end{tabular}
 \end{center}
 \label{table-RIZ-splits}
-\end{table}
+\end{table*}
 
-\begin{figure}
+\begin{figure*}
         \centering
-        \begin{subfigure}[b]{0.3\columnwidth}
+        \begin{subfigure}[b]{0.3\textwidth}
                 \includegraphics[width=\textwidth]{figures/23_0.eps}
         \end{subfigure}
         ~
-        \begin{subfigure}[b]{0.3\columnwidth}
+        \begin{subfigure}[b]{0.3\textwidth}
                 \includegraphics[width=\textwidth]{figures/23_L.eps}
         \end{subfigure}
         ~
-        \begin{subfigure}[b]{0.3\columnwidth}
+        \begin{subfigure}[b]{0.3\textwidth}
                 \includegraphics[width=\textwidth]{figures/23_J.eps}
         \end{subfigure}
         
-       \begin{subfigure}[b]{0.3\columnwidth}
+       \begin{subfigure}[b]{0.3\textwidth}
                 \includegraphics[width=\textwidth]{figures/22_0.eps}
                 \caption{Zero mean}
         \end{subfigure}
         ~
-        \begin{subfigure}[b]{0.3\columnwidth}
+        \begin{subfigure}[b]{0.3\textwidth}
                 \includegraphics[width=\textwidth]{figures/22_L.eps}
                 \caption{Linear}
         \end{subfigure}
         ~
-        \begin{subfigure}[b]{0.3\columnwidth}
+        \begin{subfigure}[b]{0.3\textwidth}
                 \includegraphics[width=\textwidth]{figures/22_J.eps}
                 \caption{Joint}
         \end{subfigure}
         
         \caption{Density scatter plots of the true $z_{spec}$ vs the predicted $z_{phot}$ after training the GP-VC model with samples with $RIZ<23$ (top) and $RIZ<22$ (bottom) using $m=10$ basis functions with (a) zero mean, (b) linear regression and (c) joint linear and non-linear optimisation}
         \label{fig-RIZ-splits}
-\end{figure}
+\end{figure*}
 
 
 \subsection{Weighted Samples}
 In this experiment, a comparison between the cost sensitive learning and the normal sum of squares for the GP-VC model is presented. Two different weight configurations are tested, the first is to assign an error cost to each sample equals to $1/\left(1+z_{spec}\right)^{2}$ to directly target the Euclid mission requirement (Normalised), and the second experiment is to weigh each sample according to the frequency of their true redshift to ensure balanced learning (Balanced).  Two additional measures are reported, the maximum $\Delta z$ and the maximum $\Delta z_{norm}$. The samples were grouped into bins of uniformly spaced intervals of 0.1, the box plots are shown in Figure \ref{fig-normal} for the normal weighting scheme and Figure \ref{fig-balanced} shows the results of the balanced training. The results from the figures show that the cost sensitive learning is more consistent across the redshift range as opposed to the normal sum of squares, especially in the high redshift regions were there is less data the confidence intervals are considerably smaller. The performance comparison for the normal, balanced and normalised training are summarised in Table \ref{table-normal-balanced}. Balanced training showed a better generalisation performance, as it outperformed the normal sum of squares objective on the test set and has lower maximum errors.
+
 \begin{figure}
         \centering
         \begin{subfigure}[b]{\columnwidth}
@@ -419,7 +434,7 @@ In this experiment, a comparison between the cost sensitive learning and the nor
 \subsection{Size of the basis set}
 In this test, all the models are cross compared by varying the number of basis functions $m$ from 5 to 200 by an increment of 5 to study the relationship between accuracy, complexity and speed. The plot of the $\Delta z$ as a function of $m$ is shown in Figure \ref{fig-rmses}, the $y$-axis is shown on a log scale for the purpose of visualisation. The stable GP showed the worst performance across the board, especially when the number of basis was low, while GP-VC on the other hand consistently outperformed the rest and most significantly when trained with a few number of basis. ANN outperformed GP-GL and GP-VL, but it did not scale well with complexity as it converged around $m=100$. All the models were trained using a sum of squares objective with no cost sensitive learning or prior mean function in this experiment. GP-VC satisfied the Euclid Mission's requirement was only $m=5$ basis, and when using $m=200$ was able to guarantee  a maximum normalised error less then the required for the mission. The  time complexities for each algorithm are shown in Table \ref{table-time-complexity} and the clock time in seconds, for a single iteration, are shown for various number of basis functions are shown in Figure \ref{fig-time-seconds}. The time experiment was conducted on a machine with a 3.0 GHz Intel Core i7 processor using Matlab 2014a. \footnote{Note that even though stableGP has a lower theoretical time complexity compared to GP-VC, it is significantly slower. This has to do with the particular choice of implementation and the development environment. The partial Cholesky decomposition implementation in stableGP \citep{stableGP} uses repeated loops which tends to perform poorly as it cannot exploit parallelised operations. The other methods on the other hand are based on matrix operations which utilise all the cores of the CPU by parallelising the operations.} We see from Figure \ref{fig-rmses} that all algorithms converged around $m=50$ with very little return in accuracy for the time spent beyond this point.
 
-We note that although the \emph{training} complexity costs require effort for large numbers of basis functions, once all parameters are inferred we enjoy effectively a linear basis model performance running over unseen (test) data. We therefore consider the performance for a realistic, yet large, number of functions. The final GP-VC model to target the Euclid Space Mission was trained with $m=200$ basis functions normalised, balanced and with a joint mean optimisation reached a mean $\Delta z_{norm}=0.004$ and a $max\left(\Delta z_{norm}\right)=0.0416$ on the test set. The density scatter plot for the final model is shown in Figure \ref{fig-final-model}.
+We note that although the \emph{training} complexity costs require effort for large numbers of basis functions, once all parameters are inferred we enjoy effectively a linear basis model performance running over unseen (test) data. We therefore consider the performance for a realistic, yet large, number of functions. 
 
  \begin{table}
 \caption{The time complexity of each approach.}
@@ -454,13 +469,23 @@ We note that although the \emph{training} complexity costs require effort for la
        \caption{The root mean squares (a) and the time in seconds per iteration (b) as a function of $m$ for all the models.}	
 \end{figure}
 
+\subsection{Size of the training set}
+
+In this experiment the generalisation performance of the GP-VC is tested by limiting the training set size to different percentage of the dataset. The validation and test sets were set fixed to the same sets used in previous experiments to ensure consistent reporting on the same test set. The model was trained using various percentages from 5\% to 80\% and the $\Delta z$ as well as the $\Delta z_{norm}$ are reported for each percentage split in the plot shown in Figure \ref{fig-training-percentage}. The models were trained using the ``Joint'' prior optimisation, cost-sensitive learning and normalised weights using $m=200$ basis functions. The results from Figure \ref{fig-training-percentage} shows a stable generalisation performance for the GP-VC model with cost-sensitive learning even when using a limited training set size. The final GP-VC model to target the Euclid Space Mission was trained with $m=200$ basis functions normalised, balanced and with a joint mean optimisation reached a mean $\Delta z_{norm}=0.003$ and a $max\left(\Delta z_{norm}\right)=0.0468$ on the test set. The density scatter plot for the final model is shown in Figure \ref{fig-final-model}.
+
+\begin{figure}
+       \centering
+        \includegraphics[width=\columnwidth]{figures/percentage.eps}
+        \caption{The $\Delta z$ and $\Delta z_{norm}$ after training GP-VC models with $m=200$ basis functions with various training set percentage splits. }
+       \label{fig-training-percentage}
+\end{figure}
+
 \begin{figure}
        \centering
         \includegraphics[width=\columnwidth]{figures/final-model.eps}
         \caption{The density scatter plot for the final GP-VC model trained using $m=200$ basis functions with a jointly optimised linear mean function, a balanced and normalised weights. }
        \label{fig-final-model}
 \end{figure}
-
 
 \section{Conclusion}
 \label{sec-conclusion}
