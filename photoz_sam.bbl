@@ -1,0 +1,62 @@
+\begin{thebibliography}{13}
+\expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
+
+\bibitem[{{Ashok Srivastava}(2010)}]{stableGP}
+{Ashok Srivastava}, 2010, stable{GP}
+
+\bibitem[{Foster {et~al}\mbox{.}(2009)Foster, Waagen, Aijaz, Hurley, Luis,
+  Rinsky, Satyavolu, Way, Gazis, \& Srivastava}]{foster2009}
+Foster L. {et~al.}, 2009, Journal of Machine Learning Research, 10, 857
+
+\bibitem[{Gibbs \& MacKay(1997)}]{gibbs97}
+Gibbs M., MacKay D. J.~C., 1997, Efficient implementation of {G}aussian
+  processes. Tech. rep., Technical report Cavendish Laboratory, Cambridge, UK
+
+\bibitem[{Jolliffe(1986)}]{jolliffe1986}
+Jolliffe I.~T., 1986, Principal Component Analysis. Springer-Verlag, New York,
+  New York
+
+\bibitem[{{Laureijs} {et~al}\mbox{.}(2011){Laureijs}, {Amiaux}, {Arduini},
+  {Augu{\`e}res}, {Brinchmann}, {Cole}, {Cropper}, {Dabin}, {Duvet}, {Ealet},
+  \& et~al.}]{laureijs2011}
+{Laureijs} R. {et~al.}, 2011, ArXiv e-prints
+
+\bibitem[{LeCun {et~al}\mbox{.}(1998)LeCun, Bottou, Orr, \&
+  Mueller}]{lecun1998}
+LeCun Y., Bottou L., Orr G.~B., Mueller K.-R., 1998, Lecture Notes in Computer
+  Science, 1524, 9
+
+\bibitem[{Nocedal(1980)}]{jorge1980}
+Nocedal J., 1980, Mathematics of Computation, 35, 773
+
+\bibitem[{Rasmussen \& Williams(2006)}]{rasmussen2006gaussian}
+Rasmussen C., Williams C., 2006, Gaussian Processes for Machine Learning,
+  Adaptative computation and machine learning series. University Press Group
+  Limited
+
+\bibitem[{Roberts {et~al}\mbox{.}(2013)Roberts, Osborne, Ebden, Reece, Gibson,
+  \& Aigrain}]{roberts2012rs}
+Roberts S., Osborne M., Ebden M., Reece S., Gibson N., Aigrain S., 2013,
+  Philosophical Transactions of the Royal Society A: Mathematical, Physical and
+  Engineering Sciences, 371, 20110550
+
+\bibitem[{Snelson \& Ghahramani(2006)}]{snelson2005}
+Snelson E., Ghahramani Z., 2006, in Advances in Neural Information Processing
+  Systems 18, Weiss Y., Sch\"{o}lkopf B., Platt J., eds., MIT Press, pp.
+  1257--1264
+
+\bibitem[{Tsiligkaridis \& Hero(2013)}]{tsiligkaridis2013}
+Tsiligkaridis T., Hero A., 2013, Signal Processing, IEEE Transactions on, 61,
+  5347
+
+\bibitem[{Weiss, McCarthy \& Zabar(2007)Weiss, McCarthy, \& Zabar}]{weiss2007}
+Weiss G., McCarthy K., Zabar B., 2007, in DMIN, Stahlbock R., Crone S.~F.,
+  Lessmann S., eds., CSREA Press, pp. 35--41
+
+\bibitem[{Zhang, Leithead \& Leith(2005)Zhang, Leithead, \&
+  Leith}]{zhang2005time}
+Zhang Y., Leithead W.~E., Leith D.~J., 2005, in Decision and Control, 2005 and
+  2005 European Control Conference. CDC-ECC'05. 44th IEEE Conference on, IEEE,
+  pp. 3711--3716
+
+\end{thebibliography}

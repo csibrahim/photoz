@@ -1,0 +1,56 @@
+This is BibTeX, Version 0.99d (TeX Live 2013)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: photoz_sam.aux
+The style file: mn2e.bst
+Database file #1: sources.bib
+Warning--entry type for "stableGP" isn't style-file defined
+--line 171 of file sources.bib
+Warning--I didn't find a database entry for "ilbert06"
+Warning--I didn't find a database entry for "collister04"
+Warning--I didn't find a database entry for "hildebrandt10"
+Warning--I didn't find a database entry for "abdalla11"
+Warning--I didn't find a database entry for "sanchez14"
+Warning--I didn't find a database entry for "bonfield10"
+Warning--I didn't find a database entry for "jouvel09"
+You've used 13 entries,
+            2938 wiz_defined-function locations,
+            700 strings with 6588 characters,
+and the built_in function-call counts, 6750 in all, are:
+= -- 560
+> -- 517
+< -- 3
++ -- 171
+- -- 167
+* -- 532
+:= -- 1237
+add.period$ -- 3
+call.type$ -- 13
+change.case$ -- 103
+chr.to.int$ -- 13
+cite$ -- 13
+duplicate$ -- 248
+empty$ -- 410
+format.name$ -- 189
+if$ -- 1346
+int.to.chr$ -- 1
+int.to.str$ -- 1
+missing$ -- 8
+newline$ -- 43
+num.names$ -- 56
+pop$ -- 100
+preamble$ -- 1
+purify$ -- 100
+quote$ -- 0
+skip$ -- 255
+stack$ -- 0
+substring$ -- 305
+swap$ -- 42
+text.length$ -- 3
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 111
+warning$ -- 0
+while$ -- 63
+width$ -- 0
+write$ -- 136
+(There were 8 warnings)

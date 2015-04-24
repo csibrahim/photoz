@@ -1,0 +1,207 @@
+\begin{thebibliography}{34}
+\expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
+
+\bibitem[{{Abdalla} {et~al}\mbox{.}(2011){Abdalla}, {Banerji}, {Lahav}, \&
+  {Rashkov}}]{abdalla11}
+{Abdalla} F.~B., {Banerji} M., {Lahav} O., {Rashkov} V., 2011, \mnras, 417,
+  1891
+
+\bibitem[{{Alam} {et~al}\mbox{.}(2015){Alam}, {Albareti}, {Allende Prieto},
+  {Anders}, {Anderson}, {Andrews}, {Armengaud}, {Aubourg}, {Bailey},
+  {Bautista}, \& et~al.}]{SDSS3}
+{Alam} S. {et~al.}, 2015, ArXiv e-prints
+
+\bibitem[{{Ashok Srivastava}(2010)}]{stableGP}
+{Ashok Srivastava}, 2010, stable{GP}
+
+\bibitem[{{Ball} {et~al}\mbox{.}(2008){Ball}, {Brunner}, {Myers}, {Strand},
+  {Alberts}, \& {Tcheng}}]{Ball2008}
+{Ball} N.~M., {Brunner} R.~J., {Myers} A.~D., {Strand} N.~E., {Alberts} S.~L.,
+  {Tcheng} D., 2008, \apj, 683, 12
+
+\bibitem[{{Bolzonella}, {Miralles} \& {Pell{\'o}}(2000){Bolzonella},
+  {Miralles}, \& {Pell{\'o}}}]{Hyperz}
+{Bolzonella} M., {Miralles} J.-M., {Pell{\'o}} R., 2000, \aap, 363, 476
+
+\bibitem[{{Bonfield} {et~al}\mbox{.}(2010){Bonfield}, {Sun}, {Davey}, {Jarvis},
+  {Abdalla}, {Banerji}, \& {Adams}}]{bonfield10}
+{Bonfield} D.~G., {Sun} Y., {Davey} N., {Jarvis} M.~J., {Abdalla} F.~B.,
+  {Banerji} M., {Adams} R.~G., 2010, \mnras, 405, 987
+
+\bibitem[{{Brammer}, {van Dokkum} \& {Coppi}(2008){Brammer}, {van Dokkum}, \&
+  {Coppi}}]{EAZY}
+{Brammer} G.~B., {van Dokkum} P.~G., {Coppi} P., 2008, \apj, 686, 1503
+
+\bibitem[{{Colless} {et~al}\mbox{.}(2003){Colless}, {Peterson}, {Jackson},
+  {Peacock}, {Cole}, {Norberg}, {Baldry}, {Baugh}, {Bland-Hawthorn}, {Bridges},
+  {Cannon}, {Collins}, {Couch}, {Cross}, {Dalton}, {De Propris}, {Driver},
+  {Efstathiou}, {Ellis}, {Frenk}, {Glazebrook}, {Lahav}, {Lewis}, {Lumsden},
+  {Maddox}, {Madgwick}, {Sutherland}, \& {Taylor}}]{2dfgrs}
+{Colless} M. {et~al.}, 2003, ArXiv Astrophysics e-prints
+
+\bibitem[{{Collister} \& {Lahav}(2004)}]{Collister04}
+{Collister} A.~A., {Lahav} O., 2004, \pasp, 116, 345
+
+\bibitem[{{Driver} {et~al}\mbox{.}(2011){Driver}, {Hill}, {Kelvin}, {Robotham},
+  {Liske}, {Norberg}, {Baldry}, {Bamford}, {Hopkins}, {Loveday}, {Peacock},
+  {Andrae}, {Bland-Hawthorn}, {Brough}, {Brown}, {Cameron}, {Ching}, {Colless},
+  {Conselice}, {Croom}, {Cross}, {de Propris}, {Dye}, {Drinkwater}, {Ellis},
+  {Graham}, {Grootes}, {Gunawardhana}, {Jones}, {van Kampen}, {Maraston},
+  {Nichol}, {Parkinson}, {Phillipps}, {Pimbblet}, {Popescu}, {Prescott},
+  {Roseboom}, {Sadler}, {Sansom}, {Sharp}, {Smith}, {Taylor}, {Thomas},
+  {Tuffs}, {Wijesinghe}, {Dunne}, {Frenk}, {Jarvis}, {Madore}, {Meyer},
+  {Seibert}, {Staveley-Smith}, {Sutherland}, \& {Warren}}]{GAMA}
+{Driver} S.~P. {et~al.}, 2011, \mnras, 413, 971
+
+\bibitem[{{Feldmann} {et~al}\mbox{.}(2006){Feldmann}, {Carollo}, {Porciani},
+  {Lilly}, {Capak}, {Taniguchi}, {Le F{\`e}vre}, {Renzini}, {Scoville},
+  {Ajiki}, {Aussel}, {Contini}, {McCracken}, {Mobasher}, {Murayama}, {Sanders},
+  {Sasaki}, {Scarlata}, {Scodeggio}, {Shioya}, {Silverman}, {Takahashi},
+  {Thompson}, \& {Zamorani}}]{ZEBRA}
+{Feldmann} R. {et~al.}, 2006, \mnras, 372, 565
+
+\bibitem[{{Firth}, {Lahav} \& {Somerville}(2003){Firth}, {Lahav}, \&
+  {Somerville}}]{Firth2003}
+{Firth} A.~E., {Lahav} O., {Somerville} R.~S., 2003, \mnras, 339, 1195
+
+\bibitem[{Foster {et~al}\mbox{.}(2009)Foster, Waagen, Aijaz, Hurley, Luis,
+  Rinsky, Satyavolu, Way, Gazis, \& Srivastava}]{foster2009}
+Foster L. {et~al.}, 2009, Journal of Machine Learning Research, 10, 857
+
+\bibitem[{{Geach}(2012)}]{Geach2012}
+{Geach} J.~E., 2012, \mnras, 419, 2633
+
+\bibitem[{Gibbs \& MacKay(1997)}]{gibbs97}
+Gibbs M., MacKay D. J.~C., 1997, Efficient implementation of {G}aussian
+  processes. Tech. rep., Technical report Cavendish Laboratory, Cambridge, UK
+
+\bibitem[{{Hildebrandt} {et~al}\mbox{.}(2010){Hildebrandt}, {Arnouts}, {Capak},
+  {Moustakas}, {Wolf}, {Abdalla}, {Assef}, {Banerji}, {Ben{\'{\i}}tez},
+  {Brammer}, {Budav{\'a}ri}, {Carliles}, {Coe}, {Dahlen}, {Feldmann}, {Gerdes},
+  {Gillis}, {Ilbert}, {Kotulla}, {Lahav}, {Li}, {Miralles}, {Purger},
+  {Schmidt}, \& {Singal}}]{hildebrandt10}
+{Hildebrandt} H. {et~al.}, 2010, \aap, 523, A31
+
+\bibitem[{{Hogan}, {Fairbairn} \& {Seeburn}(2015){Hogan}, {Fairbairn}, \&
+  {Seeburn}}]{Hogan2015}
+{Hogan} R., {Fairbairn} M., {Seeburn} N., 2015, \mnras, 449, 2040
+
+\bibitem[{{Ilbert} {et~al}\mbox{.}(2006){Ilbert}, {Arnouts}, {McCracken},
+  {Bolzonella}, {Bertin}, {Le F{\`e}vre}, {Mellier}, {Zamorani}, {Pell{\`o}},
+  {Iovino}, {Tresse}, {Le Brun}, {Bottini}, {Garilli}, {Maccagni}, {Picat},
+  {Scaramella}, {Scodeggio}, {Vettolani}, {Zanichelli}, {Adami}, {Bardelli},
+  {Cappi}, {Charlot}, {Ciliegi}, {Contini}, {Cucciati}, {Foucaud}, {Franzetti},
+  {Gavignaud}, {Guzzo}, {Marano}, {Marinoni}, {Mazure}, {Meneux}, {Merighi},
+  {Paltani}, {Pollo}, {Pozzetti}, {Radovich}, {Zucca}, {Bondi}, {Bongiorno},
+  {Busarello}, {de La Torre}, {Gregorini}, {Lamareille}, {Mathez}, {Merluzzi},
+  {Ripepi}, {Rizzo}, \& {Vergani}}]{Ilbert2006}
+{Ilbert} O. {et~al.}, 2006, \aap, 457, 841
+
+\bibitem[{Jolliffe(1986)}]{jolliffe1986}
+Jolliffe I.~T., 1986, Principal Component Analysis. Springer-Verlag, New York,
+  New York
+
+\bibitem[{{Jouvel} {et~al}\mbox{.}(2009){Jouvel}, {Kneib}, {Ilbert},
+  {Bernstein}, {Arnouts}, {Dahlen}, {Ealet}, {Milliard}, {Aussel}, {Capak},
+  {Koekemoer}, {Le Brun}, {McCracken}, {Salvato}, \& {Scoville}}]{jouvel09}
+{Jouvel} S. {et~al.}, 2009, \aap, 504, 359
+
+\bibitem[{{Laureijs} {et~al}\mbox{.}(2011){Laureijs}, {Amiaux}, {Arduini},
+  {Augu{\`e}res}, {Brinchmann}, {Cole}, {Cropper}, {Dabin}, {Duvet}, {Ealet},
+  \& et~al.}]{laureijs2011}
+{Laureijs} R. {et~al.}, 2011, ArXiv e-prints
+
+\bibitem[{{Le F{\`e}vre} {et~al}\mbox{.}(2013){Le F{\`e}vre}, {Cassata},
+  {Cucciati}, {Garilli}, {Ilbert}, {Le Brun}, {Maccagni}, {Moreau},
+  {Scodeggio}, {Tresse}, {Zamorani}, {Adami}, {Arnouts}, {Bardelli},
+  {Bolzonella}, {Bondi}, {Bongiorno}, {Bottini}, {Cappi}, {Charlot}, {Ciliegi},
+  {Contini}, {de la Torre}, {Foucaud}, {Franzetti}, {Gavignaud}, {Guzzo},
+  {Iovino}, {Lemaux}, {L{\'o}pez-Sanjuan}, {McCracken}, {Marano}, {Marinoni},
+  {Mazure}, {Mellier}, {Merighi}, {Merluzzi}, {Paltani}, {Pell{\`o}}, {Pollo},
+  {Pozzetti}, {Scaramella}, {Tasca}, {Vergani}, {Vettolani}, {Zanichelli}, \&
+  {Zucca}}]{LeFevre2013}
+{Le F{\`e}vre} O. {et~al.}, 2013, \aap, 559, A14
+
+\bibitem[{{Le F{\`e}vre} {et~al}\mbox{.}(2015){Le F{\`e}vre}, {Tasca},
+  {Cassata}, {Garilli}, {Le Brun}, {Maccagni}, {Pentericci}, {Thomas},
+  {Vanzella}, {Zamorani}, {Zucca}, {Amorin}, {Bardelli}, {Capak},
+  {Cassar{\`a}}, {Castellano}, {Cimatti}, {Cuby}, {Cucciati}, {de la Torre},
+  {Durkalec}, {Fontana}, {Giavalisco}, {Grazian}, {Hathi}, {Ilbert}, {Lemaux},
+  {Moreau}, {Paltani}, {Ribeiro}, {Salvato}, {Schaerer}, {Scodeggio},
+  {Sommariva}, {Talia}, {Taniguchi}, {Tresse}, {Vergani}, {Wang}, {Charlot},
+  {Contini}, {Fotopoulou}, {L{\'o}pez-Sanjuan}, {Mellier}, \&
+  {Scoville}}]{LeFevre2015}
+{Le F{\`e}vre} O. {et~al.}, 2015, \aap, 576, A79
+
+\bibitem[{LeCun {et~al}\mbox{.}(1998)LeCun, Bottou, Orr, \&
+  Mueller}]{lecun1998}
+LeCun Y., Bottou L., Orr G.~B., Mueller K.-R., 1998, Lecture Notes in Computer
+  Science, 1524, 9
+
+\bibitem[{{Lilly} {et~al}\mbox{.}(2009){Lilly}, {Le Brun}, {Maier}, {Mainieri},
+  {Mignoli}, {Scodeggio}, {Zamorani}, {Carollo}, {Contini}, {Kneib}, {Le
+  F{\`e}vre}, {Renzini}, {Bardelli}, {Bolzonella}, {Bongiorno}, {Caputi},
+  {Coppa}, {Cucciati}, {de la Torre}, {de Ravel}, {Franzetti}, {Garilli},
+  {Iovino}, {Kampczyk}, {Kovac}, {Knobel}, {Lamareille}, {Le Borgne}, {Pello},
+  {Peng}, {P{\'e}rez-Montero}, {Ricciardelli}, {Silverman}, {Tanaka}, {Tasca},
+  {Tresse}, {Vergani}, {Zucca}, {Ilbert}, {Salvato}, {Oesch}, {Abbas},
+  {Bottini}, {Capak}, {Cappi}, {Cassata}, {Cimatti}, {Elvis}, {Fumana},
+  {Guzzo}, {Hasinger}, {Koekemoer}, {Leauthaud}, {Maccagni}, {Marinoni},
+  {McCracken}, {Memeo}, {Meneux}, {Porciani}, {Pozzetti}, {Sanders},
+  {Scaramella}, {Scarlata}, {Scoville}, {Shopbell}, \& {Taniguchi}}]{Lilly2009}
+{Lilly} S.~J. {et~al.}, 2009, \apjs, 184, 218
+
+\bibitem[{Nocedal(1980)}]{jorge1980}
+Nocedal J., 1980, Mathematics of Computation, 35, 773
+
+\bibitem[{Rasmussen \& Williams(2006)}]{rasmussen2006gaussian}
+Rasmussen C., Williams C., 2006, Gaussian Processes for Machine Learning,
+  Adaptative computation and machine learning series. University Press Group
+  Limited
+
+\bibitem[{Roberts {et~al}\mbox{.}(2013)Roberts, Osborne, Ebden, Reece, Gibson,
+  \& Aigrain}]{roberts2012rs}
+Roberts S., Osborne M., Ebden M., Reece S., Gibson N., Aigrain S., 2013,
+  Philosophical Transactions of the Royal Society A: Mathematical, Physical and
+  Engineering Sciences, 371, 20110550
+
+\bibitem[{{S{\'a}nchez} {et~al}\mbox{.}(2014){S{\'a}nchez}, {Carrasco Kind},
+  {Lin}, {Miquel}, {Abdalla}, {Amara}, {Banerji}, {Bonnett}, {Brunner},
+  {Capozzi}, {Carnero}, {Castander}, {da Costa}, {Cunha}, {Fausti}, {Gerdes},
+  {Greisel}, {Gschwend}, {Hartley}, {Jouvel}, {Lahav}, {Lima}, {Maia},
+  {Mart{\'{\i}}}, {Ogando}, {Ostrovski}, {Pellegrini}, {Rau}, {Sadeh}, {Seitz},
+  {Sevilla-Noarbe}, {Sypniewski}, {de Vicente}, {Abbot}, {Allam}, {Atlee},
+  {Bernstein}, {Bernstein}, {Buckley-Geer}, {Burke}, {Childress}, {Davis},
+  {DePoy}, {Dey}, {Desai}, {Diehl}, {Doel}, {Estrada}, {Evrard},
+  {Fern{\'a}ndez}, {Finley}, {Flaugher}, {Frieman}, {Gaztanaga}, {Glazebrook},
+  {Honscheid}, {Kim}, {Kuehn}, {Kuropatkin}, {Lidman}, {Makler}, {Marshall},
+  {Nichol}, {Roodman}, {S{\'a}nchez}, {Santiago}, {Sako}, {Scalzo}, {Smith},
+  {Swanson}, {Tarle}, {Thomas}, {Tucker}, {Uddin}, {Vald{\'e}s}, {Walker},
+  {Yuan}, \& {Zuntz}}]{sanchez14}
+{S{\'a}nchez} C. {et~al.}, 2014, \mnras, 445, 1482
+
+\bibitem[{Snelson \& Ghahramani(2006)}]{snelson2005}
+Snelson E., Ghahramani Z., 2006, in Advances in Neural Information Processing
+  Systems 18, Weiss Y., Sch\"{o}lkopf B., Platt J., eds., MIT Press, pp.
+  1257--1264
+
+\bibitem[{Tsiligkaridis \& Hero(2013)}]{tsiligkaridis2013}
+Tsiligkaridis T., Hero A., 2013, Signal Processing, IEEE Transactions on, 61,
+  5347
+
+\bibitem[{{Way} {et~al}\mbox{.}(2009){Way}, {Foster}, {Gazis}, \&
+  {Srivastava}}]{Way2009}
+{Way} M.~J., {Foster} L.~V., {Gazis} P.~R., {Srivastava} A.~N., 2009, \apj,
+  706, 623
+
+\bibitem[{Weiss, McCarthy \& Zabar(2007)Weiss, McCarthy, \& Zabar}]{weiss2007}
+Weiss G., McCarthy K., Zabar B., 2007, in DMIN, Stahlbock R., Crone S.~F.,
+  Lessmann S., eds., CSREA Press, pp. 35--41
+
+\bibitem[{Zhang, Leithead \& Leith(2005)Zhang, Leithead, \&
+  Leith}]{zhang2005time}
+Zhang Y., Leithead W.~E., Leith D.~J., 2005, in Decision and Control, 2005 and
+  2005 European Control Conference. CDC-ECC'05. 44th IEEE Conference on, IEEE,
+  pp. 3711--3716
+
+\end{thebibliography}

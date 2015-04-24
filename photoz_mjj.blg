@@ -1,0 +1,49 @@
+This is BibTeX, Version 0.99d (TeX Live 2013)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: photoz_mjj.aux
+The style file: mn2e.bst
+Database file #1: sources.bib
+Warning--entry type for "stableGP" isn't style-file defined
+--line 171 of file sources.bib
+You've used 34 entries,
+            2938 wiz_defined-function locations,
+            822 strings with 17954 characters,
+and the built_in function-call counts, 35628 in all, are:
+= -- 2170
+> -- 5344
+< -- 3
++ -- 1647
+- -- 1628
+* -- 2974
+:= -- 6755
+add.period$ -- 3
+call.type$ -- 34
+change.case$ -- 669
+chr.to.int$ -- 34
+cite$ -- 34
+duplicate$ -- 602
+empty$ -- 951
+format.name$ -- 1690
+if$ -- 6902
+int.to.chr$ -- 1
+int.to.str$ -- 1
+missing$ -- 29
+newline$ -- 106
+num.names$ -- 140
+pop$ -- 645
+preamble$ -- 1
+purify$ -- 666
+quote$ -- 0
+skip$ -- 997
+stack$ -- 0
+substring$ -- 741
+swap$ -- 63
+text.length$ -- 3
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 300
+warning$ -- 0
+while$ -- 151
+width$ -- 0
+write$ -- 344
+(There was 1 warning)
