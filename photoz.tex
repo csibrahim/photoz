@@ -299,11 +299,26 @@ We preprocess the data using Principle Component Analysis (PCA) \citep{jolliffe1
        \caption{Using coordinate-descent to optimise the linear regression objective on the synthetic dataset shown in Figure \ref{fig-toy-example}. Subfigure (a) shows the steps taken when the data has some correlation, while subfigure (b) shows the steps taken when the data was de-correlated.}
 	\label{fig-error-surface}
 \end{figure}
+
 \begin{figure}
-       \centering
-       \includegraphics[width=\columnwidth]{figures/zspec.eps}
-        \caption{The spectroscopic redshift distribution of the full dataset.}
-       \label{fig-zspec-hostogram}
+        \centering
+        \begin{subfigure}[b]{1\columnwidth}
+                 \includegraphics[width=\textwidth]{figures/zspec.eps}
+                 \caption{Full}
+        \end{subfigure}
+        ~
+        \begin{subfigure}[b]{1\columnwidth}
+                 \includegraphics[width=\textwidth]{figures/zspec_23.eps}
+                 \caption{RIZ$<$23}
+        \end{subfigure}
+        ~
+        \begin{subfigure}[b]{1\columnwidth}
+                 \includegraphics[width=\textwidth]{figures/zspec_22.eps}
+                 \caption{RIZ$<$22}
+        \end{subfigure}
+        
+       \caption{The spectroscopic redshift distribution of the (a) full dataset, (b) sources with RIZ magnitude\textless23 and (c) sources with RIZ magnitude\textless22}
+	 \label{fig-zspec-hostogram}
 \end{figure}
 
 \section{Experiments and Results}
@@ -370,11 +385,12 @@ In the first test, all models were trained using a fixed $m=10$ to cross compare
 We also test the extrapolation performance of the GP-VC model using different prior means, namely a zero mean, a linear regression mean and a joint optimisation approach which learns the linear and non-linear features simultaneously by regularising the non-linear features more aggressively than linear features. To test this more effectively,  the models were trained using sources, with $RIZ<23$ (26,367 objects from the training set) and tested on the unseen samples with $RIZ<23$, $RIZ\ge23$, and the entire test set. A similar test was also conducted using a split of $RIZ<22$ (10,629 objects  from the training set). This also demonstrates the effectiveness of the algorithms in the scenario where the brightest sources dominate the training set, as may be true in practice. The results are reported in Table \ref{table-RIZ-splits} and the density scatter plots are shown for comparison in Figure \ref{fig-RIZ-splits}. The results from Table \ref{table-RIZ-splits} show that the ``Joint'' method consistently outperformed the other methods in extrapolation as well as in interpolation especially when trained with a small sample size as in the $RIZ<22$ case, and upon examining the density scatter plots in Figure \ref{fig-RIZ-splits}, it has less systematic and catastrophic errors.
 
  \begin{table*}
-\caption{The $\Delta z$ for the GP-VC model when trained using $m=10$ basis functions with different prior mean functions and RIZ splits}
+\caption{The $\Delta z$ for the GP-VC model when trained using $m=10$ basis functions with different prior mean functions and RIZ splits. The results for ANNz are shown for comparison}
 \begin{center}
   \begin{tabular}{| l | c | c | c | c | c | c | c | c | c |}
-  	Trained on				& 	\multicolumn{3}{|c|}{ $RIZ<22$}				&	& 	\multicolumn{3}{c}{$RIZ<23$}  &  & All\\ \cline{2-4} \cline{6-8} \cline{10-10} 
-     	Tested on					&	$<22$			&	$\ge 22$		&	All				&	&	$<23$	&	$\ge 23$	&	All	& & All\\	\hline
+  	Trained on				& 	\multicolumn{3}{|c|}{ $RIZ<22$}				&	& 	\multicolumn{3}{c}{$RIZ<23$}  &  & Full\\ \cline{2-4} \cline{6-8} \cline{10-10} 
+     	Tested on					&	$<22$			&	$\ge 22$		&	Full				&	&	$<23$	&	$\ge 23$	&	Full	& & Full\\	\hline
+	ANNz					&	0.0291			&	0.1177			&	0.1129			&	&	0.0299	&	0.0680	&	0.0619 &  & 0.0387				\\
 	Zero						&	0.0163			&	0.2034			&	0.1946			&	&	0.0259	&	0.0691	&	0.0625 &  & 0.0234				\\
 	Linear						&	0.0165			&	0.2501			&	0.2392			&	&	0.0154	&	0.0433	&	0.0391 &  & 0.0158				\\
 	Joint						&	\textbf{0.0135}	&	\textbf{0.1033}	&	\textbf{0.0988}	&	&	\textbf{0.0142}	&	\textbf{0.0362}	&	\textbf{0.0328} &  & \textbf{0.0156}	\\	\hline
@@ -385,34 +401,43 @@ We also test the extrapolation performance of the GP-VC model using different pr
 
 \begin{figure*}
         \centering
-        \begin{subfigure}[b]{0.3\textwidth}
+        \begin{subfigure}[b]{0.23\textwidth}
                 \includegraphics[width=\textwidth]{figures/23_0.eps}
         \end{subfigure}
         ~
-        \begin{subfigure}[b]{0.3\textwidth}
+        \begin{subfigure}[b]{0.23\textwidth}
                 \includegraphics[width=\textwidth]{figures/23_L.eps}
         \end{subfigure}
         ~
-        \begin{subfigure}[b]{0.3\textwidth}
+        \begin{subfigure}[b]{0.23\textwidth}
                 \includegraphics[width=\textwidth]{figures/23_J.eps}
         \end{subfigure}
+         ~
+        \begin{subfigure}[b]{0.23\textwidth}
+                \includegraphics[width=\textwidth]{figures/ANN_23.eps}
+        \end{subfigure}
         
-       \begin{subfigure}[b]{0.3\textwidth}
+       \begin{subfigure}[b]{0.23\textwidth}
                 \includegraphics[width=\textwidth]{figures/22_0.eps}
                 \caption{Zero}
         \end{subfigure}
         ~
-        \begin{subfigure}[b]{0.3\textwidth}
+        \begin{subfigure}[b]{0.23\textwidth}
                 \includegraphics[width=\textwidth]{figures/22_L.eps}
                 \caption{Linear}
         \end{subfigure}
         ~
-        \begin{subfigure}[b]{0.3\textwidth}
+        \begin{subfigure}[b]{0.23\textwidth}
                 \includegraphics[width=\textwidth]{figures/22_J.eps}
                 \caption{Joint}
         \end{subfigure}
+       ~
+        \begin{subfigure}[b]{0.23\textwidth}
+                \includegraphics[width=\textwidth]{figures/ANN_22.eps}
+                \caption{ANNz}
+        \end{subfigure}
         
-        \caption{Density scatter plots of the true $z_{s}$ versus the predicted $z_{p}$ after training the GP-VC model with samples with $RIZ<23$ (top) and $RIZ<22$ (bottom) using $m=10$ basis functions with (a) zero mean, (b) linear regression and (c) joint linear and non-linear optimisation}
+        \caption{Density scatter plots of the true $z_{s}$ versus the predicted $z_{p}$ after training the GP-VC model with samples with $RIZ<23$ (top) and $RIZ<22$ (bottom) using $m=10$ basis functions with (a) zero mean, (b) linear regression, (c) joint linear and non-linear optimisation and (d) ANNz for comparison}
         \label{fig-RIZ-splits}
 \end{figure*}
 
