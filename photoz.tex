@@ -524,7 +524,7 @@ We note that although the \emph{training} complexity costs require effort for la
 \subsection{Size of the training set}
 \label{sec-sizetraining}
 
-Thus far, we have only considered the case of having a large (80 per cent of the total data) training set. In practice, it is likely that the training set will be substantially smaller that the data set for which photometric redshifts are required. Therefore, in this section the generalisation performance of the GP-VC is tested by limiting the training set size to different percentage of the dataset. The validation and test sets were set fixed to the same sets used in previous experiments to ensure consistent reporting on the same test set. The model was trained using various percentages from 5\% to 80\% and the $\Delta z$ as well as the $\Delta z_{norm}$ are reported for each percentage split in the plot shown in Figure \ref{fig-training-percentage}. The models were trained using the joint prior optimisation and cost-sensitive learning with $m=200$ basis functions. The models were trained twice, the first using the normalised weights to report $\Delta z_{norm}$, and the second using normal sum of squares to report $\Delta z$. In this experiment, the number of basis functions was increased in size in order to test the performance of the algorithm to fit a complex model when presented with various data set sizes. Figure \ref{fig-training-percentage} show a stable generalisation performance for the GP-VC model with cost-sensitive learning and joint prior optimisation even when using a limited training set size. The final GP-VC model to target the Euclid Space Mission was trained with $m=1600$ basis functions normalised, balanced and with a joint prior optimisation reached a $\Delta z_{norm}=0.002$ and a $max\left(\Delta z_{norm}\right)=0.0432$ on the test set. Even though evidence suggest that increasing the number of basis functions will continue to improve the results, we suspect that the return is very marginal. Moreover, 1600 basis functions managed to guarantee a maximum normalised error less than the required for the mission. The density scatter plot for the final model is shown in Figure \ref{fig-final-model}.
+Thus far, we have only considered the case of having a large (80 per cent of the total data) training set. In practice, it is likely that the training set will be substantially smaller that the data set for which photometric redshifts are required. Therefore, in this section the generalisation performance of the GP-VC is tested by limiting the training set size to different percentage of the dataset. The validation and test sets were set fixed to the same sets used in previous experiments to ensure consistent reporting on the same test set. The model was trained using various percentages from 5\% to 80\% and the $\Delta z$ as well as the $\Delta z_{norm}$ are reported for each percentage split in the plot shown in Figure \ref{fig-training-percentage}. The models were trained using the joint prior optimisation and cost-sensitive learning with $m=200$ basis functions. The models were trained twice, the first using the normalised weights to report $\Delta z_{norm}$, and the second using normal sum of squares to report $\Delta z$. In this experiment, the number of basis functions was increased in size in order to test the performance of the algorithm to fit a complex model when presented with various data set sizes. Figure \ref{fig-training-percentage} show a stable generalisation performance for the GP-VC model with cost-sensitive learning and joint prior optimisation even when using a limited training set size. The final GP-VC model to target the Euclid Space Mission was trained with $m=1600$ basis functions normalised, balanced and with a joint prior optimisation reached a $\Delta z_{norm}=0.002$ and a $max\left(\Delta z_{norm}\right)=0.0432$ on the test set. Even though evidence suggest that increasing the number of basis functions will continue to improve the results, we suspect that the return is very marginal. Moreover, 1600 basis functions managed to guarantee a maximum normalised error less than the required for the mission. We also generated photometric redshifts from a committee of five neural networks using a two-layer architecture, each layer with twice the number of hidden units as the number of filters as recommended in \cite{Collister04} and has become a standard for most ANNz users. The models were trained using the same training, validation and test sets. The results of the final GP-VC and ANNz models are summarised in Table \ref{table-GP-ANN} and the density scatter plots for the final models are shown in Figure \ref{fig-final-model} for comparison.
 
 \begin{figure}
        \centering
@@ -533,10 +533,32 @@ Thus far, we have only considered the case of having a large (80 per cent of the
        \label{fig-training-percentage}
 \end{figure}
 
+ \begin{table}
+\caption{Performance measures for the final ANNz model using a committee of 5 networks with 8:16:16:1 architectures and the final GP-VC model using $m=1600$ basis functions with a jointly optimised linear mean function, balanced and normalised weights.}
+\begin{center}
+  \begin{tabular}{| l | c | c | c | c |}
+     				&	$\Delta z$	&	$max\left(\Delta z\right)$		&	$\Delta z_{norm}$		&	$max\left(\Delta z_{norm}\right)$	\\	\hline
+	ANNz		&	0.0101		&	0.0983			&	0.0061				&	0.0710				\\
+	GP-VC	&	\textbf{0.0035}		&	\textbf{0.0589}			&	\textbf{0.0020}			&	\textbf{0.0432}				\\	\hline
+  \end{tabular}
+\end{center}
+\label{table-GP-ANN}
+\end{table}
+
 \begin{figure}
-       \centering
-        \includegraphics[width=\columnwidth]{figures/final-1600.eps}
-        \caption{The density scatter plot for the final GP-VC model trained using $m=1600$ basis functions with a jointly optimised linear mean function, balanced and normalised weights. }
+        \centering
+       
+       \begin{subfigure}[b]{\columnwidth}
+                \includegraphics[width=\columnwidth]{figures/ANN_final.eps}
+        \caption{ANNz}
+        \end{subfigure}
+        ~ 
+        \begin{subfigure}[b]{\columnwidth}
+                \includegraphics[width=\columnwidth]{figures/final-1600.eps}
+        \caption{GP-VC}
+        \end{subfigure}
+
+       \caption{The density scatter plot for (a) the final ANNz model using a committee of 5 networks with 8:16:16:1 architectures and (b) the final GP-VC model trained using $m=1600$ basis functions with a jointly optimised linear mean function, balanced and normalised weights. }
        \label{fig-final-model}
 \end{figure}
 
