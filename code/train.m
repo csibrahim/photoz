@@ -26,7 +26,11 @@ filterCut = 100;            % the cut-off value, set to high number if not desir
 lowerBound = 0.2;           % redshift lower bound
 upperBound = 2;             % redshift upper bound
 
-split = 0.8;                % training set percentage
+validSplit = 0.1;           % validation set percentage
+testSplit  = 0.1;           % test set percentage
+trainSplit = 0.8;           % training set percentage.If the sum do not add to 1 with the validation and test splits, 
+                            % the rest will just be ignored
+
 
 interval = 0.01;            % interval used to group the data into bins for weight assignment
 
@@ -83,9 +87,9 @@ end
 
 r = randperm(n);
 
-validSize = ceil(n*0.10);
-testSize  = ceil(n*0.10);
-trainSize = min(ceil(split*n),n-testSize-validSize);
+validSize = ceil(n*validSplit);
+testSize  = ceil(n*testSet);
+trainSize = min(ceil(trainSplit*n),n-testSize-validSize);
 
 validation = false(n,1);
 testing  = false(n,1);
@@ -108,9 +112,9 @@ if(prior==1)
 
     AW = bsxfun(@times,A,W);
     
-    wl = (AW(training,:)'*A(training,:))\(AW(training,:)'*Y(training,:));
+    w = (AW(training,:)'*A(training,:))\(AW(training,:)'*Y(training,:));
 
-    Yl = A*wl;
+    Yl = A*w;
 
     Y = Y-Yl;
 end
@@ -189,9 +193,9 @@ displayResults(Y,Yp,testing,displayPlots);
 
 if(any(gtCut)>0&&any(ltCut))
     fprintf('\n');
-    fprintf('Filter < cut-ff\n');
+    fprintf('Filter < cut-off\n');
     displayResults(Y,Yp,testing&ltCut,false);
     fprintf('\n');
-    fprintf('Filter >= cut-ff\n');
+    fprintf('Filter >= cut-off\n');
     displayResults(Y,Yp,testing&gtCut,false);
 end
