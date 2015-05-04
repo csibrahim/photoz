@@ -9,7 +9,7 @@
   
 \captionsetup{compatibility=false}
 
-\title[A Sparse Gaussian Process Framework for Photometric Redshift Estimation]{A Sparse Gaussian Process Framework for Photometric Redshift Estimation}
+\title[A Sparse GP Framework for Photometric Redshift]{A Sparse Gaussian Process Framework for Photometric Redshift Estimation}
 \author[Almosallam et al.]
 {\parbox{\textwidth}{Ibrahim A. Almosallam,$^{1,2}$\thanks{E-mail: ialmosallam@kacst.edu.sa} Samuel N. Lindsay,$^{3}$ Matt J. Jarvis$^{3,4}$ and Stephen J. Roberts$^{2}$
 }
@@ -100,7 +100,7 @@ For this definition of the covariance matrix $\mathbf\Sigma$, the predictive mea
 
 Since the solution is entirely defined in terms of inner products of the input space, one can utilise the so-called ``kernel trick'' to learn non-linear models by replacing the covariance matrix $\mathbf\Sigma$ with a covariance function $\bmath{K}$, where $\bmath{K}_{i,j} = k(x_{i},x_{j})$.
 
-The kernel function $k$ is defined such that the matrix $\bmath{K}$ will be a positive definite matrix. The kernel trick allows the computation of the covariance matrix of some high dimensional mapping of the input into a higher dimensional space without explicitly requiring the mapping of the data to that space. The choice of kernel is largely a modelling decision based on the definition of similarity for a given application. In this paper, the squared exponential kernel defined in  Eq. \eqref{eq-squared-exponential} below is used, but the concepts introduced here apply to any other kernel function. We note that the basis functions' internal dimensionality is that of the input space, thus they can be interpreted as function local to ``pseudo points''. As we show later in this paper, the flexibility of the squared exponential kernel can be enhanced allowing us to learn more complex patterns using less basis functions.
+The kernel function $k$ is defined such that the matrix $\bmath{K}$ will be a positive definite matrix. The kernel trick allows the computation of the covariance matrix of some high dimensional mapping of the input into a higher dimensional space without explicitly requiring the mapping of the data to that space. The choice of kernel is largely a modelling decision based on the definition of similarity for a given application. In this paper, the squared exponential kernel defined in  Eq. \eqref{eq-squared-exponential} below is used, but the concepts introduced here apply to any other kernel function. We note that the basis functions' internal dimensionality is that of the input space, thus they can be interpreted as function local to ``pseudo points''. As we show later in this paper, the flexibility of the squared exponential kernel can be enhanced allowing us to learn more complex patterns using fewer basis functions.
 \begin{equation}
 \label{eq-squared-exponential}
 k(x_{i},x_{j}) = \sigma^{2} \exp \left ( -\frac{1} {2\lambda^{2}} \left \|x_{i}-x_{j}\right\|^{2}\right ).
@@ -111,7 +111,7 @@ The hyper-parameters of the squared exponential kernel $\sigma^{2}$ and $\lambda
 \log\text{ }p(y|x) &= -\frac{1}{2}y^{T}\left(\bmath{K}+\bmath{I}\sigma_{n}^{2} \right)^{-1}y \nonumber \\
 &\qquad -\frac{1}{2} \log\left | \bmath{K}+\bmath{I}\sigma_{n}^{2}\right|-\frac{n}{2}\log(2\pi).
 \end{align}
-We search for the optimal set of hyper-parameters using gradient search optimisation, hence we require the derivatives of the log marginal likelihood with respect to each hyper-parameter. In this paper, the L-BFGS algorithm was used to optimise the objective which uses a Quasi-Newton method to compute the search direction in each step by approximating the inverse of the Hessian matrix from the history of gradients in previous steps \citep{jorge1980}.
+We search for the optimal set of hyper-parameters using gradient search optimisation, hence we require the derivatives of the log marginal likelihood with respect to each hyper-parameter. In this paper, the L-BFGS algorithm was used to optimise the objective which uses a Quasi-Newton method to compute the search direction in each step by approximating the inverse of the Hessian matrix from the history of gradients in previous steps \citep{jorge1980,schmidt2005}.
 
 \section{Sparse Gaussian Processes}
 \label{sec-sparse-gaussian-processes}
@@ -153,7 +153,7 @@ where $\bmath{P}=\{p_{j}\}_{j=1}^{m} \in \mathbb{R}^{d}$ are the set of basis co
 \bmath{D}_{i,j} &= \left \| x_{i}-p_{j}\right\|^{2}.
 \end{align}
 \end{subequations}
-The symbol $\circ$ denotes the Hadamard product, i.e. element-wise matrix multiplication and $\underset{n}{1}$ denotes a column vector of length $n$ with all elements set to 1. Finding the set of hyper-parameters that optimises the solution, is in effect finding the set of radial basis defined by their positions $p$ and radius $\lambda$ that jointly describe the patterns across the input space. By parameterising them differently, the model is more capable to accommodate different regions of the space more specifically. The kernel in Eq. \eqref{eq-squared-exponential-extension} can be further extended to, not only model each basis with its own radius $\lambda_{j}$, but also model each one with its own covariance defined by $\bmath{C}_{j}$. This enables the basis to have any arbitrary shaped ellipses given it more flexibility. The kernel in Eq. \eqref{eq-squared-exponential-extension} can be extended as follows:
+The symbol $\circ$ denotes the Hadamard product, i.e. element-wise matrix multiplication and $\underset{n}{1}$ denotes a column vector of length $n$ with all elements set to 1. Finding the set of hyper-parameters that optimises the solution, is in effect finding the set of radial basis defined by their positions $p$ and radius $\lambda$ that jointly describe the patterns across the input space. By parameterising them differently, the model is more capable to accommodate different regions of the space more specifically. The kernel in Eq. \eqref{eq-squared-exponential-extension} can be further extended to, not only model each basis with its own radius $\lambda_{j}$, but also model each one with its own covariance defined by $\bmath{C}_{j}$. This enables the basis to have any arbitrary shaped ellipses giving it more flexibility. The kernel in Eq. \eqref{eq-squared-exponential-extension} can be extended as follows:
 \begin{equation}
 \label{eq-squared-exponential-covariance-extension}
 k(x_{i},p_{j}) = \exp{\left(-\frac{1}{2}\left(x_{i}-p_{j}\right)\bmath{C}_{j}^{-1}\left(x_{i}-p_{j}\right)^{T}\right)}.
@@ -287,21 +287,6 @@ We preprocess the data using Principle Component Analysis (PCA) \citep{jolliffe1
 
 \begin{figure}
         \centering
-        \begin{subfigure}[b]{0.45\columnwidth}
-                 \includegraphics[width=\textwidth]{figures/correlated.eps}
-                 \caption{Correlated}
-        \end{subfigure}
-        ~
-        \begin{subfigure}[b]{0.45\columnwidth}
-                 \includegraphics[width=\textwidth]{figures/decorrelated.eps}
-                 \caption{De-correlated}
-        \end{subfigure}
-       \caption{Using coordinate-descent to optimise the linear regression objective on the synthetic dataset shown in Figure \ref{fig-toy-example}. Subfigure (a) shows the steps taken when the data has some correlation, while subfigure (b) shows the steps taken when the data was de-correlated.}
-	\label{fig-error-surface}
-\end{figure}
-
-\begin{figure}
-        \centering
         \begin{subfigure}[b]{1\columnwidth}
                  \includegraphics[width=\textwidth]{figures/zspec.eps}
                  \caption{Full}
@@ -321,10 +306,25 @@ We preprocess the data using Principle Component Analysis (PCA) \citep{jolliffe1
 	 \label{fig-zspec-hostogram}
 \end{figure}
 
+\begin{figure}
+        \centering
+        \begin{subfigure}[b]{0.45\columnwidth}
+                 \includegraphics[width=\textwidth]{figures/correlated.eps}
+                 \caption{Correlated}
+        \end{subfigure}
+        ~
+        \begin{subfigure}[b]{0.45\columnwidth}
+                 \includegraphics[width=\textwidth]{figures/decorrelated.eps}
+                 \caption{De-correlated}
+        \end{subfigure}
+       \caption{Using coordinate-descent to optimise the linear regression objective on the synthetic dataset shown in Figure \ref{fig-toy-example}. Subfigure (a) shows the steps taken when the data has some correlation, while subfigure (b) shows the steps taken when the data was de-correlated.}
+	\label{fig-error-surface}
+\end{figure}
+
 \section{Experiments and Results}
 \label{sec-experiments}
 
-Five algorithms are considered to model the data; Artificial Neural Networks \citep[ANNz;][]{Collister04}, a GP with low rank approximation (stableGP), a sparse GP with global length scale (GP-GL), a GP with variable length scale (GP-VL) and a GP with variable covariances (GP-VC). For ANNz, a single layer network is used, and to satisfy the input format for the code, the data was not de-correlated and the associated error bars were used as part of the training input. For the stableGP, we use the SR-VP method proposed in \citep{foster2009}. In subsequent tests, the variable $m$ refers to the number of hidden units in ANNz, the rank in stableGP, and the number of basis functions in GP-GL, GP-VL and GP-VC. The data was split at random into 80 per cent for training, 10 per cent for validation and 10 per cent for testing. We note that we investigate the accuracy for various training set sizes in Section~\ref{sec-sizetraining} . The validation set was used for model selection and all the results here are reported on the test set. The following performance measures on the test set are reported for each experiment:
+Five algorithms are considered to model the data; Artificial Neural Networks \citep[ANNz;][]{Collister04}, a GP with low rank approximation (stableGP), a sparse GP with global length scale (GP-GL), a GP with variable length scale (GP-VL) and a GP with variable covariances (GP-VC). For ANNz, a single layer network is used, and to satisfy the input format for the code, the data was not de-correlated and the uncertainties on photometry for each band were used as part of the training input. For stableGP, we use the SR-VP method proposed in \citep{foster2009}. In subsequent tests, the variable $m$ refers to the number of hidden units in ANNz, the rank in stableGP, and the number of basis functions in GP-GL, GP-VL and GP-VC. The data was split at random into 80 per cent for training, 10 per cent for validation and 10 per cent for testing. We note that we investigate the accuracy for various training set sizes in Section~\ref{sec-sizetraining} . The validation set was used for model selection and all the results here are reported on the test set. The following performance measures on the test set are reported for each experiment:
 \begin{itemize}
   \item $\Delta z_{\phantom{norm}} = \sqrt{\frac{1}{n}\sum_{i=1}^{n}\left(z_{s}-z_{p}\right)^{2}}$
   \item $\Delta z_{norm} = \sqrt{\frac{1}{n}\sum_{i=1}^{n}\left(\frac{z_{s}-z_{p}}{1+z_{s}}\right)^{2}}$,
@@ -366,7 +366,7 @@ In the first test, all models were trained using a fixed $m=10$ to cross compare
 \end{figure*}
 
  \begin{table}
-\caption{Performance measures for each algorithm trained using $m=10$ basis functions with different prior mean functions and RIZ splits. The best-peforming algorithm is highlighted in bold font.}
+\caption{Performance measures for each algorithm trained using $m=10$ basis functions. The best-performing algorithm is highlighted in bold font.}
 \begin{center}
   \begin{tabular}{| l | c | c | }
      				&	$\Delta z$	&	$\Delta z_{norm}$	\\	\hline
@@ -382,7 +382,7 @@ In the first test, all models were trained using a fixed $m=10$ to cross compare
 
 \subsection{Prior Mean}
 
-We also test the extrapolation performance of the GP-VC model using different prior means, namely a zero mean, a linear regression mean and a joint optimisation approach which learns the linear and non-linear features simultaneously by regularising the non-linear features more aggressively than linear features. To test this more effectively,  the models were trained using sources, with $RIZ<23$ (26,367 objects from the training set) and tested on the unseen samples with $RIZ<23$, $RIZ\ge23$, and the entire test set. A similar test was also conducted using a split of $RIZ<22$ (10,629 objects  from the training set). This also demonstrates the effectiveness of the algorithms in the scenario where the brightest sources dominate the training set, as may be true in practice. The results are reported in Table \ref{table-RIZ-splits} and the density scatter plots are shown for comparison in Figure \ref{fig-RIZ-splits}. The results from Table \ref{table-RIZ-splits} show that the ``Joint'' method consistently outperformed the other methods in extrapolation as well as in interpolation especially when trained with a small sample size as in the $RIZ<22$ case, and upon examining the density scatter plots in Figure \ref{fig-RIZ-splits}, it has less systematic and catastrophic errors.
+We also test the extrapolation performance of the GP-VC model using different prior means, namely a zero mean, a linear regression mean and a joint optimisation approach which learns the linear and non-linear features simultaneously by regularising the non-linear features more aggressively than linear features and compare them with ANNz. To test this more effectively,  the models were trained using sources, with $RIZ<23$ (26,367 objects from the training set) and tested on the unseen samples with $RIZ<23$, $RIZ\ge23$, and the entire test set. A similar test was also conducted using a split of $RIZ<22$ (10,629 objects  from the training set). This also demonstrates the effectiveness of the algorithms in the scenario where the brightest sources dominate the training set, as may be true in practice. The results are reported in Table \ref{table-RIZ-splits} and the density scatter plots are shown for comparison in Figure \ref{fig-RIZ-splits}. The results from Table \ref{table-RIZ-splits} show that the ``Joint'' method consistently outperformed the other methods in extrapolation as well as in interpolation especially when trained with a small sample size as in the $RIZ<22$ case, and upon examining the density scatter plots in Figure \ref{fig-RIZ-splits}, it has less systematic and catastrophic errors.
 
  \begin{table*}
 \caption{The $\Delta z$ for the GP-VC model when trained using $m=10$ basis functions with different prior mean functions and RIZ splits. The results for ANNz are shown for comparison}
@@ -443,7 +443,7 @@ We also test the extrapolation performance of the GP-VC model using different pr
 
 
 \subsection{Cost Sensitive Learning}
-We now perform a comparison between the cost sensitive learning and the normal sum of squares for the GP-VC model. Two different weight configurations are tested, the first is to assign an error cost to each sample equal to $1/\left(1+z_{s}\right)^{2}$ to directly target the {\em Euclid} mission requirement (Normalised), and the second experiment is to weight each sample according to the frequency of their true redshift to ensure balanced learning (Balanced).  Two additional measures are reported, the maximum $\Delta z$ and the maximum $\Delta z_{norm}$. The samples were grouped into bins of uniformly spaced intervals of 0.05, the box plots are shown in Figure \ref{fig-normal} for the normal weighting scheme and Figure \ref{fig-balanced} shows the results of the balanced training. The figures show that the cost-sensitive learning is more consistent across the redshift range as opposed to the normal sum of squares, especially in the high redshift regions where there is less data. The confidence intervals are also considerably smaller for the ``Balanced'' case. The performance comparison for the normal, balanced and normalised training are summarised in Table \ref{table-normal-balanced}. Balanced training showed a better generalisation performance, as it outperformed the normal sum of squares objective on the test set and has lower maximum errors.
+We now perform a comparison between the cost sensitive learning and the normal sum of squares for the GP-VC model. Two different weight configurations are tested, the first is to assign an error cost to each sample equal to $1/\left(1+z_{s}\right)^{2}$ to directly target the {\em Euclid} mission requirement (Normalised), and the second experiment is to weight each sample according to the frequency of their true redshift to ensure balanced learning (Balanced).  Two additional measures are reported, the maximum $\Delta z$ and the maximum $\Delta z_{norm}$. The samples were grouped into bins of uniformly spaced intervals of 0.05, the box plots are for the ``Normal'', ``Balanced'' and ``Normalised'' are shown in Figure \ref{fig-normal-balanced}. The figures show that the cost-sensitive learning is more consistent across the redshift range as opposed to the normal sum of squares, especially in the high redshift regions where there is less data. The confidence intervals are also considerably smaller for the ``Balanced'' case. The ``Normalised'' training on the other hand resulted in a systematic bias, as expected, towards the lower part of the redshift range. The performance comparison for the ``Normal'', ``Balanced'' and ``Normalised'' training are summarised in Table \ref{table-normal-balanced}. Balanced training showed a better generalisation performance, as it outperformed the normal sum of squares objective on the test set and has lower maximum errors.
 
 \begin{figure}
         \centering
@@ -457,11 +457,16 @@ We now perform a comparison between the cost sensitive learning and the normal s
                 \caption{Balanced}
                 \label{fig-balanced}
         \end{subfigure}
-       \caption{Box plots of residual errors on the hold-out test set, showing median (bar), inter-quartile range (box) and range (whiskers) for (a) the direct sum of squared errors and (b) the balanced cost sensitive learning for the GV-VC model. All training was with $m=10$ basis functions for comparison. The right-most histograms are the empirical densities of errors.}
+       \begin{subfigure}[b]{\columnwidth}
+                \includegraphics[width=\textwidth]{figures/Zspec-Zphot_normalised.eps}
+                \caption{Normalised}
+                \label{fig-normalised}
+        \end{subfigure}
+       \caption{Box plots of residual errors on the hold-out test set, showing median (bar), inter-quartile range (box) and range (whiskers) for (a) the direct sum of squared errors, (b) the balanced cost sensitive learning and (c) the normalised cost learning for the GV-VC model. All training was with $m=10$ basis functions for comparison. The right-most histograms are the empirical densities of errors.}
 	\label{fig-normal-balanced}
 \end{figure}
 
- \begin{table}
+ \begin{table*}
 \caption{Performance measures of training the GP-VC model using $m=10$ basis functions and different weighting schemes.}
 \begin{center}
   \begin{tabular}{| l | c | c | c | c |}
@@ -472,7 +477,7 @@ We now perform a comparison between the cost sensitive learning and the normal s
   \end{tabular}
 \end{center}
 \label{table-normal-balanced}
-\end{table}
+\end{table*}
 
 \subsection{Size of the basis set}
 Until now we have limited the number of basis function to 10, in practice the only limitation on the number of bases used for training the GP is computing resources. In this section we investigate how the accuracy of the photometric redshifts depends on the number of basis functions.
@@ -524,7 +529,9 @@ We note that although the \emph{training} complexity costs require effort for la
 \subsection{Size of the training set}
 \label{sec-sizetraining}
 
-Thus far, we have only considered the case of having a large (80 per cent of the total data) training set. In practice, it is likely that the training set will be substantially smaller that the data set for which photometric redshifts are required. Therefore, in this section the generalisation performance of the GP-VC is tested by limiting the training set size to different percentage of the dataset. The validation and test sets were set fixed to the same sets used in previous experiments to ensure consistent reporting on the same test set. The model was trained using various percentages from 5\% to 80\% and the $\Delta z$ as well as the $\Delta z_{norm}$ are reported for each percentage split in the plot shown in Figure \ref{fig-training-percentage}. The models were trained using the joint prior optimisation and cost-sensitive learning with $m=200$ basis functions. The models were trained twice, the first using the normalised weights to report $\Delta z_{norm}$, and the second using normal sum of squares to report $\Delta z$. In this experiment, the number of basis functions was increased in size in order to test the performance of the algorithm to fit a complex model when presented with various data set sizes. Figure \ref{fig-training-percentage} show a stable generalisation performance for the GP-VC model with cost-sensitive learning and joint prior optimisation even when using a limited training set size. The final GP-VC model to target the Euclid Space Mission was trained with $m=1600$ basis functions normalised, balanced and with a joint prior optimisation reached a $\Delta z_{norm}=0.002$ and a $max\left(\Delta z_{norm}\right)=0.0432$ on the test set. Even though evidence suggest that increasing the number of basis functions will continue to improve the results, we suspect that the return is very marginal. Moreover, 1600 basis functions managed to guarantee a maximum normalised error less than the required for the mission. We also generated photometric redshifts from a committee of five neural networks using a two-layer architecture, each layer with twice the number of hidden units as the number of filters as recommended in \cite{Collister04} and has become a standard for most ANNz users. The models were trained using the same training, validation and test sets. The results of the final GP-VC and ANNz models are summarised in Table \ref{table-GP-ANN} and the density scatter plots for the final models are shown in Figure \ref{fig-final-model} for comparison.
+Thus far, we have only considered the case of having a large (80 per cent of the total data) training set. In practice, it is likely that the training set will be substantially smaller than the data set for which photometric redshifts are required. Therefore, in this section the generalisation performance of the GP-VC is tested by limiting the training set size to different percentage of the dataset. The validation and test sets were set fixed to the same sets used in previous experiments to ensure consistent reporting on the same test set. The model was trained using various percentages from 5\% to 80\% and the $\Delta z$ as well as the $\Delta z_{norm}$ are reported for each percentage split in the plot shown in Figure \ref{fig-training-percentage}. The models were trained using the joint prior optimisation and cost-sensitive learning with $m=200$ basis functions. The models were trained twice, the first using the normalised weights to report $\Delta z_{norm}$, and the second using normal sum of squares to report $\Delta z$. In this experiment, the number of basis functions was increased in size in order to test the performance of the algorithm to fit a complex model when presented with various data set sizes. Figure \ref{fig-training-percentage} show a stable generalisation performance for the GP-VC model with cost-sensitive learning and joint prior optimisation even when using a limited training set size. The final GP-VC model to target the Euclid Space Mission was trained with $m=1600$ basis functions normalised, balanced and with a joint prior optimisation reached a $\Delta z_{norm}=0.002$ and a $max\left(\Delta z_{norm}\right)=0.0432$ on the test set. Even though evidence suggest that increasing the number of basis functions will continue to improve the results, we suspect that the return is very marginal. Moreover, 1600 basis functions managed to guarantee a maximum normalised error less than the required for the mission.
+
+We also generated photometric redshifts from a committee of five neural networks using a two-layer architecture, each layer with twice the number of hidden units as the number of filters as recommended in \cite{Collister04} and has become a standard for most ANNz users. The models were trained using the same training, validation and test sets. The results of the final GP-VC and ANNz models are summarised in Table \ref{table-GP-ANN} and the density scatter plots for the final models are shown in Figure \ref{fig-final-model} for comparison.
 
 \begin{figure}
        \centering
