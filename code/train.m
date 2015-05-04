@@ -88,7 +88,7 @@ end
 r = randperm(n);
 
 validSize = ceil(n*validSplit);
-testSize  = ceil(n*testSet);
+testSize  = ceil(n*testSplit);
 trainSize = min(ceil(trainSplit*n),n-testSize-validSize);
 
 validation = false(n,1);
