@@ -329,12 +329,45 @@ We preprocess the data using Principle Component Analysis \citep[PCA;][]{jolliff
 \section{Experiments and Results}
 \label{sec-experiments}
 
-Five algorithms are considered to model the data; Artificial Neural Networks \citep[ANNz;][]{Collister04}, a GP with low rank approximation (stableGP), a sparse GP with global length scale (GP-GL), a GP with variable length scale (GP-VL) and a GP with variable covariances (GP-VC). For ANNz, a single layer network is used, and to satisfy the input format for the code, the data were not de-correlated and the uncertainties on photometry for each band were used as part of the training input. For stableGP, we use the SR-VP method proposed in \citep{foster2009}. In subsequent tests, the variable $m$ refers to the number of hidden units in ANNz, the rank in stableGP, and the number of basis functions in GP-GL, GP-VL and GP-VC. The data were split at random into 80 per cent for training, 10 per cent for validation and 10 per cent for testing. We note that we investigate the accuracy for various training set sizes in Section~\ref{sec-sizetraining} . The validation set was used for model selection and all the results here are reported on the test set. The following performance measures on the test set are reported for each experiment:
-\begin{itemize}
-  \item $\Delta z_{\phantom{norm}} = \sqrt{\frac{1}{n}\sum_{i=1}^{n}\left(z_\textrm{s}-z_\textrm{p}\right)^{2}}$
-  \item $\Delta z_\textrm{norm} = \sqrt{\frac{1}{n}\sum_{i=1}^{n}\left(\frac{z_\textrm{s}-z_\textrm{p}}{1+z_\textrm{s}}\right)^{2}}$,
-\end{itemize}
-in which $\Delta z$ is the standard Root Mean Squared Error (RMSE) and $\Delta z_\textrm{norm}$ is a normalized version that weights low redshift objects more aggressively than higher redshift objects. % The scientific requirement of {\em Euclid} is to reach a $\Delta z_\textrm{norm} \le 0.05$ \citep{laureijs2011}.
+Five algorithms are considered to model the data; Artificial Neural Networks \citep[ANNz;][]{Collister04}, a GP with low rank approximation (stableGP), a sparse GP with global length scale (GP-GL), a GP with variable length scale (GP-VL) and a GP with variable covariances (GP-VC). For ANNz, a single layer network is used, and to satisfy the input format for the code, the data were not de-correlated and the uncertainties on photometry for each band were used as part of the training input. For stableGP, we use the SR-VP method proposed in \citep{foster2009}. In subsequent tests, the variable $m$ refers to the number of hidden units in ANNz, the rank in stableGP, and the number of basis functions in GP-GL, GP-VL and GP-VC. The data were split at random into 80 per cent for training, 10 per cent for validation and 10 per cent for testing. We note that we investigate the accuracy for various training set sizes in Section~\ref{sec-sizetraining} . The validation set was used for model selection and all the results here are reported on the test set. The following performance measures are adopted:
+%\begin{itemize}
+%  \item $\Delta z_{\phantom{norm}} = \sqrt{\frac{1}{n}\sum_{i=1}^{n}\left(z_\textrm{s}-z_\textrm{p}\right)^{2}}$
+%  \item $\Delta z_\textrm{norm} = \sqrt{\frac{1}{n}\sum_{i=1}^{n}\left(\frac{z_\textrm{s}-z_\textrm{p}}{1+z_\textrm{s}}\right)^{2}}$,
+%\end{itemize}
+
+ \begin{table*}
+\begin{center}
+  \begin{tabular}{| l | l | l |}
+     	Metric				&	Equation	& Description\\	\hline
+	$\delta^{(i)}$		&	$z_\textrm{s}^{(i)}-z_\textrm{p}^{(i)}	$		&  Error for the $i$-th object\\
+
+	$\delta^{(i)}_{norm}$		&	$\delta^{(i)}/\left(1+z_\textrm{s}^{(i)}\right)$	&  Normalized error for the $i$-th object		\\
+
+	$\Delta z$		&	$\sqrt{\frac{1}{n}\sum_{i=1}^{n}\left(\delta^{(i)}\right)^{2}}$	&  Root mean squared error		\\
+
+	$\Delta z_{norm}$		&	$\sqrt{\frac{1}{n}\sum_{i=1}^{n}\left(\delta_{norm}^{(i)}\right)^{2}}$	&  Normalized root mean squared error		\\
+
+	max$_{z}$	& max$\left(\left\{\delta^{(1)},\hdots,\delta^{(n)}\right\}\right)$& Maximum error \\
+	
+	max$_{norm}$	& max$\left(\left\{\delta_{norm}^{(1)},\hdots,\delta_{norm}^{(n)}\right\}\right)$& Maximum normalized error \\
+	
+	$\mu_{z}$		&	$\frac{1}{n}\sum_{i=1}^{n}\delta^{(i)}$	&  Bias		\\
+
+	$\mu_{norm}$		&	$\frac{1}{n}\sum_{i=1}^{n}\delta_{norm}^{(i)}$	&  Normalized bias		\\
+
+	$\sigma_{z}$		&	$\sqrt{\frac{1}{n}\sum_{i=1}^{n}\left(\delta^{(i)}-\mu_{z}\right)^{2}}$	&  Standard deviation of the errors		\\
+
+	$\sigma_{norm}$		&	$\sqrt{\frac{1}{n}\sum_{i=1}^{n}\left(\delta_{norm}^{(i)}-\mu_{norm}\right)^{2}}$	&  Standard deviation of the normalized errors \\
+	
+	out$_{z}$		&	$\frac{1}{n}\left | \left\{i: \delta^{(i)}>2\sigma_{z}\right\}\right |$	&  Fraction of errors above two standard deviations from the mean \\
+	out$_{norm}$		&	$\frac{1}{n}\left | \left\{i: \delta_{norm}^{(i)}>2\sigma_{norm}\right\}\right |$	&  Fraction of normalized errors above two standard deviations from the mean \\
+	
+  \end{tabular}
+  \label{table-metrics}
+\end{center}
+\end{table*}
+
+in which $\Delta z$ is the standard Root Mean Squared Error (RMSE) and $\Delta z_\textrm{norm}$ is a normalized version that weights low redshift objects more aggressively than higher redshift objects. 
 
 \subsection{Modelling Performance}
 
@@ -369,19 +402,19 @@ in which $\Delta z$ is the standard Root Mean Squared Error (RMSE) and $\Delta z
         \label{fig-experiment-1}
 \end{figure*}
 
- \begin{table}
+ \begin{table*}
 \begin{center}
-  \begin{tabular}{| l | c | c | }
-     				&	$\Delta z$	&	$\Delta z_\textrm{norm}$	\\	\hline
-	ANNz		&	0.0387			&	0.0241				\\
-	stableGP		&	0.2708			&	0.1559				\\
-	GP-GL		&	0.0802			&	0.0500				\\
-	GP-VL		&	0.0636			&	0.0402				\\
-	GP-VC		&	\textbf{0.0234}		&	\textbf{0.0137}			\\	\hline
+\begin{tabular}{| l | c | c |  c | c |  c | c |  c | c |  c | c | }
+     				&	$\Delta z$	&	$\Delta z_\textrm{norm}$	&	max$_{z}$ & max$_{norm}$		&	$\mu_{z}$&	$\mu_{norm}$	& $\sigma_{z}$ & $\sigma_{norm}$ & out$_{z}$&out$_{norm}$\\	\hline
+	ANNz	&	0.0808		&	0.0522	&	0.8149			&	0.7545&	-0.0017			&	-0.0036&	0.0808		&	0.0521&	0.0541		&	0.0501	\\
+	stableGP	&	0.4399		&	0.2836	&	1.5906			&	1.4441&	-0.0085			&	-0.0365&	0.4399		&	0.2812&	0.0509		&	0.0539	\\
+	GP-GL		&	0.1420		&	0.0952	&	1.1183			&	0.5953&	-0.0064			&	-0.0106&	0.1418		&	0.0946&	0.0548		&	0.0530	\\
+	GP-VL		&	0.1251	&	0.0833	&	1.0349			&	0.7953&	-0.0074			&	-0.0094&	0.1249		&	0.0828&	0.0549		&	0.0552	\\
+	GP-VC	&	\textbf{0.0435}	&	\textbf{0.0294}	 &	\textbf{0.5488	}		&	\textbf{0.5380} &	\textbf{-0.0005}			&	\textbf{-0.0007}&	\textbf{0.0435	}	&	\textbf{0.0294} &	\textbf{0.0487}		&	\textbf{0.0473}	 \\\hline
   \end{tabular}
   \label{table-experiment-1}
 \end{center}
-\end{table}
+\end{table*}
 
 
 In the first test, all models were trained using a fixed $m=10$ to cross-compare the performance of the methods using the same number of basis functions. The number of basis functions was set deliberately low to highlight the sparse-limit modelling capabilities of each algorithm, as for large values of $m$ the performance gap between the algorithms reduces making harder to compare the strengths and weaknesses of each algorithm. The standard sum of squares objective was used, without cost-sensitive training or a prior mean function to keep the comparison as simple as possible. The $z_\textrm{s}$ versus $z_\textrm{p}$ density scatter plots are shown in Figure \ref{fig-experiment-1} and their performance scores are reported in Table \ref{table-experiment-1}. We find that we obtain a $\sim 75$ per cent improvement for the RMSE on $\Delta z_{norm}$ compared to our implementation of the widely-used ANNz.
@@ -436,10 +469,10 @@ In the first test, all models were trained using a fixed $m=10$ to cross-compare
   \begin{tabular}{| l | c | c | c | c | c | c | c | c | c |}
   	Trained on				& 	\multicolumn{3}{|c|}{ $RIZ<22$}				&	& 	\multicolumn{3}{c}{$RIZ<23$}  &  & Full\\ \cline{2-4} \cline{6-8} \cline{10-10} 
      	Tested on					&	$<22$			&	$\ge 22$		&	Full				&	&	$<23$	&	$\ge 23$	&	Full	& & Full\\	\hline
-	ANNz					&	0.0291			&	0.1177			&	0.1129			&	&	0.0299	&	0.0680	&	0.0619 &  & 0.0387				\\
-	Zero						&	0.0163			&	0.2034			&	0.1946			&	&	0.0259	&	0.0691	&	0.0625 &  & 0.0234				\\
-	Linear						&	0.0165			&	0.2501			&	0.2392			&	&	0.0154	&	0.0433	&	0.0391 &  & 0.0158				\\
-	Joint						&	\textbf{0.0135}	&	\textbf{0.1033}	&	\textbf{0.0988}	&	&	\textbf{0.0142}	&	\textbf{0.0362}	&	\textbf{0.0328} &  & \textbf{0.0156}	\\	\hline
+	ANNz						&	0.0418			&	0.1844			&	0.1764			&	&	0.0472&	0.1704	&	0.1525 &  & 0.0808				\\
+	Zero						&	0.0233			&	0.2539			&	0.2424			&	&	0.0362&	0.1261	&	0.1129 &  & 0.0435				\\
+	Linear						&	0.0199			&	0.1043			&	0.0997			&	&	0.0321	&	0.1097	&	0.0983 &  & 0.0412				\\
+	Joint						&	\textbf{0.0192}	&	\textbf{0.0982}	&	\textbf{0.0939}	&	&	\textbf{0.0277}	&	\textbf{0.0653}	&	\textbf{0.0593} &  & \textbf{0.0298}	\\	\hline
   \end{tabular}
 \end{center}
 \label{table-RIZ-splits}
@@ -473,18 +506,18 @@ We also test the extrapolation performance of the GP-VC model using different pr
 
 We now perform a comparison between the cost-sensitive learning and the normal sum of squared errors for the GP-VC model. Two different weight configurations are tested, the first is to assign an error cost to each sample equal to $1/\left(1+z_\textrm{s}\right)^{2}$ (Normalized), and the second experiment is to weight each sample according to the frequency of their true redshift to ensure balanced learning (Balanced).  Two additional measures are reported, the maximum $\Delta z$ and the maximum $\Delta z_\textrm{norm}$. The samples were grouped into bins of uniformly spaced intervals of 0.05, the box plots are for the ``Normal'', ``Balanced'' and ``Normalized'' are shown in Figure \ref{fig-normal-balanced}. The figures show that the cost-sensitive learning is more consistent across the redshift range as opposed to the normal sum of squares, especially in the high redshift regions where there is less data. The confidence intervals are also considerably smaller for the ``Balanced'' case. The ``Normalized'' training on the other hand resulted in a systematic bias, as expected, towards the lower part of the redshift range. The performance comparison for the ``Normal'', ``Balanced'' and ``Normalized'' training are summarized in Table \ref{table-normal-balanced}. Balanced training showed a better generalization performance, as it outperformed the normal sum of squares objective on the test set and has lower maximum errors, although the differences are generally small.
 
- \begin{table}
+ \begin{table*}
 \caption{Performance measures of training the GP-VC model using $m=10$ basis functions and different weighting schemes.}
 \begin{center}
-  \begin{tabular}{| l | c | c | c | c |}
-     				&	$\Delta z$		&	$max\left(\Delta z\right)$		&	$\Delta z_\textrm{norm}$		&	$max\left(\Delta z_\textrm{norm}\right)$	\\	\hline
-	Normal			&	0.0234			&	0.2813							&	0.0137							&	0.1567				\\
-	Balanced		&	\textbf{0.0220}	&	\textbf{0.2388}					&	0.0141							&	\textbf{0.1440}			\\
-	Normalized		&	0.0234			&	0.3234							&	\textbf{0.0131}					&	0.1548				\\	\hline
+\begin{tabular}{| l | c | c |  c | c |  c | c |  c | c |  c | c | }
+     				&	$\Delta z$	&	$\Delta z_\textrm{norm}$	&	max$_{z}$ & max$_{norm}$		&	$\mu_{z}$&	$\mu_{norm}$	& $\sigma_{z}$ & $\sigma_{norm}$ & out$_{z}$&out$_{norm}$\\	\hline
+	Normal		&	\textbf{0.0499	}	&	0.0337		&	0.6128		&	0.6008&	-0.0017		&	-0.0016&	\textbf{0.0499}		&	0.0336&	0.0507		&	0.0507\\
+	Balanced		&	0.0500 	&	0.0324		&	\textbf{0.4933}	&	0.3419&	\textbf{0.0007}		&	\textbf{0.0001}&	0.0500		&	0.0324&	0.0510 	&	0.0510	\\
+	Normalized	&	0.0500 	&	\textbf{0.0280}	&	0.6389		&	\textbf{0.2862}&	0.0008			&	-0.0005&	0.0500		&	\textbf{0.0280}&	\textbf{0.0458}	&	\textbf{0.0498	}\\\hline
   \end{tabular}
 \end{center}
 \label{table-normal-balanced}
-\end{table}
+\end{table*}
 
 \subsection{Size of the training set}
 \label{sec-sizetraining}
