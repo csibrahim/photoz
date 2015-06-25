@@ -8,6 +8,9 @@
 \usepackage{graphicx,epstopdf}
 \usepackage{times}
 \usepackage{balance}  
+\usepackage{listings}
+
+\lstset{language=Java}
   
 \captionsetup{compatibility=false}
 
@@ -34,7 +37,8 @@ $^4$Department of Physics, University of the Western Cape, Bellville 7535, South
 \label{firstpage}
 
 \begin{abstract}
-Accurate photometric redshifts are a lynchpin for many future experiments to pin down the cosmological model and for studies of galaxy evolution. In this study, a novel sparse regression framework for photometric redshift estimation is presented. Data from a simulated survey was used to train and test the proposed models. We show that approaches which include careful data preparation and model design offer a significant improvement in comparison with several competing machine learning algorithms. Standard implementations of most regression algorithms have as the objective the minimization of the sum of squared errors. For redshift inference, however, this induces a bias in the posterior mean of the output distribution, which can be problematic. In this paper we directly target minimizing $\Delta z = (z_\textrm{s} - z_\textrm{p})/(1+z_\textrm{s})$ and address the bias problem via a distribution-based weighting scheme, incorporated as part of the optimization objective. The results are compared with other machine learning algorithms in the field such as Artificial Neural Networks (ANN), Gaussian Processes (GPs) and sparse GPs. The proposed framework reaches a mean absolute $\Delta z = 0.002(1+z_\textrm{s})$, with a maximum absolute error of 0.0432, over the redshift range of $0.2 \le z_\textrm{s} \le 2$, a factor of three improvement over standard ANNs used in the literature. We also investigate how the relative  size of the training set affects the photometric redshift accuracy. We find that a training set of $>$30 per cent of total sample size, provides little additional constraint on the photometric redshifts, and note that our GP formalism strongly outperforms ANN in the sparse data regime.
+Accurate photometric redshifts are a lynchpin for many future experiments to pin down the cosmological model and for studies of galaxy evolution. In this study, a novel sparse regression framework for photometric redshift estimation is presented. Data from both simulated and SDSS DR12 were used to train and test the proposed models. We show that approaches which include careful data preparation and model design offer a significant improvement in comparison with several competing machine learning algorithms. Standard implementations of most regression algorithms have as the objective the minimization of the sum of squared errors. For redshift inference, however, this induces a bias in the posterior mean of the output distribution, which can be problematic. In this paper we directly target minimizing $\Delta z = (z_\textrm{s} - z_\textrm{p})/(1+z_\textrm{s})$ and address the bias problem via a distribution-based weighting scheme, incorporated as part of the optimization objective. The results are compared with other machine learning algorithms in the field such as Artificial Neural Networks (ANN), Gaussian Processes (GPs) and sparse GPs. The proposed framework reaches a mean absolute $\Delta z = 0.0026(1+z_\textrm{s})$, over the redshift range of $0 \le z_\textrm{s} \le 2$ on the simulated data, and $\Delta z = 0.0179(1+z_\textrm{s})$ over the entire redshift range on the SDSS survey, outperforming the standard {\sc ANNz} used in the literature. We also investigate how the relative  size of the training set affects the photometric redshift accuracy. We find that a training set of \textgreater 30 per cent of total sample size, provides little additional constraint on the photometric redshifts, and note that our GP formalism strongly outperforms {\sc ANNz} in the sparse data regime.
+
 \end{abstract}
 
 \begin{keywords}
@@ -47,90 +51,91 @@ This forces us towards the use of photometric observations to infer the redshift
 
 Photometric redshift methods largely fall into two categories, based on either SED template fitting or machine learning. Template fitting software such as {\sc Hyperz}; \citep[][]{Hyperz}, {\sc ZEBRA}; \citep{ZEBRA}, {\sc EAZY}; \citep[][]{EAZY} and {\sc Le Phare} \citep[][]{Ilbert2006} rely on a library of SED templates for a variety of different galaxy types, which (given the transmission curves for the photometric filters being used) can be redshifted to fit the photometry. This method can be refined in various ways, often with the use of simulated SEDs rather than only those observed at low redshift, composite SEDs, and through calibration using any available spectroscopic redshifts. Machine learning methods such as artificial neural networks \citep[e.g. {\sc ANNz};][]{Firth2003,Collister04}, nearest-neighbour (NN) \citep{Ball2008}, genetic algorithms \citep[e.g.][]{Hogan2015} and self-organized maps \citep[][]{Geach2012}, to name but a few, rely on a significant fraction of sources in a photometric catalogue having spectroscopic redshifts. These `true' redshifts are used to train the algorithm. 
 
-Both methods have their strengths and weaknesses, with the best performance often depending on the available data and the intended science goals. As such, future surveys may well depend on contributions from both in tandem, but there has been extensive work on comparing the current state of the art in public software using a variety of techniques \citep{hildebrandt10,abdalla11,sanchez14}. Artificial neural networks motivate the most commonly used machine learning software \citep{Firth2003,vanzella2004photometric,brescia2014catalogue}, however Gaussian Processes \citep[e.g.][]{Way2009} have not yet become well established in this area, despite comparison by \citet{bonfield10} suggesting that they may outperform the popular ANNz code, using the rms error as a metric. 
+Both methods have their strengths and weaknesses, with the best performance often depending on the available data and the intended science goals. As such, future surveys may well depend on contributions from both in tandem, but there has been extensive work on comparing the current state of the art in public software using a variety of techniques \citep{hildebrandt10,abdalla11,sanchez14}. Artificial neural networks motivate the most commonly used machine learning software \citep{Firth2003,vanzella2004photometric,brescia2014catalogue}, however Gaussian Processes \citep[e.g.][]{Way2009} have not yet become well established in this area, despite comparison by \citet{bonfield10} suggesting that they may outperform the popular {\sc ANNz} code, using the rms error as a metric. 
 
 
-In this paper, we introduce a novel sparse kernel regression model that greatly reduces the number of basis (kernel) functions required to model the data considered in this paper. This is achieved by allowing each kernel to have its own hyper-parameters, governing its shape. This is in contrast to the standard kernel-based model in which a set of global hyper-parameters are optimized (such as is typical in Gaussian Process (GP) methods). The complexity cost of such a kernel-based regression model is $O\left(n^{3}\right)$, where $n$ is the number of basis functions. This cubic time complexity arise from the cost of inverting a $n$ by $n$ covariance matrix. In a standard Gaussian Process model \citep{rasmussen2006gaussian}, seen as a kernel regression algorithm, we may regard the basis functions, as located at the $n$ points in the training set. This renders such an approach unusable for many large training data applications where scalability is a major concern. Much of the work done to make GPs more scalable is either to make the inverse computation faster or use a smaller representative training data sample or a set of ``inducing points" to reduce the rank and ease the computation of the training data covariance matrix. Examples of the former include methods such as structuring the covariance matrix such that it is much easier to invert, using Toeplitz  \citep{zhang2005time} or Kronecker decomposition \citep{tsiligkaridis2013}, or inverse approximation as an optimization problem \citep{gibbs97}. To reduce the number of representative points, an $m \ll n$ subset of the training set can be selected which maximizes the accuracy or the numerical stability of the inversion \citep{foster2009}. Alternatively, one may search for ``pseudo'' points not necessarily present in the training set to use as basis for the covariance matrix such that it maximizes the log marginal likelihood \citep{snelson2005}. 
+In this paper, we introduce a novel sparse kernel regression model that greatly reduces the number of basis (kernel) functions required to model the data considered in this paper. This is achieved by allowing each kernel to have its own hyper-parameters, governing its shape. This is in contrast to the standard kernel-based models in which a set of global hyper-parameters are optimized (such as is typical in Gaussian Process (GP) methods). The complexity cost of such a kernel-based regression model is $O\left(n^{3}\right)$, where $n$ is the number of basis functions. This cubic time complexity arise from the cost of inverting an $n$ by $n$ covariance matrix. In a standard Gaussian Process model \citep{rasmussen2006gaussian}, seen as a kernel regression algorithm, we may regard the basis functions, as located at the $n$ points in the training set. This renders such an approach unusable for many large training data applications where scalability is a major concern. Much of the work done to make GPs more scalable is either to make the inverse computation faster or use a smaller representative training data sample or a set to reduce the rank and ease the computation of the training data covariance matrix. Examples of the former include methods such as structuring the covariance matrix such that it is much easier to invert, using Toeplitz  \citep{zhang2005time} or Kronecker decomposition \citep{tsiligkaridis2013}, or inverse approximation as an optimization problem \citep{gibbs97}. To reduce the number of representative points, an $m \ll n$ subset of the training set can be selected which maximizes the accuracy or the numerical stability of the inversion \citep{foster2009}. Alternatively, one may search for ``inducing'' points not necessarily present in the training set, and not necessarily even lying within the data range, to use as the basis set such that the probability of the data being generated from the model is maximized \citep{snelson2005}. Approaches such as Relevance Vector Machines (RVM) \citep{tipping2001} and Support Vector Machines (SVM) \citep{smola1997} are basis-function models, which unlike sparse GPs, do not learn the basis functions' locations but rather applies shrinkage to a set of kernels in the form of weight-decay on the linear weights that couple the kernels, located at training data points, to the regression. 
 
-The focus in this paper is on sparse GP modelling where we extend the sparse pseudo GP method using a smaller number of kernels. Moreover, a weighting scheme is modelled as an integral part of the process to remove, or introduce, any systematic bias to the model. The results are demonstrated on photometric redshift estimation for a {\em Euclid}-like survey \citep{laureijs2011}. In particular, we use the weighting scheme to remove any distribution bias and introduce a linear bias to directly target the mission's requirement. 
+In this paper, we propose a non-stationary sparse Gaussian model to target photometric redshift estimation. The key difference between the proposed approach and other basis function models, is that our model does not use shrinkage (automatic relevance determination) external to the kernel, but instead has a length-scale parameter in each kernel. This allows for parts of the input-output regression mapping to have different characteristic length-scales. We can see this as allowing for shrinkage and reducing the need for more basis functions, as well as allowing for non-stationary mappings. A regular GP, {\sc sparseGP} or RVM does not do this, and we demonstrate that this is advantageous to photometric redshift estimation. Furthermore, the model is presented within a framework with components that address other challenges in photometric redshift estimation such as incorporating a weighting scheme as an integral part of the process to remove, or introduce, any systematic bias to the model and a prior mean function to enhance the extrapolation performance of the model. The results are demonstrated on photometric redshift estimation for a {\em Euclid}-like survey \citep{laureijs2011} and on the 12th Data Release of the Sloan Digital Sky Survey \citep{SDSS3}\footnote{\url{www.sdss.org}} . In particular, we use the weighting scheme to remove any distribution bias and introduce a linear bias to directly target the mission's requirement. 
 
-The paper is organised as follows, a brief introduction to Gaussian Processes for regression is presented in section \ref{sec-gaussian-process} followed by an introduction to sparse GPs in section \ref{sec-sparse-gaussian-processes}. The proposed approach is described in Section \ref{sec-proposed-approach} followed by an application to photometric redshift estimation in section \ref{sec-application}, where the details of the dataset are described. The experiments and results are discussed in section \ref{sec-experiments}. Finally, we summarize and conclude in Section \ref{sec-conclusion}. The contributions of this paper are as follows:
+The paper is organised as follows, a brief introduction to Gaussian Processes for regression is presented in Section \ref{sec-gaussian-process} followed by an introduction to sparse GPs in Section \ref{sec-sparse-gaussian-processes}. The proposed approach is described in Section \ref{sec-proposed-approach} followed by an application to photometric redshift estimation in Section \ref{sec-application}, where the details of the mock dataset are described. The experiments and results are discussed in Section \ref{sec-experiments} on the simulated survey, and in Section \ref{sec-experiments-sdss} we demonstrate the performance of the proposed model and compare it to ANNz on the SDSS 12th Data Release. Finally, we summarize and conclude in Section \ref{sec-conclusion}. The contributions of this paper are as follows:
 \begin{enumerate}
   \item Increasing the modelling capability of sparse GPs via the use of more flexible kernels and fewer basis functions, thereby enhancing computational complexity without sacrificing accuracy.
   \item Development of an efficient computational procedure to compute the gradients for both full covariance matrix and its low rank approximations.
   \item Incorporating a weighting scheme directly to the objective in order to counteract any undesired bias and/or to control the bias of the model. 
   \item A linear regression prior mean function is jointly optimized to enhance the model's extrapolation performance.
-  \item The proposed approach was applied to a simulated catalogue and achieved  a mean $\Delta z = 0.002(1+z_\textrm{s})$ exceeding the requirement for most future cosmology experiments based on photometric redshifts, and outperformed other machine learning algorithms such as ANNz and stableGP.
+  \item The proposed approach was applied to a simulated catalogue and achieved  a mean $\Delta z = 0.0026(1+z_\textrm{s})$ on the simulated survey, and  $\Delta z = 0.0179(1+z_\textrm{s})$ on SDSS DR12, exceeding the requirement for most future cosmology experiments based on photometric redshifts, and outperformed other machine learning algorithms such as {\sc ANNz} and {\sc stableGP}.
 \end{enumerate}
 
 \section{Gaussian Processes}
 \label{sec-gaussian-process}
 In many modelling problems, we have little prior knowledge of the explicit functional form of the function that maps our observables onto the variable of interest. Imposing, albeit sensible, parametric models, such as polynomials, makes a tacit bias. For this reason, much of modern function modelling is performed using \emph{non-parametric} techniques. For regression, the most widely used approach is that of \emph{Gaussian Processes} \citep{rasmussen2006gaussian}.
-A Gaussian Process is a supervised non-linear regression algorithm that makes few explicit \emph{parametric} assumptions about the nature of the function fit. For this reason, Gaussian Processes are seen as lying within the class of Bayesian non-parametric models. The main underlying assumption in a GP is that the joint probability of the input variable $x$ and the output variable $y$ is a multivariate Gaussian with mean $\mu=\begin{bmatrix} \mu_{x} & \mu_{y}\end{bmatrix}^{T}$ and covariance $\mathbf\Sigma=\begin{bmatrix}\mathbf\Sigma_{xx} & \mathbf\Sigma_{xy} \\ \mathbf\Sigma_{yx} & \mathbf\Sigma_{yy} \end{bmatrix}$, where $\mathbf\Sigma_{xy}=(x-\mu_{x})(y-\mu_{y})^{T}$. The input variables $x$ is an $n$ by $d$ matrix, where $n$ is the number of data points and $d$ is the dimensionality of the input. Without loss of generality, the output variable $y$ is assumed to be a vector of length $n$ of target outputs but the same concept holds for multiple output variables. The joint distribution is hence:
+A Gaussian Process is a supervised non-linear regression algorithm that makes few explicit \emph{parametric} assumptions about the nature of the function fit. For this reason, Gaussian Processes are seen as lying within the class of Bayesian non-parametric models. The main underlying assumption in a GP is that the joint probability of the input variable $\mathbf{x}$ and the output variable $\mathbf{y}$ is a multivariate Gaussian with mean $\bmu=\begin{bmatrix} \bmu_{\mathbf{x}} & \bmu_{\mathbf{y}}\end{bmatrix}^{T}$ and covariance $\mathbf\Sigma=\begin{bmatrix}\mathbf\Sigma_{\mathbf{x}\mathbf{x}} & \mathbf\Sigma_{\mathbf{x}\mathbf{y}} \\ \mathbf\Sigma_{\mathbf{y}\mathbf{x}} & \mathbf\Sigma_{\mathbf{y}\mathbf{y}} \end{bmatrix}$, where $\mathbf\Sigma_{\mathbf{x}\mathbf{y}}=(\mathbf{x}-\bmu_{\mathbf{x}})(\mathbf{y}-\bmu_{\mathbf{y}})^{T}$. The input variables $\mathbf{x}$ is an $n$ by $d$ matrix, where $n$ is the number of data points and $d$ is the dimensionality of the input. Without loss of generality, the output variable $\mathbf{y}$ is assumed to be a vector of length $n$ of target outputs but the same concept holds for multiple output variables. The joint distribution is hence:
 
 \begin{equation}
-p\left ( x,y\right) \sim \mathcal{N} \left ( \begin{bmatrix}\mu_{x}\\\mu_{y} \end{bmatrix}, \begin{bmatrix}\mathbf\Sigma_{xx} & \mathbf\Sigma_{xy}\\\mathbf\Sigma_{yx} & \mathbf\Sigma_{yy} \end{bmatrix}\right ).
+p\left ( \mathbf{x},\mathbf{y}\right) \sim \mathcal{N} \left ( \begin{bmatrix}\bmu_{\mathbf{x}}\\\bmu_{\mathbf{y}} \end{bmatrix}, \begin{bmatrix}\mathbf\Sigma_{\mathbf{x}\mathbf{x}} & \mathbf\Sigma_{\mathbf{x}\mathbf{y}}\\\mathbf\Sigma_{\mathbf{y}\mathbf{x}} & \mathbf\Sigma_{\mathbf{y}\mathbf{y}} \end{bmatrix}\right ).
 \end{equation}
 
-The mean and covariance of the conditional probability $p(y|x)$ therefore is Gaussian distributed as follows:
+The mean and covariance of the conditional probability $p(\mathbf{y}|\mathbf{x})$ therefore is Gaussian distributed as follows:
 \begin{equation}
 \begin{array}{rcl}
-p(y|x)		&	\sim		&	\mathcal{N} \left ( \mu, \mathbf\Sigma \right ),\\
-\mu			&	=		&	\mu_{x}+\mathbf\Sigma_{yx}\mathbf\Sigma_{xx}^{-1}\left ( y-\mu_{y}\right ),\\
-\mathbf\Sigma		&	=		&	\mathbf\Sigma_{yy}-\mathbf\Sigma_{yx}\mathbf\Sigma_{xx}^{-1}\mathbf\Sigma_{xy}.
+p(\mathbf{y}|\mathbf{x})		&	\sim		&	\mathcal{N} \left ( \bmu, \mathbf\Sigma \right ),\\
+\bmu			&	=		&	\bmu_{\mathbf{x}}+\mathbf\Sigma_{\mathbf{y}\mathbf{x}}\mathbf\Sigma_{\mathbf{x}\mathbf{x}}^{-1}\left ( \mathbf{y}-\bmu_{\mathbf{y}}\right ),\\
+\mathbf\Sigma		&	=		&	\mathbf\Sigma_{\mathbf{y}\mathbf{y}}-\mathbf\Sigma_{\mathbf{y}\mathbf{x}}\mathbf\Sigma_{\mathbf{x}\mathbf{x}}^{-1}\mathbf\Sigma_{\mathbf{x}\mathbf{y}}.
 \end{array}
+\label{eq-conditional-distribution}
 \end{equation}
 
-The calculation can be simplified by subtracting the mean of the input and the output variables and assuming a prior mean $\mu_{x}=\mu_{y}=0$ and $\mathbf\Sigma_{xy}$ redefined as $xy^{T}$. The mean and covariance of the conditional probability $p(y|x)$ can then be rewritten as:
+The calculation can be simplified by subtracting the mean of the input and the output variables and assuming a prior mean $\bmu_{\mathbf{x}}=\bmu_{\mathbf{y}}=0$ and $\mathbf\Sigma_{\mathbf{x}\mathbf{y}}$ redefined as $\mathbf{x}\mathbf{y}^{T}$. The mean and covariance of the conditional probability $p(\mathbf{y}|\mathbf{x})$ can then be rewritten as:
 \begin{equation}
 \label{eq-conditional-zero-mean}
 \begin{array}{rcl}
-\mu 		&=&		\mathbf\Sigma_{yx}\mathbf\Sigma_{xx}^{-1}y,\\
-\mathbf\Sigma 	&=& 	\mathbf\Sigma_{yy}-\mathbf\Sigma_{yx}\mathbf\Sigma_{xx}^{-1}\mathbf\Sigma_{xy}.
+\bmu 		&=&		\mathbf\Sigma_{\mathbf{y}\mathbf{\mathbf{x}}}\mathbf\Sigma_{\mathbf{x}\mathbf{x}}^{-1}\mathbf{y},\\
+\mathbf\Sigma 	&=& 	\mathbf\Sigma_{\mathbf{y}\mathbf{y}}-\mathbf\Sigma_{\mathbf{y}\mathbf{x}}\mathbf\Sigma_{\mathbf{x}\mathbf{x}}^{-1}\mathbf\Sigma_{\mathbf{x}\mathbf{y}}.
 \end{array}
 \end{equation}
 
-For the rest of this paper, the prior mean is assumed to be zero unless otherwise stated (this can readily be achieved without loss of generality). Thus far, the analysis has assumed that no noise (uncertainty) exists in the set of observed $y$ data. It is readily shown that assuming some noise $\epsilon \sim \mathcal{N}\left(0,\sigma_{n}^{2}\right)$ on the output variable $y$, yields the following updated mean and covariance \citep{rasmussen2006gaussian}:
+For the rest of this paper, the prior mean is assumed to be zero unless otherwise stated (this can readily be achieved without loss of generality). Thus far, the analysis has assumed that no noise (uncertainty) exists in the set of observed $\mathbf{y}$ data. It is readily shown that assuming some noise $\epsilon \sim \mathcal{N}\left(0,\sigma_{n}^{2}\right)$ on the output variable $\mathbf{y}$, yields the following updated mean and covariance \citep{rasmussen2006gaussian}:
 \begin{equation}
 \label{eq-mean-variance-noise}
 \begin{array}{rcl}
-\mu &=& \mathbf\Sigma_{yx}\left(\mathbf\Sigma_{xx}+\bmath{I}\sigma_{n}^{2}\right)^{-1}y,\\
-\mathbf\Sigma &=& \mathbf\Sigma_{yy}-\mathbf\Sigma_{yx}\left(\mathbf\Sigma_{xx}+\bmath{I}\sigma_{n}^{2}\right)^{-1}\mathbf\Sigma_{xy}+\sigma_{n}^{2}.
+\bmu &=& \mathbf\Sigma_{\mathbf{y}\mathbf{x}}\left(\mathbf\Sigma_{\mathbf{x}\mathbf{x}}+\mathbf{I}\sigma_{n}^{2}\right)^{-1}\mathbf{y},\\
+\mathbf\Sigma &=& \mathbf\Sigma_{\mathbf{y}\mathbf{y}}-\mathbf\Sigma_{\mathbf{y}\mathbf{x}}\left(\mathbf\Sigma_{\mathbf{x}\mathbf{x}}+\mathbf{I}\sigma_{n}^{2}\right)^{-1}\mathbf\Sigma_{\mathbf{x}\mathbf{y}}+\sigma_{n}^{2}.
 \end{array}
 \end{equation}
-For this definition of the covariance matrix $\mathbf\Sigma$, the predictive mean is equivalent to a linear regression model, indeed, the same regression solution may be found by evaluating the (kernel) regression model that minimizes the sum of squared errors. For an in depth discussion on Gaussian processes for regression and its Bayesian interpretation, the reader is referred to \citep{rasmussen2006gaussian}. The specific use of Gaussian processes for timeseries modelling is discussed in \citep{roberts2012rs}.
+For this definition of the covariance matrix $\mathbf\Sigma$, the predictive mean is equivalent to a linear regression model, indeed, the same regression solution may be found by evaluating the regression model that minimizes the sum of squared errors. For an in depth discussion on Gaussian processes for regression and its Bayesian interpretation, the reader is referred to \citep{rasmussen2006gaussian}. The specific use of Gaussian processes for timeseries modelling is discussed in \citep{roberts2012rs}.
 
-Since the solution is entirely defined in terms of inner products of the input space, one can utilize the so-called ``kernel trick'' to learn non-linear models by replacing the covariance matrix $\mathbf\Sigma$ with a covariance function $\bmath{K}$, where $\bmath{K}_{i,j} = k(x_{i},x_{j})$.
+Since the solution is entirely defined in terms of inner products of the input space, one can utilize the so-called ``kernel trick'' to learn non-linear models by replacing the covariance matrix $\mathbf\Sigma$ with a covariance function $\mathbf{K}$, where $\mathbf{K}_{i,j} = k(\mathbf{x}_{i},\mathbf{x}_{j})$.
 
-The kernel function $k$ is defined such that the matrix $\bmath{K}$ will be a positive definite matrix. The kernel trick allows the computation of the covariance matrix of some high dimensional mapping of the input into a higher dimensional space without explicitly requiring the mapping of the data to that space. The choice of kernel is largely a modelling decision based on the definition of similarity for a given application. In this paper, the squared exponential kernel defined in  Eq. \eqref{eq-squared-exponential} below is used, but the concepts introduced here apply to any other kernel function. We note that the basis functions' internal dimensionality is that of the input space, thus they can be interpreted as functions local to ``pseudo points''. As we show later in this paper, the flexibility of the squared exponential kernel can be enhanced allowing us to learn more complex patterns using fewer basis functions.
+The kernel function $k$ is defined such that the matrix $\mathbf{K}$ will be a positive definite matrix. The kernel trick allows the computation of the covariance matrix of some high dimensional mapping of the input into a higher dimensional space without explicitly requiring the mapping of the data to that space. The choice of kernel is largely a modelling decision based on the definition of similarity for a given application. In this paper, the squared exponential kernel defined in  Eq. \eqref{eq-squared-exponential} below is used, but the concepts introduced here apply to any other kernel function. We note that the basis functions' internal dimensionality is that of the input space, thus they can be interpreted as functions local to ``inducing points''. As we show later in this paper, the flexibility of the squared exponential kernel can be enhanced allowing us to learn more complex patterns using fewer basis functions.
 \begin{equation}
 \label{eq-squared-exponential}
-k(x_{i},x_{j}) = \sigma^{2} \exp \left ( -\frac{1} {2\lambda^{2}} \left \|x_{i}-x_{j}\right\|^{2}\right ).
+k(\mathbf{x}_{i},\mathbf{x}_{j}) = \sigma^{2} \exp \left ( -\frac{1} {2\lambda^{2}} \left \|\mathbf{x}_{i}-\mathbf{x}_{j}\right\|^{2}\right ).
 \end{equation}
 The hyper-parameters of the squared exponential kernel $\sigma^{2}$ and $\lambda^{2}$ are referred to as the height (output, or variance) and characteristic length (input) scale respectively. Together with the noise variance $\sigma_{n}^{2}$, they define the set of hyper-parameters for the GP model. The optimal set of hyper-parameters are the set of values that maximizes the probability of the data given the model, which can be achieved by maximizing the log marginal likelihood defined in Eq. \eqref{eq-log-marginal-likelihood} below:
 \begin{align}
 \label{eq-log-marginal-likelihood}
-\log\text{ }p(y|x) &= -\frac{1}{2}y^{T}\left(\bmath{K}+\bmath{I}\sigma_{n}^{2} \right)^{-1}y \nonumber \\
-&\qquad -\frac{1}{2} \log\left | \bmath{K}+\bmath{I}\sigma_{n}^{2}\right|-\frac{n}{2}\log(2\pi).
+\log\text{ }p(\mathbf{y}|\mathbf{x}) &= -\frac{1}{2}\mathbf{y}^{T}\left(\mathbf{K}+\mathbf{I}\sigma_{n}^{2} \right)^{-1}\mathbf{y} \nonumber \\
+&\qquad -\frac{1}{2} \log\left | \mathbf{K}+\mathbf{I}\sigma_{n}^{2}\right|-\frac{n}{2}\log(2\pi).
 \end{align}
-We search for the optimal set of hyper-parameters using gradient search optimization, hence we require the derivatives of the log marginal likelihood with respect to each hyper-parameter. In this paper, the L-BFGS algorithm was used to optimize the objective which uses a Quasi-Newton method to compute the search direction in each step by approximating the inverse of the Hessian matrix from the history of gradients in previous steps \citep{jorge1980,schmidt2005}.
+We search for the optimal set of hyper-parameters using gradient search optimization, hence we require the derivatives of the log marginal likelihood with respect to each hyper-parameter. In this paper, the L-BFGS algorithm was used to optimize the objective which uses a Quasi-Newton method to compute the search direction in each step by approximating the inverse of the Hessian matrix from the history of gradients in previous steps \citep{jorge1980,schmidt2005}. It is worth mentioning that non-parametric models require the optimization of few hyper-parameters that do not grow with the size of the data and are less prone to overfitting, the parameters of the models are inferred analytically. The main distinction between parameters and hyper-parameters of a model, is that the former directly influence the input-output mapping, such as linear coupling weights, whereas the latter affects the distributions in the probabilistic model, such as scales, widths etc, for example the variance of a Gaussian over a parameter
 
 \section{Sparse Gaussian Processes}
 \label{sec-sparse-gaussian-processes}
-Gaussian processes are often described as non-parametric regression models due to the lack of an explicit parametric form. GP regression can also be viewed as a feature transformation $\bmath{X}\in \mathbb{R}^{n\times d}:\rightarrow \bmath{K}\in \mathbb{R}^{n\times n}$ parametrized by the data and the kernel function followed by linear regression, via optimization of the following objective:
+Gaussian processes are often described as non-parametric regression models due to the lack of an explicit parametric form. GP regression can also be viewed as a feature transformation $\mathbf{X}\in \mathbb{R}^{n\times d}:\rightarrow \mathbf{K}\in \mathbb{R}^{n\times n}$ parametrized by the data and the kernel function followed by linear regression, via optimization of the following objective:
 \begin{equation}
 \label{eq-linear-regression-objective}
 \begin{array}{lcl}
-\underset{w}{\text{min}} &\frac{1}{2}\left ( \bmath{K}w-y \right )^{T}\left( \bmath{K}w-y \right )+\frac{1}{2}\sigma_{n}^{2}w^{T}w,
+\underset{\mathbf{w}}{\text{min}} &\frac{1}{2}\left ( \mathbf{K}\mathbf{w}-\mathbf{y} \right )^{T}\left( \mathbf{K}\mathbf{w}-\mathbf{y} \right )+\frac{1}{2}\sigma_{n}^{2}\mathbf{w}^{T}\mathbf{w},
 \end{array}
 \end{equation}
-where $w$ are the set of coefficients for the linear regression model that maps the transformed features $\bmath{K}$ to the desired output $y$. The feature transformation $\bmath{K}$ evaluate how ``similar'' a datum is to every point in the training set, where the similarity measure is defined by the kernel function. If two points have a high kernel response via  Eq. \eqref{eq-squared-exponential}, this will result in very correlated features, adding extra computational cost for very little or no added information. Selecting a subset of the training set that maximizes the preserved information is a research question addressed in \citep{foster2009}, whereas in \citep{snelson2005} the basis functions are treated as a search problem rather than a selection problem and their locations are treated as hyper-parameters which are optimized. These approaches result in a transformation $\bmath{X}\in \mathbb{R}^{n\times d}:\rightarrow \bmath{K}\in \mathbb{R}^{n\times m}$, in which $m\ll n$ is the number of basis used. The transformation matrix $\bmath{K}$ will therefore be a rectangular $n$ by $m$ matrix and the solution for $w$ in  Eq. \eqref{eq-linear-regression-objective} is calculated via standard linear algebra as:
+where $\mathbf{w}$ are the set of coefficients for the linear regression model that maps the transformed features $\mathbf{K}$ to the desired output $\mathbf{y}$. The feature transformation $\mathbf{K}$ evaluate how ``similar'' a datum is to every point in the training set, where the similarity measure is defined by the kernel function. If two points have a high kernel response via  Eq. \eqref{eq-squared-exponential}, this will result in very correlated features, adding extra computational cost for very little or no added information. Selecting a subset of the training set that maximizes the preserved information is a research question addressed in \citep{foster2009}, whereas in \citep{snelson2005} the basis functions are treated as a search problem rather than a selection problem and their locations are treated as hyper-parameters which are optimized. These approaches result in a transformation $\mathbf{X}\in \mathbb{R}^{n\times d}:\rightarrow \mathbf{K}\in \mathbb{R}^{n\times m}$, in which $m\ll n$ is the number of basis used. The transformation matrix $\mathbf{K}$ will therefore be a rectangular $n$ by $m$ matrix and the solution for $\mathbf{w}$ in  Eq. \eqref{eq-linear-regression-objective} is calculated via standard linear algebra as:
 \begin{equation}
 \label{eq-linear-regression-objective-rectangular}
-w = \left(\bmath{K}^{T}\bmath{K}+\bmath{I}\sigma_{n}^{2} \right)^{-1}\bmath{K}^{T}y.
+\mathbf{w} = \left(\mathbf{K}^{T}\mathbf{K}+\mathbf{I}\sigma_{n}^{2} \right)^{-1}\mathbf{K}^{T}\mathbf{y}.
 \end{equation}
 
-Even though these models improve upon the computational cost of a standard GP, very little is done to compensate for the reduction in modelling power caused by the ``loss'' of basis functions. The selection method is always bounded by the full GP's accuracy, since the basis set is a subset of the full GP basis function set. On the other hand, the sparse GP's ability to place the basis set freely across the input space does go some way to compensate for this reduction, as the kernels can be optimized to describe the distribution of the data. In other words, instead of training a GP model with all data points as basis functions, or restricting it to a subset of the training set which require some cost to select them, a set of pseudo points is used in which their locations are treated as hyper parameters of the model to be optmized. In both a full and a low rank approximation GP, a global set of hyper-parameters is used for all basis functions, therefore limiting the algorithm's local modelling capability. Moreover, the objective in Eq. \eqref{eq-linear-regression-objective}, by definition, minimizes the sum of squared errors, therefore for any non-uniformly distributed output, the optimization routine will bias the model towards the mean of the output distribution and will seek to fit preferentially the region of space where there are more data. In other words the model might seek to produce very poor predictions for few points in poorly represented regions, e.g. high redshift, in order to produce very good predictions for well represented regions because that will minimize the ``sum''. Therefore, the error distribution as a function of redshift is not uniform unless the training set is well balanced, producing a model that is sensitive to how the target output is distributed. The weighting scheme will virtually balance the data set in order to achieve non-biased error distribution.
+Even though these models improve upon the computational cost of a standard GP, very little is done to compensate for the reduction in modelling power caused by the ``loss'' of basis functions. The selection method is always bounded by the full GP's accuracy, on the \emph{training} set, since the basis set is a subset of the full GP basis function set. On the other hand, the sparse GP's ability to place the basis set freely across the input space does go some way to compensate for this reduction, as the kernels can be optimized to describe the distribution of the data. In other words, instead of training a GP model with all data points as basis functions, or restricting it to a subset of the training set which require some cost to select them, a set of inducing points is used in which their locations are treated as hyper parameters of the model to be optmized. In both a full and a low rank approximation GP, a global set of hyper-parameters is used for all basis functions, therefore limiting the algorithm's local modelling capability. Moreover, the objective in Eq. \eqref{eq-linear-regression-objective} minimizes the sum of squared errors, therefore for any non-uniformly distributed output, the optimization routine will bias the model towards the mean of the output distribution and will seek to fit preferentially the region of space where there are more data. In other words the model might seek to produce very poor predictions for few points in poorly represented regions, e.g. the high redshift range, in order to produce very good predictions for well represented regions because that will minimize the ``sum''. Therefore, the error distribution as a function of redshift is not uniform unless the training set is well balanced, producing a model that is sensitive to how the target output is distributed. The weighting scheme will virtually balance the data set in order to achieve non-biased error distribution.
 
 In the next section, a method is proposed which addresses the above issues by parametrizing each basis with bespoke hyper-parameters which account for variable density and/or patterns across the input space. This is particularly pertinent to determining photometric redshifts, where complete spectroscopic information may be restricted or biased to certain redshifts or galaxy types, depending on the target selection for spectroscopy of the training set.
 This allows the algorithm to learn more complex models with fewer basis functions. In addition, a weighting mechanism to remove any distribution bias from the model is directly incorporated into the objective.
@@ -141,152 +146,94 @@ This allows the algorithm to learn more complex models with fewer basis function
 In this paper, we extend the sparse GP approach by modelling each basis (kernel) with its own set of hyper-parameters. The kernel function in Eq. \eqref{eq-squared-exponential} is hence redefined as follows:
 \begin{equation}
 \label{eq-squared-exponential-extension}
-k(x_{i},p_{j}) = \exp{\left(-\frac{1}{2\lambda_{j}^{2}}\left\| x_{i}-p_{j}\right\|^{2}\right)},
+k(\mathbf{x}_{i},\mathbf{p}_{j}) = \exp{\left(-\frac{1}{2\blambda_{j}^{2}}\left\| \mathbf{x}_{i}-\mathbf{p}_{j}\right\|^{2}\right)},
 \end{equation}
-where $\bmath{P}=\{p_{j}\}_{j=1}^{m} \in \mathbb{R}^{m\times d}$ are the set of basis coordinates and $\lambda_{j}$ is the corresponding length scale for basis $j$. The multivariate input is denoted as $\bmath{X}=\{x_{i}\}_{i=1}^{n} \in \mathbb{R}^{n\times d}$. Throughout the rest of the paper, $\bmath{X}_{i,*}$ denotes the $i$-th row of matrix $\bmath{X}$, or $x_{i}$ for short, whereas $\bmath{X}_{*,j}$ denotes the $j$-th column and $\bmath{X}_{i,j}$ refers to the element at row $i$ and column $j$ in matrix $\bmath{X}$, and similarly for other matrices. Note that the hyper-parameter $\sigma$ has been dropped, as it interferes with the regularization objective. This can be seen from the final prediction equation $f(x_{i},y,w)=\sum_{j=1}^{m}w_{j}\sigma_{j}^{2}\exp{\left(-\left\| x_{i}-p_{j}\right\|^{2}/2\lambda_{j}^{2}\right)}$, the weights are always multiplied by their associated $\sigma$. Therefore, the optimization process will always compensate for decreasing $w_{j}^{2}$ by increasing $\sigma_{j}^{2}$. Dropping the height variance ensures that the kernel functions do not grow beyond control and delegates learning the linear coefficients and regularization to the weights $w_{j}$. The derivatives with respect to each length scale and position are provided in equations Eq. \eqref{eq-dfdl} and Eq. \eqref{eq-dfdp} respectively:
+where $\mathbf{P}=\{\mathbf{p}_{j}\}_{j=1}^{m} \in \mathbb{R}^{m\times d}$ are the set of basis coordinates and $\blambda_{j}$ is the corresponding length scale for basis $j$. The multivariate input is denoted as $\mathbf{X}=\{\mathbf{x}_{i}\}_{i=1}^{n} \in \mathbb{R}^{n\times d}$. Throughout the rest of the paper, $\mathbf{X}_{i,*}$ denotes the $i$-th row of matrix $\mathbf{X}$, or $\mathbf{x}_{i}$ for short, whereas $\mathbf{X}_{*,j}$ denotes the $j$-th column and $\mathbf{X}_{i,j}$ refers to the element at row $i$ and column $j$ in matrix $\mathbf{X}$, and similarly for other matrices. Note that the hyper-parameter $\sigma$ has been dropped, as it interferes with the regularization objective. This can be seen from the final prediction equation $\hat y_{i}=\sum_{j=1}^{m}\mathbf{w}_{j}\bsigma_{j}^{2}\exp{\left(-\left\| \mathbf{x}_{i}-\mathbf{p}_{j}\right\|^{2}/2\blambda_{j}^{2}\right)}$, the weights are always multiplied by their associated $\sigma$. Therefore, the optimization process will always compensate for decreasing $\mathbf{w}_{j}^{2}$ by increasing $\bsigma_{j}^{2}$. Dropping the height variance ensures that the kernel functions do not grow beyond control and delegates learning the linear coefficients and regularization to the weights in $\mathbf{w}$. The derivatives with respect to each length scale and position are provided in equations Eq. \eqref{eq-dfdl} and Eq. \eqref{eq-dfdp} respectively:
 \begin{subequations}
 \begin{align}
+\mathbf{E}\phantom{_{i,j}} &= \left(\left(\mathbf{K}\mathbf{w}-\mathbf{y}\right)\mathbf{w}^{T}\right)\circ\mathbf{K},\\
+\mathbf\Delta_{j\phantom{,i}} &= \mathbf{X}-\vec{\mathbf{1}}_{n}\mathbf{p}_{j},\\
+\mathbf{D}_{i,j} &= \left \| \mathbf{x}_{i}-\mathbf{p}_{j}\right\|^{2},\\
 \label{eq-dfdl}
-\frac{\partial f(\bmath{X},y,w)}{\partial \lambda_{j}} &=\bmath{E}_{*,j}^{T}\bmath{D}_{*,j}\lambda_{j}^{-3},\\
+\frac{\partial f(\mathbf{X},\mathbf{y},\mathbf{w})}{\partial \blambda_{j}} &=\mathbf{E}_{*,j}^{T}\mathbf{D}_{*,j}\blambda_{j}^{-3},\\
 \label{eq-dfdp}
-\frac{\partial f(\bmath{X},y,w)}{\partial p_{j}} &=\bmath{E}_{*,j}^{T}\mathbf\Delta_{j}\lambda_{j}^{-2},\\
-\bmath{E}\phantom{_{i,j}} &= \left(\left(\bmath{K}w-y\right)w^{T}\right)\circ\bmath{K},\\
-\mathbf\Delta_{j\phantom{,i}} &= \bmath{X}-\underset{n}{1}p_{j},\\
-\bmath{D}_{i,j} &= \left \| x_{i}-p_{j}\right\|^{2}.
+\frac{\partial f(\mathbf{X},\mathbf{y},\mathbf{w})}{\partial \mathbf{p}_{j}} &=\mathbf{E}_{*,j}^{T}\mathbf\Delta_{j}\blambda_{j}^{-2}.
 \end{align}
 \end{subequations}
-The symbol $\circ$ denotes the Hadamard product, i.e. element-wise matrix multiplication and $\underset{n}{1}$ denotes a column vector of length $n$ with all elements set to 1. Finding the set of hyper-parameters that optimizes the solution, is in effect finding the set of radial basis functions defined by their positions $p$ and radius $\lambda$ that jointly describe the patterns across the input space. By parametrizing them differently, the model is more capable to accommodate different regions of the space more specifically. A global variance model assumes that the correlation between the input and output is global or equal across the input space, whereas a variable variance model makes no assumptions and learns the variable variances for each basis function which helps reduces the need for more basis functions to model the data. The kernel in Eq. \eqref{eq-squared-exponential-extension} can be further extended to, not only model each basis with its own radius $\lambda_{j}$, but also model each one with its own covariance defined by $\bmath{C}_{j}$. This enables the basis to have any arbitrary shaped ellipses giving it more flexibility. The kernel in Eq. \eqref{eq-squared-exponential-extension} can be extended as follows:
+The symbol $\circ$ denotes the Hadamard product, i.e. element-wise matrix multiplication and $\vec{\mathbf{1}}_{n}$ denotes a column vector of length $n$ with all elements set to 1. Finding the set of hyper-parameters that optimizes the solution, is in effect finding the set of radial basis functions defined by their positions $\mathbf{p}$ and radii $\blambda$ that jointly describe the patterns across the input space. By parametrizing them differently, the model is more capable to accommodate different regions of the space more specifically. A global variance model assumes that the relationship between the input and output is global or equal across the input space, whereas a variable variance model, or non-stationary GP, makes no assumptions and learns the variable variances for each basis function which reduces the need for more basis functions to model the data. The kernel in Eq. \eqref{eq-squared-exponential-extension} can be further extended to, not only model each basis with its own radius $\blambda_{j}$, but also model each one with its own covariance $\mathbf{C}_{j} \in \mathbb{R}^{d\times d}$. This enables the basis to have any arbitrary shaped ellipses giving it more flexibility. The kernel in Eq. \eqref{eq-squared-exponential-extension} can be extended as follows:
 \begin{equation}
 \label{eq-squared-exponential-covariance-extension}
-k(x_{i},p_{j}) = \exp{\left(-\frac{1}{2}\left(x_{i}-p_{j}\right)\bmath{C}_{j}^{-1}\left(x_{i}-p_{j}\right)^{T}\right)}.
+k(\mathbf{x}_{i},\mathbf{p}_{j}) = \exp{\left(-\frac{1}{2}\left(\mathbf{x}_{i}-\mathbf{p}_{j}\right)\mathbf{C}_{j}^{-1}\left(\mathbf{x}_{i}-\mathbf{p}_{j}\right)^{T}\right)}.
 \end{equation}
 
-To make the optimization process faster and simpler, we define the additional variables:
+Furthermore, to make the optimization process faster and simpler, we define the additional variables:
 \begin{subequations}
 \begin{align}
 \label{eq-Cinv}
-\bmath{C}_{j}^{-1} &= \mathbf\Lambda_{j}\mathbf\Lambda_{j}^{T},\\
+\mathbf{C}_{j}^{-1} &= \mathbf\Lambda_{j}\mathbf\Lambda_{j}^{T},\\
 \label{eq-V_j}
-\bmath{V}_{j} &= \mathbf\Delta_{j}\mathbf\Lambda_{j}.
+\mathbf{V}_{j} &= \mathbf\Delta_{j}\mathbf\Lambda_{j},
 \end{align}
 \end{subequations}
-optimizing with respect to $\mathbf\Lambda_{j}$ directly ensures that the covariance matrix is positive definite and makes it faster from a computational perspective, as the kernel functions for all the points with respect to a particular basis can be computed more efficiently as below:
+where $\mathbf\Lambda_{j} \in \mathbb{R}^{d\times d}$ is a local affine transformation matrix for basis function $j$ and $\mathbf{V}_{j}$ is the application of the local transformation to the data. Optimizing with respect to $\mathbf\Lambda_{j}$ directly ensures that the covariance matrix is positive definite and makes it faster from a computational perspective, as the kernel functions for all the points with respect to a particular basis can be computed more efficiently as follows:
 \begin{equation}
 \label{eq-squared-exponential-covariance-extension-simplified}
-k(\bmath{X},p_{j}) = \exp{\left(-\frac{1}{2}\left(\bmath{V}_{j}\circ \bmath{V}_{j}\right)\underset{d}{1}\right)}.
+k(\mathbf{X},\mathbf{p}_{j}) = \exp{\left(-\frac{1}{2}\left(\mathbf{V}_{j}\circ \mathbf{V}_{j}\right)\vec{\mathbf{1}}_{d}\right)}.
 \end{equation}
-The exponent in Eq. \eqref{eq-squared-exponential-covariance-extension-simplified} basically computes the sum of squares in each row of $\bmath{V}_{j}$. This allows for a more efficient computation of the kernel functions for all the points in a single matrix operation. The derivatives with respect to each $\mathbf\Lambda_{j}$ and $p_{j}$ are shown in Eq. \eqref{eq-dfdL} and Eq. \eqref{eq-dfdP}.
+The exponent in Eq. \eqref{eq-squared-exponential-covariance-extension-simplified} basically computes the sum of squares in each row of $\mathbf{V}_{j}$. This allows for a more efficient computation of the kernel functions for all the points in a single matrix operation. The derivatives with respect to each $\mathbf\Lambda_{j}$ and $\mathbf{p}_{j}$ are shown in Eq. \eqref{eq-dfdL} and Eq. \eqref{eq-dfdP} respectivley.
+
 \begin{subequations}
 \begin{align}
 \label{eq-dfdL}
-\frac{\partial f(\bmath{X},y,w)}{\partial \mathbf\Lambda_{j}} &= -\left( \mathbf\Delta_{j}^{T}\circ \left(\underset{d}{1}\bmath{E}_{*,j}^{T}\right) \right)\bmath{V}_{j},\\
+\frac{\partial f(\mathbf{X},\mathbf{y},\mathbf{w})}{\partial \mathbf\Lambda_{j}} &= -\left( \mathbf\Delta_{j}^{T}\circ \left(\vec{\mathbf{1}}_{d}\mathbf{E}_{*,j}^{T}\right) \right)\mathbf{V}_{j},\\
 \label{eq-dfdP}
-\frac{\partial f(\bmath{X},y,w)}{\partial p_{j}} &= \bmath{E}_{*,j}^{T}\bmath{V}_{j}\mathbf\Lambda_{j}^{T}.
+\frac{\partial f(\mathbf{X},\mathbf{y},\mathbf{w})}{\partial \mathbf{p}_{j}} &= \mathbf{E}_{*,j}^{T}\mathbf{V}_{j}\mathbf\Lambda_{j}^{T}.
 \end{align}
 \end{subequations}
 
-%We highlight the differences between the three approaches, using different numbers of basis functions, on a synthetic 2D regression example, as shown in Figures \ref{fig-toy-example} and \ref{fig-toy-comparison}. We note the advantage of having basis functions with more flexible kernels. 
 
-Setting up the problem in this manner allows the setting of matrix $\mathbf\Lambda_{j}$ to be of any size $d$ by $q$, where $q<d$ which can be considered as a low rank approximation to $\bmath{C}_{j}^{-1}$ without affecting the gradient calculations. In addition, the inverse of the covariance can be set to  $\bmath{C}_{j}^{-1}=\mathbf\Lambda_{j}\mathbf\Lambda_{j}^{T}+diag(\lambda_{j})^{-2}$ in the low rank approximation case to ensure that the final covariance can model a diagonal covariance. This is referred to as \emph{factor analysis distance} \citep[p. 107]{rasmussen2006gaussian} but previously used to model a global covariance as opposed to variable covariance as is the case here.
-\begin{figure}
-        \centering
-        \begin{subfigure}[b]{0.45\columnwidth}
-                \includegraphics[width=\textwidth]{figures/surface.eps}
-        \end{subfigure}
-        ~
-         \begin{subfigure}[b]{0.45\columnwidth}
-                \includegraphics[width=\textwidth]{figures/contour.eps}
-        \end{subfigure}
-                       
-        \caption{Synthetic regression problem generated from a mixture of random Gaussian kernels. }
-       \label{fig-toy-example}
-\end{figure}
-\begin{figure}
-        \centering
-        \begin{subfigure}[b]{0.3\columnwidth}
-               \includegraphics[width=\textwidth]{figures/GPGL1.eps}
-        \end{subfigure}
-        ~
-         \begin{subfigure}[b]{0.3\columnwidth}
-                \includegraphics[width=\textwidth]{figures/GPVL1.eps}
-        \end{subfigure}
-        ~
-        \begin{subfigure}[b]{0.3\columnwidth}
-               \includegraphics[width=\textwidth]{figures/GPVC1.eps}
-        \end{subfigure}
-       
-         \begin{subfigure}[b]{0.3\columnwidth}
-               \includegraphics[width=\textwidth]{figures/GPGL2.eps}
-        \end{subfigure}
-        ~
-         \begin{subfigure}[b]{0.3\columnwidth}
-               \includegraphics[width=\textwidth]{figures/GPVL2.eps}
-        \end{subfigure}
-        ~
-        \begin{subfigure}[b]{0.3\columnwidth}
-                \includegraphics[width=\textwidth]{figures/GPVC2.eps}
-        \end{subfigure}
-       
-         \begin{subfigure}[b]{0.3\columnwidth}
-                \includegraphics[width=\textwidth]{figures/GPGL3.eps}
-        \end{subfigure}
-        ~
-         \begin{subfigure}[b]{0.3\columnwidth}
-                \includegraphics[width=\textwidth]{figures/GPVL3.eps}
-        \end{subfigure}
-        ~
-        \begin{subfigure}[b]{0.3\columnwidth}
-                \includegraphics[width=\textwidth]{figures/GPVC3.eps}
-        \end{subfigure}
-         \begin{subfigure}[b]{0.3\columnwidth}
-                \includegraphics[width=\textwidth]{figures/GPGL4.eps}
-                \caption{GP-GL}
-        \end{subfigure}
-        ~
-         \begin{subfigure}[b]{0.3\columnwidth}
-                \includegraphics[width=\textwidth]{figures/GPVL4.eps}
-                \caption{GP-VL}
-        \end{subfigure}
-        ~
-        \begin{subfigure}[b]{0.3\columnwidth}
-                \includegraphics[width=\textwidth]{figures/GPVC4.eps}
-                \caption{GP-VC}
-        \end{subfigure}          
-        \caption{Comparisons between different sparse GP approaches with 1 to 4 basis functions (top to bottom) using (a) a global length scale, (b) variable length scales and (c) variable covariances.}
-        \label{fig-toy-comparison}
-\end{figure}
+Setting up the problem in this manner allows the setting of matrix $\mathbf\Lambda_{j}$ to be of any size $d$ by $q$, where $q<d$ which can be considered as a low rank approximation to $\mathbf{C}_{j}^{-1}$ without affecting the gradient calculations. In addition, the inverse of the covariance can be set to  $\mathbf{C}_{j}^{-1}=\mathbf\Lambda_{j}\mathbf\Lambda_{j}^{T}+diag(\blambda_{j})^{-2}$ in the low rank approximation case to ensure that the final covariance can model a diagonal covariance. This is referred to as \emph{factor analysis distance} \citep[p. 107]{rasmussen2006gaussian} but previously used to model a global covariance as opposed to variable covariances as is the case here.
+
+
 \subsection{Prior Mean Functions}
 
-In the absence of observations, all Bayesian models, Gaussian processes included, rely on their priors to provide function estimation. For the case of Gaussian processes this requires us to consider the prior over the function, especially the prior mean. For example, the first term in the mean prediction in EQ. \eqref{}, $\mu_{x}$ is our prior mean in which we learn the deviation from using a GP. Similarly, we may consider a mean function that is itself a simple linear regression from the independent to dependent variable. The parameters of this function are then inferred and the GP infers non-linear deviations. In the absence of data, e.g. in extrapolative regions, the GP will fall back to the linear regression prediction \citep{roberts2012rs}. We can incorporate this directly into the optimization objective instead of having it as a separate preprocessing step by redefining $\bmath{K}$ as a concatenation of the linear and non-linear features, or setting $\bmath{\hat K}=[\bmath{K}|\bmath{X}|\underset{n}{1}]$. The prediction can then be formulated as follows:
+In the absence of observations, all Bayesian models, Gaussian processes included, rely on their priors to provide function estimation. For the case of Gaussian processes this requires us to consider the prior over the function, especially the prior mean. For example, the first term in the mean prediction in EQ. \eqref{eq-conditional-distribution}, $\bmu_{\mathbf{x}}$, is our prior mean in which we learn the deviation from using a GP. Similarly, we may consider a mean \emph{function} that is itself a simple linear regression from the independent to dependent variable. The parameters of this function are then inferred and the GP infers non-linear deviations. In the absence of data, e.g. in extrapolative regions, the GP will fall back to the linear regression prediction \citep{roberts2012rs}. We can incorporate this directly into the optimization objective instead of having it as a separate preprocessing step by redefining $\mathbf{K}$ as a concatenation of the linear and non-linear features, or setting $\mathbf{\hat K}=[\mathbf{K}|\mathbf{X}|\vec{\mathbf{1}}_{n}]$ and $\mathbf{\hat w} = \left [\mathbf{w}|\mathbf{w}_{L}|b \right]$, where $\mathbf{w}_{L}$ is the linear regression's coefficients and $b$ is the bias. The prediction can then be formulated as follows:
 
 \begin{equation}
 \label{eq-joint-concatenation}
-\bmath{\hat K}\hat w = \bmath{K}w+\bmath{X}\left[w_{\left(m+1\right)},\hdots,w_{\left(m+d\right)}\right]^{T}+w_{\left(m+d+1\right)}.
+\mathbf{\hat K}\mathbf{\hat w} = \mathbf{K}\mathbf{w}+\mathbf{X}\mathbf{w}_{L}+b.
 \end{equation}
 
-Furthermore, the regularization matrix, $\bmath{I}\sigma_{n}^{2}$, in Eq. \eqref{eq-linear-regression-objective-rectangular} can be modified so that it penalises for learning high coefficients for the non-linear terms but no or little cost for learning linear terms by setting the corresponding elements in the diagonal of $I$ to 0 instead of $\sigma_{n}^{2}$, or the last $d+1$ elements. Therefore, as $\sigma_{n}^{2}$ goes to infinity, the model will get closer to a simple linear regression model.
+Furthermore, the regularization matrix, $\mathbf{I}\sigma_{n}^{2}$, in Eq. \eqref{eq-linear-regression-objective-rectangular} can be modified so that it penalises for learning high coefficients for the non-linear terms, $\mathbf{w}$, but small or no cost for learning high linear terms, $\mathbf{w}_{L}$ and $b$, by setting the corresponding elements in the diagonal of $\mathbf{I}$ to 0 instead of $\sigma_{n}^{2}$, or the last $d+1$ elements. Therefore, as $\sigma_{n}^{2}$ goes to infinity, the model will approach a simple linear regression model instead of fallen back to zero.
 
 \subsection{Cost-Sensitive Learning}
 
-Thus far in the discussion, we make the tacit assumption that the objective of the inference process is to minimize the sum of squared errors between the model and target function values. Although this is a suitable objective for many applications, it is intrinsically biased by uneven distributions of training data in input and output, sacrificing accuracy in less represented regions of the space. Ideally we would like to train a model with distribution balanced data to avoid such bias. This however, is a luxury that we often do not have. For example, the lack of strong emission lines that are detectable with visible-wavelength spectrographs in the ``redshift-desert'' at $1.2 < z <1.8$ means that this redshift range is often under-represented in spectroscopic samples. A common technique is to either over-sample or under-sample the data to achieve balance \citep{weiss2007}. In under-sampling, samples are removed from highly represented regions to achieve balance, over-sampling on the other hand duplicates under represented samples. Both approaches come with a cost; in the former good data are wasted and in the latter more computation is introduced due to the data size increase. In this paper, we perform cost-sensitive learning, which increases the intrinsic error function in under-represented regions. In regression tasks, such as we consider here, the output can be either discretized and treated as classes for the purpose of cost assignment, or a probability function is fitted to the output then samples are weighted in proportion to their inverse probability. After the weights have been assigned, they can be incorporated directly into the objective via:
+Thus far in the discussion, we make the tacit assumption that the objective of the inference process is to minimize the sum of squared errors between the model and target function values. Although this is a suitable objective for many applications, it is intrinsically biased by uneven distributions of training data in input and output, sacrificing accuracy in less represented regions of the space. Ideally we would like to train a model with distribution balanced data to avoid such bias. This however, is a luxury that we often do not have. For example, the lack of strong emission lines that are detectable with visible-wavelength spectrographs in the ``redshift-desert'' at $1.2 < z <1.8$ means that this redshift range is often under-represented in spectroscopic samples. A common technique is to either over-sample or under-sample the data to achieve balance \citep{weiss2007}. In under-sampling, samples are removed from highly represented regions to achieve balance, over-sampling on the other hand duplicates under represented samples. Both approaches come with a cost; in the former good data are wasted and in the latter more computation is introduced due to the data size increase. In this paper, we perform cost-sensitive learning, which increases the intrinsic error function in under-represented regions. In regression tasks, such as we consider here, the output can be either discretized and treated as classes for the purpose of cost assignment, or a specific bias is used such as the desired cost for the {\em Euclid} mission $1/\left(1+z_{\rm s}\right)$. To mimic a balanced data set in our setup, the galaxies were grouped by their spectroscopic redshift using non-overlapping bins of width 0.1. The weights are then assigned as follows for balanced training:
+\begin{equation}
+\label{eq-balanced-weights}
+w_{i} = \frac{max\left(\left \{f_{1},\hdots,f_{B}\right\}\right)}{\left\{f_{b}:i\in S_{b}\right\}},
+\end{equation}
+where $w_{i}$ is the error cost for sample $i$, $f_{b}$ is the frequency of samples in bin number number $i$, $B$ is the number of bins and $S_{b}$ is the set of samples in set number $b$. Eq. \ref{eq-balanced-weights} assigns a weight to each training point which is the maximum bin frequency over the frequency of the bin where the source belongs to, this ensures that the error cost of source $i$ is inversely proportional to its spectroscopic redshift frequency in the training set. The normalized weights to target the requirement for the {\em Euclid} mission are assigned as follows:
+
+\begin{equation}
+\label{eq-normalized-weights}
+w_{i} = \left(\frac{1}{1+z_{\rm s}^{\left(i\right)}}\right)^{2}.
+\end{equation}
+
+After the weights have been assigned, they can be incorporated directly into the objective via:
 \begin{equation}
 \label{eq-weighted-linear-regression-objective}
 \begin{array}{lcl}
-\underset{w}{\text{min}} &\frac{1}{2}\left ( \bmath{K}w-y \right )^{T} \bmath{W}\left( \bmath{K}w-y \right )+\frac{1}{2}\sigma_{n}^{2}w^{T}w.
+\underset{\mathbf{w}}{\text{min}} &\frac{1}{2}\left ( \mathbf{K}\mathbf{w}-\mathbf{y} \right )^{T} \mathbf{W}\left( \mathbf{K}\mathbf{w}-\mathbf{y} \right )+\frac{1}{2}\sigma_{n}^{2}\mathbf{w}^{T}\mathbf{w},
 \end{array}
 \end{equation}
 
-The difference between the objectives in Eq. \eqref{eq-linear-regression-objective} and Eq. \eqref{eq-weighted-linear-regression-objective} is the introduction of the diagonal matrix $\bmath{W}$, where each element $\bmath{W}_{ii}$ is the corresponding cost for sample $i$. The first term in Eq. \eqref{eq-weighted-linear-regression-objective} is a matrix form for a weighted sum of squares $\sum_{i=1}^{n}\bmath{W}_{ii}\left(\bmath{K}_{i,*}w-y_{i}\right)^{2}$, where the solution can be found analytically as follows:
+The difference between the objectives in Eq. \eqref{eq-linear-regression-objective} and Eq. \eqref{eq-weighted-linear-regression-objective} is the introduction of the diagonal matrix $\mathbf{W}$, where each element $\mathbf{W}_{ii}$ is the corresponding cost $w_{i}$ for sample $i$. The first term in Eq. \eqref{eq-weighted-linear-regression-objective} is a matrix operation form for a weighted sum of squares $\sum_{i=1}^{n}w_{i}\left(\mathbf{K}_{i,*}\mathbf{w}-\mathbf{y}_{i}\right)^{2}$, where the solution can be found analytically as follows:
 \begin{equation}
 \label{eq-weighted-linear-regression-objective-rectangular}
-w = \left(\bmath{K}^{T}\bmath{WK}+\bmath{I}\sigma_{n}^{2} \right)^{-1}\bmath{K}^{T}\bmath{W}y.
+\mathbf{w} = \left(\mathbf{K}^{T}\mathbf{WK}+\mathbf{I}\sigma_{n}^{2} \right)^{-1}\mathbf{K}^{T}\mathbf{W}\mathbf{y}.
 \end{equation}
-To mimic a balanced data set in our setup, the galaxies were grouped by their spectroscopic redshift using non-overlapping bins of width 0.1. The weights are then assigned as follows:
-\begin{equation}
-\label{eq-balanced-weights}
-\bmath{W}_{ii} = \frac{max\left(\left \{f_{1},\hdots,f_{B}\right\}\right)}{\left\{f_{b}:i\in S_{b}\right\}},
-\end{equation}
-where $f_{b}$ is the frequency of sources in bin number $i$, $B$ is the number of bins and $S_{b}$ is the set of sources in set $b$. Eq. \ref{eq-balanced-weights} assigns a weight to each training point which is the maximum frequency over the frequency of bin where the source belongs to, this ensures that the error cost of source $i$ is inversely proportional to its spectroscopic redshift frequency in the training set. The only modification to the gradient calculation is to set the matrix $\bmath{E}=\bmath{W}\left(\left(\bmath{K}w-y\right)w^{T}\right)\circ\bmath{K}$.
+The only modification to the gradient calculation is to set the matrix $\mathbf{E}=\mathbf{W}\left(\left(\mathbf{K}\mathbf{w}-\mathbf{y}\right)\mathbf{w}^{T}\right)\circ\mathbf{K}$. In standard sum of squared errors, $ \mathbf{W}= \mathbf{I}$ or the identity matrix. It is worth emphasising that this component of the framework does not attempt to weigh the training set in order to match the distribution of the test set, or matching the spectroscopic distribution to the photometric distribution as proposed in \citet{Lima2008}, \citet{Cunha2009} and applied to photometric redshift in \citet{sanchez14}, but rather gives the user of the framework the ability to control the cost per sample to serve different science goals depending on the application. In this paper, the weighting scheme was used for two different purposes, the first was to virtually balance the data to mimic training on a uniform distribution, and the second was to directly target the weighted error of $1/\left(1+z_{\rm s}\right)$ set for future missions
 
 \section{Application to Photometric Redshift Estimation}
 \label{sec-application}
@@ -297,7 +244,7 @@ Here, we specifically target the photometric bands and depts planned for {\em Eu
 \subsection{Dataset}
 \label{sec-dataset}
 
-We use a a mock dataset from \citet{jouvel09}, consisting of the $g$, $r$, $i$, $z$, $RIZ$, $Y$, $J$ and $H$ magnitudes (to 10$\sigma$ depths of 24.6, 24.2, 24.4, 23.8, 25.0 for the former, and 5$\sigma$ depth of 24.0 for each of the latter three near-infrared filters) for 185,253 simulated sources. All sources with any missing measurement in any of their bands were removed prior to training. No additional limits on any of the bands were used, although some limits will be explicitly set to the RIZ band to test the extrapolation performance of the models. The distribution of the spectroscopic redshift is provided in Figure \ref{fig-zspec-histogram}. For all experiments reported in this paper, we ignore the uncertainties on the photometry in each band and train only on the magnitudes. 
+We use a mock dataset from \citet{jouvel09}, consisting of the $g$, $r$, $i$, $z$, $RIZ$, $Y$, $J$ and $H$ magnitudes (to 10$\sigma$ depths of 24.6, 24.2, 24.4, 23.8, 25.0 for the former, and 5$\sigma$ depth of 24.0 for each of the latter three near-infrared filters) for 185,253 simulated sources. All sources with any missing measurement in any of their bands were removed prior to training. No additional limits on any of the bands were used, although some limits will be explicitly set to the RIZ band to test the extrapolation performance of the models. The distribution of the spectroscopic redshift is provided in Figure \ref{fig-zspec-histogram}. For all experiments on the simulated data, we ignore the uncertainties on the photometry in each band and train only on the magnitudes since in the simulated data set, unlike real datasets, the log of the associated errors are linearly correlated with the magnitudes, especially in the targeted range, therefore adding no information. However, they were fed as input to {\sc ANNz} to satisfy the input format of the code.
 
 \begin{figure}
         \centering
@@ -320,24 +267,9 @@ We use a a mock dataset from \citet{jouvel09}, consisting of the $g$, $r$, $i$, 
 	 \label{fig-zspec-histogram}
 \end{figure}
 
-\begin{figure}
-        \centering
-        \begin{subfigure}[b]{1\columnwidth}
-                 \includegraphics[width=\textwidth]{figures/correlated.eps}
-                 \caption{Correlated}
-        \end{subfigure}
-        ~
-        \begin{subfigure}[b]{1\columnwidth}
-                 \includegraphics[width=\textwidth]{figures/decorrelated.eps}
-                 \caption{De-correlated}
-        \end{subfigure}
-       \caption{Using coordinate-descent to optimize the linear regression objective on the synthetic dataset shown in Figure \ref{fig-toy-example}. Subfigure (a) shows the steps taken when the data have some correlation, while subfigure (b) shows the steps taken when the data were de-correlated.}
-	\label{fig-error-surface}
-\end{figure}
+We preprocess the data using Principle Component Analysis \citep[PCA;][]{jolliffe1986} to de-correlate the features prior to learning. De-correlation accelerates the convergence rate of the optimization routine especially when using a logistic-type kernel machines such as Neural Networks \citep{lecun1998}. To understand this, consider a simple linear regression example where we would like to solve for $\mathbf{w}$ in $\mathbf{A}\mathbf{w}=\mathbf{b}$, the solution for this is $\mathbf{w}=\left(\mathbf{A}^{T}\mathbf{A}\right)^{-1}\mathbf{A}^{T}\mathbf{b}$. Note that if $\mathbf{A}$ is de-correlated $\mathbf{A}^{T}\mathbf{A}=\mathbf{I}$, therefore learning $\mathbf{w}_{i}$ depends only on the $i$-th column of $\mathbf{A}$ and it is independent from learning $\mathbf{w}_{j}$, where $i\ne j$. In an optimization approach, the convergence rate is a function of the condition number of the $\mathbf{A}^{T}\mathbf{A}$ matrix, which is minimized in the case of de-correlated data. This represents a quadratic error surface which helps accelerate the search. This is particularly important in the application addressed in this paper as the magnitudes measured in each filter are strongly correlated with each other. 
 
-We preprocess the data using Principle Component Analysis \citep[PCA;][]{jolliffe1986} to de-correlate the features prior to learning. De-correlation accelerates the convergence rate of the optimization routine especially when using a logistic-type kernel machines such as Neural Networks \citep{lecun1998}. To understand this, we consider a simple linear regression example where we would like to solve for $w$ in $\bmath{A}w=b$, the solution for this is $w=\left(\bmath{A}^{T}\bmath{A}\right)^{-1}\bmath{A}^{T}b$. Note that if $\bmath{A}$ is de-correlated $\bmath{A}^{T}\bmath{A}=I$, therefore learning $w_{i}$ depends only on the $i$-th column of $\bmath{A}$ and it is independent from learning $w_{j}$, where $i\ne j$. In an optimization approach, the convergence rate is a function of the condition number of the $\bmath{A}^{T}\bmath{A}$ matrix, which is minimized in the case of de-correlated data. This represents a quadratic error surface which helps accelerate the search. This is particularly important in the application addressed in this paper as the magnitude measured in each filter are strongly correlated with each other. 
-
-\section{Experiments and Results}
+\section{Results on the Simulated Data}
 \label{sec-experiments}
 
  \begin{table*}
@@ -373,39 +305,53 @@ We preprocess the data using Principle Component Analysis \citep[PCA;][]{jolliff
 \label{table-metrics}
 \end{table*}
 
-Five algorithms are considered to model the data; Artificial Neural Networks \citep[ANNz;][]{Collister04}, a GP with low rank approximation (stableGP), a sparse GP with global length scale (GP-GL), a GP with variable length scale (GP-VL) and a GP with variable covariances (GP-VC). For ANNz, a single layer network is used, and to satisfy the input format for the code, the data were not de-correlated and the uncertainties on photometry for each band were used as part of the training input. For stableGP, we use the SR-VP method proposed in \citep{foster2009}. In subsequent tests, the variable $m$ refers to the number of hidden units in ANNz, the rank in stableGP, and the number of basis functions in GP-GL, GP-VL and GP-VC. The data were split at random into 80 per cent for training, 10 per cent for validation and 10 per cent for testing. We note that we investigate the accuracy for various training set sizes in Section~\ref{sec-sizetraining}. All models were trained using the entire redshift range available, but we only report the performance on the redshift range of $0 \le z_\textrm{s} \le 2$ to target the parameter space set out in \cite{laureijs2011}. The validation set was used for model selection and all the results here are reported on the test set. Table \ref{table-metrics} shows the metrics used to report the performance of the models:
+Five algorithms are considered to model the data; Artificial Neural Networks \citep[{\sc ANNz};][]{Collister04}, a GP with low rank approximation ({\sc stableGP}), a sparse GP with global length scale (GP-GL), a GP with variable length scale (GP-VL) and a GP with variable covariances (GP-VC). For {\sc ANNz}, a single layer network is used, and to satisfy the input format for the code, the data were not de-correlated and the uncertainties on photometry for each band were used as part of the training input. For {\sc stableGP}, we use the SR-VP method proposed in \citep{foster2009}. In subsequent tests, the variable $m$ refers to the number of hidden units in {\sc ANNz}, the rank in {\sc stableGP}, and the number of basis functions in GP-GL, GP-VL and GP-VC. The time complexities for each algorithm are shown in Table \ref{table-time-complexity}. The data were split at random into 80 per cent for training, 10 per cent for validation and 10 per cent for testing. We note that we investigate the accuracy for various training set sizes in Section~\ref{sec-sizetraining}. All models were trained using the entire redshift range available, but we only report the performance on the redshift range of $0 \le z_\textrm{s} \le 2$ to target the parameter space set out in \cite{laureijs2011}. We train each model for 500 iterations in each run and the validation set was used for model selection, but all the results here are reported on the test set. Table \ref{table-metrics} shows the metrics used to report the performance of the models.
 
+\begin{table}
+\caption{The time complexity of each approach.}
+\begin{center}
+  \begin{tabular}{| l | l |}
+     	Method		&	Time Complexity					\\	\hline				\\
+	{\sc ANNz} ($l$-layers)			&	$O\left(nmd+(l-1)(nm^{2})\right)$					\\
+	{\sc stableGP}		&	$O\left(nm^{2}\right)$				\\
+	GP-GL		&	$O\left(nmd+nm^{2}\right)$		\\	
+	GP-VL		&	$O\left(nmd+nm^{2}\right)$		\\	
+	GP-VC		&	$O\left(nmd^{2}+nm^{2}\right)$	\\	\hline
+  \end{tabular}
+\end{center}
+\label{table-time-complexity}
+\end{table}
 
 \subsection{Modelling Performance}
 
+In the first test, all models were trained using a fixed $m=10$ to cross-compare the performance of the methods using the same number of basis functions. The number of basis functions was set deliberately low to highlight the sparse-limit modelling capabilities of each algorithm, as for large values of $m$ the performance gap between the algorithms reduces making it harder to compare the strengths and weaknesses of each algorithm. The standard sum of squares objective was used, without cost-sensitive learning or a prior mean function to keep the comparison as simple as possible. The $z_\textrm{s}$ versus $z_\textrm{p}$ density scatter plots are shown in Figure \ref{fig-methods-plots} and their performance scores are reported in Table \ref{table-10-basis}. Figure \ref{fig-methods-plots} clearly shows the advantage of using inducing points over an active set when we compare GP-GL's performance in Figure \ref{stableGP-plot} with {\sc stableGP}'s performance in Figure \ref{GPGL-plot}. The problem formulation of the two are identical, except that GP-GL's basis set is learned as part of the optimization objective whereas {\sc stableGP}'s basis set is pre-selected in an unsupervised fashion.
+
  \begin{table*}
+  \caption{Performance measures for each algorithm trained using m = 10 basis functions. The best-performing algorithm is highlighted in bold font}
 \begin{center}
- \caption{Performance measures for each algorithm trained using m = 10 basis functions. The best-performing algorithm is highlighted in bold font}
 \begin{tabular}{| l | c | c |  c | c |  c | c |  c | c |  c | c | }
      				&	$\Delta z$	&	$\Delta z_\textrm{norm}$	&	max$_{z}$ & max$_{norm}$		&	$\mu_{z}$&	$\mu_{norm}$	& $\sigma_{z}$ & $\sigma_{norm}$ & out$_{z}$&out$_{norm}$\\	\hline
-	ANNz	&	0.0808		&	0.0522	&	0.8149			&	0.7545&	-0.0017			&	-0.0036&	0.0808		&	0.0521&	0.0541		&	0.0501	\\
-	stableGP	&	0.4399		&	0.2836	&	1.5906			&	1.4441&	-0.0085			&	-0.0365&	0.4399		&	0.2812&	0.0509		&	0.0539	\\
+	{\sc ANNz}	&	0.0848		&	0.0568	&	1.0126			&	\textbf{0.4199}&	-0.0025			&	-0.0048&	0.0847		&	0.0566&	0.0505		&	0.0532	\\
+	{\sc stableGP}	&	0.4399		&	0.2836	&	1.5906			&	1.4441&	-0.0085			&	-0.0365&	0.4399		&	0.2812&	0.0509		&	0.0539	\\
 	GP-GL		&	0.1420		&	0.0952	&	1.1183			&	0.5953&	-0.0064			&	-0.0106&	0.1418		&	0.0946&	0.0548		&	0.0530	\\
 	GP-VL		&	0.1251	&	0.0833	&	1.0349			&	0.7953&	-0.0074			&	-0.0094&	0.1249		&	0.0828&	0.0549		&	0.0552	\\
-	GP-VC	&	\textbf{0.0435}	&	\textbf{0.0294}	 &	\textbf{0.5488	}		&	\textbf{0.5380} &	\textbf{-0.0005}			&	\textbf{-0.0007}&	\textbf{0.0435	}	&	\textbf{0.0294} &	\textbf{0.0487}		&	\textbf{0.0473}	 \\\hline
+	GP-VC	&	\textbf{0.0435}	&	\textbf{0.0294}	 &	\textbf{0.5488	}		&	0.5380 &	\textbf{-0.0005}			&	\textbf{-0.0007}&	\textbf{0.0435	}	&	\textbf{0.0294} &	\textbf{0.0487}		&	\textbf{0.0473}	 \\\hline
   \end{tabular}
 \end{center}
-\label{table-experiment-1}
+\label{table-10-basis}
 \end{table*}
-
-In the first test, all models were trained using a fixed $m=10$ to cross-compare the performance of the methods using the same number of basis functions. The number of basis functions was set deliberately low to highlight the sparse-limit modelling capabilities of each algorithm, as for large values of $m$ the performance gap between the algorithms reduces making harder to compare the strengths and weaknesses of each algorithm. The standard sum of squares objective was used, without cost-sensitive training or a prior mean function to keep the comparison as simple as possible. The $z_\textrm{s}$ versus $z_\textrm{p}$ density scatter plots are shown in Figure \ref{fig-methods-plots} and their performance scores are reported in Table \ref{table-experiment-1}. Figure \ref{fig-methods-plots} clearly shows the advantage of using inducing points over an active set when we compare GP-GL's performance in Figure \ref{stableGP-plot} with stableGP's performance in Figure \ref{GPGL-plot}. The problem formulation of the two are identical, except that GP-GL basis set is learned as part of the optimization objective whereas stableGP's basis set is pre-selected in an unsupervised fashion.
 
 \begin{figure*}
         \centering
         \begin{subfigure}[b]{0.3\textwidth}
                 \includegraphics[width=\textwidth]{figures/ANN.eps}
-                \caption{ANNz}
+                \caption{{\sc ANNz}}
                 \label{annz-plot}
         \end{subfigure}
         ~
         \begin{subfigure}[b]{0.3\textwidth}
                 \includegraphics[width=\textwidth]{figures/stableGP.eps}
-                \caption{stableGP}
+                \caption{{\sc stableGP}}
                 \label{stableGP-plot}
         \end{subfigure}
         ~
@@ -427,7 +373,7 @@ In the first test, all models were trained using a fixed $m=10$ to cross-compare
                 \label{GPVC-plot}
         \end{subfigure}
         
-        \caption{Density scatter plots of the true $z_\textrm{s}$ vs the predicted $z_\textrm{p}$ for (a) ANNz, (b) stableGP, (c) GP-GL, (d) GP-VL and (e) GP-VC using $m=10$ basis functions. The plots shows the performance on the same test set, the colours however are scaled differently according to the density range in each plot}
+        \caption{Density scatter plots of the true $z_\textrm{s}$ vs the predicted $z_\textrm{p}$ for (a) {\sc ANNz}, (b) {\sc stableGP}, (c) GP-GL, (d) GP-VL and (e) GP-VC using $m=10$ basis functions. The plots shows the performance on the same test set, the colours however are scaled differently according to the density range in each plot to avoid colour saturation}
         \label{fig-methods-plots}
 \end{figure*}
 
@@ -468,20 +414,20 @@ In the first test, all models were trained using a fixed $m=10$ to cross-compare
        ~
         \begin{subfigure}[b]{0.24\textwidth}
                 \includegraphics[width=\textwidth]{figures/ANN_22.eps}
-                \caption{ANNz}
+                \caption{{\sc ANNz}}
         \end{subfigure}
         
-        \caption{Density scatter plots of the true $z_\textrm{s}$ versus the predicted $z_\textrm{p}$ after training the GP-VC model with samples with $RIZ<23$ (top) and $RIZ<22$ (bottom) using $m=10$ basis functions with (a) zero mean, (b) linear regression, (c) joint linear and non-linear optimization and (d) ANNz for comparison}
+        \caption{Density scatter plots of the true $z_\textrm{s}$ versus the predicted $z_\textrm{p}$ after training the GP-VC model with samples with $RIZ<23$ (top) and $RIZ<22$ (bottom) using $m=10$ basis functions with (a) zero mean, (b) linear regression, (c) joint linear and non-linear optimization and (d) {\sc ANNz} for comparison}
         \label{fig-RIZ-splits}
 \end{figure*}
 
  \begin{table*}
-\caption{The $\Delta z$ for the GP-VC model when trained using $m=10$ basis functions with different prior mean functions and $RIZ$ splits. The results for ANNz are shown for comparison}
+\caption{The $\Delta z$ for the GP-VC model when trained using $m=10$ basis functions with different prior mean functions and $RIZ$ splits. The results for {\sc ANNz} are shown for comparison}
 \begin{center}
   \begin{tabular}{| l | c | c | c | c | c | c | c | c | c |}
   	Trained on				& 	\multicolumn{3}{|c|}{ $RIZ<22$}				&	& 	\multicolumn{3}{c}{$RIZ<23$}  &  & Full\\ \cline{2-4} \cline{6-8} \cline{10-10} 
      	Tested on					&	$<22$			&	$\ge 22$		&	Full				&	&	$<23$	&	$\ge 23$	&	Full	& & Full\\	\hline
-	ANNz						&	0.0418			&	0.1844			&	0.1764			&	&	0.0472&	0.1704	&	0.1525 &  & 0.0808				\\
+	{\sc ANNz}						&	0.0385			&	0.1383			&	0.1325			&	&	0.0537&	0.1458	&	0.1315 &  & 0.0848				\\
 	Zero						&	0.0233			&	0.2539			&	0.2424			&	&	0.0362&	0.1261	&	0.1129 &  & 0.0435				\\
 	Linear						&	0.0199			&	0.1043			&	0.0997			&	&	0.0321	&	0.1097	&	0.0983 &  & 0.0412				\\
 	Joint						&	\textbf{0.0192}	&	\textbf{0.0982}	&	\textbf{0.0939}	&	&	\textbf{0.0277}	&	\textbf{0.0653}	&	\textbf{0.0593} &  & \textbf{0.0298}	\\	\hline
@@ -490,11 +436,11 @@ In the first test, all models were trained using a fixed $m=10$ to cross-compare
 \label{table-RIZ-splits}
 \end{table*}
 
-We also test the extrapolation performance of the GP-VC model using different prior means, namely a zero mean, a linear regression mean and a joint optimization approach which learns the linear and non-linear features simultaneously by regularizing the non-linear features more aggressively than linear features and compare them with ANNz. To test this more effectively,  the models were trained using sources, with $RIZ<23$ (29,024 objects from the training set) and tested on the unseen samples with $RIZ<23$, $RIZ\ge23$, and the entire test set. A similar test was also conducted using a split of $RIZ<22$ (12,056 objects  from the training set). This also demonstrates the effectiveness of the algorithms in the scenario where the brightest sources dominate the training set, as may be true in practice. The results are reported in Table \ref{table-RIZ-splits} and the density scatter plots are shown for comparison in Figure \ref{fig-RIZ-splits}. Our results show that the ``Joint'' method consistently outperformed the other methods in extrapolation as well as in interpolation especially when trained with a small sample size as in the $RIZ<22$ case. Moreover, upon examining the density scatter plots in Figure \ref{fig-RIZ-splits}, it has fewer systematic and catastrophic errors than the other methods with a factor of $\sim 2$ improvement over ANNz where the training data are limited in magnitude/flux-density.
+We also test the extrapolation performance of the GP-VC model using different prior means, namely a zero mean, a linear regression prior and a joint optimization approach which learns the linear and non-linear features simultaneously by regularizing the non-linear features more aggressively than linear features and compare them with {\sc ANNz}. The difference between the linear regression prior and the joint optimization approach, is that the former first fits a linear model to the data then subtracts the predictions from the ground truth before training a GP model, whereas the latter learns both the linear model and the non-linear deviations from it jointly. To test this more effectively,  the models were trained using sources, with $RIZ<23$ (29,024 objects from the training set) and tested on the unseen samples with $RIZ<23$, $RIZ\ge23$, and the entire test set. A similar test was also conducted using a split of $RIZ<22$ (12,056 objects  from the training set). This also demonstrates the effectiveness of the algorithms in the scenario where the brightest sources dominate the training set, as may be true in practice. The results are reported in Table \ref{table-RIZ-splits} and the density scatter plots are shown for comparison in Figure \ref{fig-RIZ-splits}. Our results show that the ``Joint'' method consistently outperformed the other methods in extrapolation as well as in interpolation especially when trained with a small sample size as in the $RIZ<22$ case. Moreover, upon examining the density scatter plots in Figure \ref{fig-RIZ-splits}, it has fewer systematic and catastrophic errors than the other methods with a factor of $\sim 2$ improvement over {\sc ANNz} where the training data are limited in magnitude/flux-density.
 
 \subsection{Cost-Sensitive Learning}
 
-We now perform a comparison between the cost-sensitive learning and the normal sum of squared errors for the GP-VC model. Two different weight configurations are tested, the first is to assign an error cost to each sample $\bmath{W}_{ii}=1/\left(1+z_\textrm{s}\right)^{2}$ (Normalized), and the second experiment is to weight each sample according to the frequency of their true redshift to ensure balanced learning (Balanced) as in Eq. \eqref{eq-balanced-weights}.  Two additional measures are reported, the maximum $\Delta z$ and the maximum $\Delta z_\textrm{norm}$. The samples were grouped into bins of uniformly spaced intervals of 0.1, the box plots are for the ``Normal'', ``Balanced'' and ``Normalized'' are shown in Figure \ref{fig-normal-balanced}. The figures show the performance on the held out test set for the entire range to demonstrate the effect more clearly. Cost-sensitive learning is more consistent across the redshift range as opposed to the normal sum of squares, especially in the high redshift regions where there is less data. The confidence intervals are also considerably smaller for the ``Balanced'' case. The ``Normalized'' training on the other hand resulted in a systematic bias, as expected, towards the lower part of the redshift range. The performance comparison for the ``Normal'', ``Balanced'' and ``Normalized'' training are summarized in Table \ref{table-normal-balanced}. Balanced training showed a better generalization performance, as it outperformed the normal sum of squares objective on the test set and has lower maximum errors, although the differences are generally small.
+We now perform a comparison between cost-sensitive learning and the normal sum of squared errors for the GP-VC model. Two different weight configurations are tested, the first is to assign an error cost to each sample as in Eq. \eqref{eq-normalized-weights} (Normalized), and the second experiment is to weight each sample according to the frequency of their true redshift to ensure balanced learning (Balanced) as in Eq. \eqref{eq-balanced-weights}, in addition to the (Normal) sum of squared errors. The algorithms were trained such that they have equal $\Delta z$ score to demonstrate how seemingly similar different are can have very drastic differences. The box plots  for the ``Normal'', ``Balanced'' and ``Normalized'' are shown in Figure \ref{fig-normal-balanced}. The figures show the performance on the held out test set for the entire range to demonstrate the effect more clearly. Cost-sensitive learning is more consistent across the redshift range as opposed to the normal sum of squares, especially in the high redshift regions where there is less data. The confidence intervals are also considerably smaller for the ``Balanced'' case. The ``Normalized'' training on the other hand resulted in a systematic bias, as expected, towards the lower part of the redshift range. The performance comparison for the ``Normal'', ``Balanced'' and ``Normalized'' training are summarized in Table \ref{table-normal-balanced}, but the metrics are reported on the desired range of $0<z_{\rm s}<2$. Balanced training showed a better generalization performance, as it outperformed the normal sum of squares objective on the test set and has lower maximum errors, although the differences are generally small.
 
 \begin{figure}
         \centering
@@ -513,7 +459,7 @@ We now perform a comparison between the cost-sensitive learning and the normal s
                 \caption{Normalized}
                 \label{fig-normalized}
         \end{subfigure}
-       \caption{Box plots of residual errors on the hold-out test set, showing median (bar), inter-quartile range (box) and range (whiskers) for (a) the direct sum of squared errors, (b) the balanced cost-sensitive learning and (c) the normalized cost learning for the GV-VC model. All training was with $m=10$ basis functions for comparison. The right-most histograms are the empirical densities of errors. The algorithms were trained such that they have equal $\Delta z$ score and we report on the entire range here to demonstrate the effect more clearly.}
+       \caption{Box plots of residual errors on the hold-out test set, showing median (bar), inter-quartile range (box) and range (whiskers) for (a) the direct sum of squared errors, (b) the balanced cost-sensitive learning and (c) the normalized cost learning for the GV-VC model. All training was with $m=10$ basis functions for comparison. The right-most histograms are the empirical densities of errors. Figures (a) and (b) have similar scales, but note the scale difference in (c).}
 	\label{fig-normal-balanced}
 \end{figure}
 
@@ -533,105 +479,185 @@ We now perform a comparison between the cost-sensitive learning and the normal s
 \subsection{Size of the training set}
 \label{sec-sizetraining}
 
-Thus far, we have only considered the case of having a large (80 per cent of the total data) training set. In practice, it is likely that the training set will be substantially smaller than the dataset for which photometric redshifts are required. Therefore, in this section the generalization performance of the GP-VC is tested by limiting the training set size to different percentage of the dataset. The validation and test sets were set fixed to the same sets used in previous experiments to ensure consistent reporting on the same test set. The model was trained using various percentages from 5\% to 80\% and the $\Delta z$ as well as the $\Delta z_\textrm{norm}$ are reported for each percentage split in the plot shown in Figure \ref{fig-training-percentage}. The models were trained using the joint prior optimization and cost-sensitive learning with $m=200$ basis functions. The models were trained twice, the first using the normalized weights to report $\Delta z_\textrm{norm}$, and the second using normal sum of squares to report $\Delta z$. In this experiment, the number of basis functions was increased in size in order to test the performance of the algorithm to fit a complex model when presented with various dataset sizes. Figure \ref{fig-training-percentage} shows a stable generalization performance for the GP-VC model with cost-sensitive learning and joint prior optimization even when using a limited training set size. 
+Thus far, we have only considered the case of having a large (80 per cent of the total data) training set. In practice, it is likely that the training set will be substantially smaller than the dataset for which photometric redshifts are required. Therefore, in this section the generalization performance of the models are tested by limiting the training set size to different percentages of the dataset. The validation and test sets were set fixed to the same sets used in previous experiments to ensure consistent reporting on the same test set. The models were trained using various percentages from 5\% to 80\%, once using a small number of basis functions ($m=10$) and a second experiment using a large number of basis functions ($m=100$) and the results are plotted for both in Figures \ref{fig-training-percentage-10} and \ref{fig-training-percentage-10} respectively. GP-VC consistently outperformed the other other models across the training range using both a simple and complex model. {ANNz} on the other hand performed poorly and quickly overfitted in the complex version of the test. It is worth noting that, unlike the other models, {ANNz} consistently showed an unsteady performance in all of the parameter tuning tests.
+
 
 \begin{figure}
-       \centering
-        \includegraphics[width=\columnwidth]{figures/percentage.eps}
-        \caption{The $\Delta z$ and $\Delta z_\textrm{norm}$ after training GP-VC models with $m=200$ basis functions with various training set percentage splits. }
-       \label{fig-training-percentage}
+        \centering
+        \begin{subfigure}[b]{\columnwidth}
+                \includegraphics[width=\textwidth]{figures/percentage10.eps}
+                \caption{10 Basis Functions}
+                \label{fig-training-percentage-10}
+        \end{subfigure}	
+        \begin{subfigure}[b]{\columnwidth}
+                \includegraphics[width=\textwidth]{figures/percentage100.eps}
+                \caption{100 Basis Functions}
+                \label{ffig-training-percentage-100}
+        \end{subfigure}
+       \caption{The $\Delta z$ as a function of training size for all the methods using a simple ($m=10$) and complex model ($m=100$).}
+	\label{fig-normal-balanced}
 \end{figure}
 
 
 \subsection{Size of the basis set}
 
-Until now, we have limited the number of basis functions to 10, except for the last section to test the generalization performance of GP-VC. In practice, the only limitation on the number of basis used for training the GP is computing resources. In this section we investigate how the accuracy of the photometric redshifts depends on the number of basis functions.
+Until now, we have limited the number of basis functions to 10, except for the last section to test the generalization performance of the models. In practice, the only limitation on the number of basis used for training the GP is computing resources. In this section we investigate how the accuracy of the photometric redshifts depends on the number of basis functions.
 
-We cross-compare all of the models by varying the number of basis functions $m$ from 5 to 200 by an increment of 5 to study the relationship between accuracy, complexity and speed. $\Delta z$ as a function of $m$ is shown in Figure \ref{fig-rmses}, the $y$-axis is shown on a log scale for the purpose of visualisation. The stableGP showed the worst performance across the board, especially when the number of basis was low, while GP-VC on the other hand consistently outperformed the rest and most significantly when trained with a few number of basis. ANNz outperformed GP-GL and GP-VL, but it did not scale well with complexity as it started to over fit after $m=45$. All the models were trained using a sum of squares objective with no cost-sensitive learning or prior mean function in this experiment. 
+We cross-compare all of the models by varying the number of basis functions $m$ from 5 to 200 by an increment of 5 to study the relationship between accuracy and complexity. $\Delta z$ as a function of $m$ for all the models are shown in Figure \ref{fig-rmses}, the $y$-axis is shown on a log scale for the purpose of visualisation. The {\sc stableGP} showed the worst performance across the board, especially when the number of basis was low, while GP-VC on the other hand consistently outperformed the rest and most significantly when trained with a few number of basis. {\sc ANNz} outperformed GP-GL and GP-VL, but it did not scale well with complexity as it started to over fit after $m=30$. All the models were trained using a sum of squared errors objective with no cost-sensitive learning or prior mean function in this experiment. 
 
 \begin{figure}
-        \centering
-        
-        \begin{subfigure}[b]{\columnwidth}
-                \includegraphics[width=\textwidth]{figures/different-basis.eps}
-                 \caption{Root Mean Squared Error.}
-                 \label{fig-rmses}
-        \end{subfigure}
-	 ~
-       \begin{subfigure}[b]{\columnwidth}
-                \includegraphics[width=\textwidth]{figures/times.eps}
-                 \caption{Time.}
-                 \label{fig-time-seconds}
-        \end{subfigure}
-
-       \caption{The root mean squares (a) and the time in seconds per iteration (b) as a function of $m$ for all the models.}	
+	\centering
+	\includegraphics[width=\columnwidth]{figures/different-basis.eps}
+	\caption{$\Delta z$ as a function of the number of basis functions for all the methods.}
+	\label{fig-rmses}
 \end{figure}
 
 \begin{figure}
        \centering
        \includegraphics[width=\columnwidth]{figures/1600.eps}
-        \caption{A log-log plot reporting the $\Delta z$ and $\Delta z_\textrm{norm}$ after training GP-VC models with 5, 10, 25, 50, 100, 200, 400, 800 and 1600 with cost-sensitive learning and joint mean optimization. The results for the $\Delta z$ were optimized using normal sum of squares whereas the results for the $\Delta z_\textrm{norm}$ were optimized using normalized weights}
+        \caption{A log-log plot reporting the $\Delta z$ and $\Delta z_\textrm{norm}$ after training GP-VC models with 5, 10, 25, 50, 100, 200, 400, 800 and 1600 with cost-sensitive learning and joint linear optimization. The results for the $\Delta z$ were optimized using normal sum of squares whereas the results for the $\Delta z_\textrm{norm}$ were optimized using normalized weights}
        \label{fig-1600}
 \end{figure}
 
-\begin{table}
-\caption{The time complexity of each approach.}
+In Figure \ref{fig-1600} we show $\Delta z$ and $\Delta z_\textrm{norm}$ for the GP-VC approach using an extended range of basis functions of 5, 10, 25, 50, 100, 200, 400, 800 and 1600 with joint linear optimization, using both the normalized weights and normal sum of squares. With the GP-VC we obtain $\Delta z_\textrm{norm} = 0.0295$ with just $m=5$ basis, and when using $m=1600$ we obtain $\Delta z_\textrm{norm} = 0.0026$ and  a maximum normalized error $\Delta z_\textrm{norm} = 0.0435$. We see from Figure \ref{fig-rmses} that all algorithms converged around $m=50$ with a relatively small improvement for the time spent beyond this point. We note that although the \emph{training} complexity costs require effort for large numbers of basis functions, once all parameters are inferred we enjoy effectively a linear basis model performance running over unseen (test) data. We therefore consider the performance for a realistic, yet large, number of functions. 
+
+We also generated photometric redshifts from a committee of five neural networks using a two-layer architecture, each layer with twice the number of hidden units as the number of filters as recommended in \cite{Collister04} and has become a standard for most {\sc ANNz} users. The models were trained using the same training, validation and test sets. The results of the final GP-VC and {\sc ANNz} models are summarized in Table \ref{table-GP-ANN-simulated} and the density scatter plots for the final models are shown in Figure \ref{fig-final-model} for comparison. We find that the GP-VC algorithm provides a factor of $\sim 7$ improvement in the accuracy of $\Delta z$ and $\Delta z_\textrm{norm}$ over the commonly-used {\sc ANNz} architecture.
+
+ \begin{table*}
+\caption{Performance measures for the final {\sc ANNz} model using a committee of 5 networks with 8:16:16:1 architectures and the final GP-VC model using $m=1600$ basis functions with a jointly optimized linear function on the simulated survey.}
 \begin{center}
-  \begin{tabular}{| l | l |}
-     	Method		&	Time Complexity					\\	\hline
-	ANN			&	$O\left(nmd\right)$					\\
-	stable GP		&	$O\left(nm^{2}\right)$				\\
-	GP-GL		&	$O\left(nm^{2}+nmd\right)$		\\	
-	GP-VL		&	$O\left(nm^{2}+nmd\right)$		\\	
-	GP-VC		&	$O\left(nm^{2}+nmd^{2}\right)$	\\	\hline
+\begin{tabular}{| l | c | c |  c | c |  c | c |  c | c |  c | c | }
+     				&	$\Delta z$	&	$\Delta z_\textrm{norm}$	&	max$_{z}$ & max$_{norm}$		&	$\mu_{z}$&	$\mu_{norm}$	& $\sigma_{z}$ & $\sigma_{norm}$ & out$_{z}$&out$_{norm}$\\	\hline
+	{\sc ANNz}		&	0.0262	&	0.0180		&	0.3696		&	0.3391&	-0.0004		&	-0.0007&	0.0262		&	0.0180&	\textbf{0.0433}		&	\textbf{0.0406}\\
+	GP-VC		&	\textbf{0.0041} 	&	\textbf{0.0026}	&	\textbf{0.0764}		&	\textbf{0.0652}&	\textbf{0.0000}			&	\textbf{0.0000}&	\textbf{0.0041}		&	\textbf{0.0026}&	0.0480	&	0.0460\\\hline
   \end{tabular}
 \end{center}
-\label{table-time-complexity}
-\end{table}
-
-In Figure \ref{fig-1600} we show $\Delta z$ and $\Delta z_\textrm{norm}$ for the GP-VC approach using an extended range of basis functions of 5, 10, 25, 50, 100, 200, 400, 800 and 1600 with cost-sensitive learning and joint mean optimization, using both the normalized weights and normal sum of squares. With the GP-VC we obtain $\Delta z_\textrm{norm} = 0.05$ with just $m=5$ basis, and when using $m=1600$ we obtain $\Delta z_\textrm{norm} = 0.002$ and  a maximum normalized error $\Delta z_\textrm{norm} = 0.0432$. The  time complexities for each algorithm are shown in Table \ref{table-time-complexity} and the clock time in seconds, for a single iteration, are shown for various number of basis functions in Figure \ref{fig-time-seconds}. The time experiment was conducted on a machine with a 3.0 GHz Intel Core i7 processor using Matlab 2014a.\footnote{Note that even though stableGP has a lower theoretical time complexity compared to GP-VC, it is significantly slower. This has to do with the particular choice of implementation and the development environment. The partial Cholesky decomposition implementation in stableGP \citep{stableGP} uses repeated loops which tends to perform poorly as it cannot exploit parallelised operations. A similar effect can be noticed for the ANNz code as it does not utilizes parallelisation as well. The other methods on the other hand are based on matrix operations which utilize all the cores of the CPU by parallelising the operations.} We see from Figure \ref{fig-rmses} that all algorithms converged around $m=50$ with a relatively small improvement for the time spent beyond this point. We note that although the \emph{training} complexity costs require effort for large numbers of basis functions, once all parameters are inferred we enjoy effectively a linear basis model performance running over unseen (test) data. We therefore consider the performance for a realistic, yet large, number of functions. 
-
-
-% The final GP-VC model to target the Euclid Space Mission was trained with $m=1600$ basis functions normalized, balanced and with a joint prior optimization reached a $\Delta z_\textrm{norm}=0.002$ and a $max\left(\Delta z_\textrm{norm}\right)=0.0432$ on the test set. Even though evidence suggest that increasing the number of basis functions will continue to improve the results, we suspect that the return is very marginal. Moreover, 1600 basis functions managed to guarantee a maximum normalized error less than the required for the mission.
-
- \begin{table}
-\caption{Performance measures for the final ANNz model using a committee of 5 networks with 8:16:16:1 architectures and the final GP-VC model using $m=1600$ basis functions with a jointly optimized linear mean function, balanced and normalized weights.}
-\begin{center}
-  \begin{tabular}{| l | c | c | c | c |}
-     				&	$\Delta z$	&	$max\left(\Delta z\right)$		&	$\Delta z_\textrm{norm}$		&	$max\left(\Delta z_\textrm{norm}\right)$	\\	\hline
-	ANNz		&	0.0101		&	0.0983			&	0.0061				&	0.0710				\\
-	GP-VC	&	\textbf{0.0035}		&	\textbf{0.0589}			&	\textbf{0.0020}			&	\textbf{0.0432}				\\	\hline
-  \end{tabular}
-\end{center}
-\label{table-GP-ANN}
-\end{table}
-
-We also generated photometric redshifts from a committee of five neural networks using a two-layer architecture, each layer with twice the number of hidden units as the number of filters as recommended in \cite{Collister04} and has become a standard for most ANNz users. The models were trained using the same training, validation and test sets. The results of the final GP-VC and ANNz models are summarized in Table \ref{table-GP-ANN} and the density scatter plots for the final models are shown in Figure \ref{fig-final-model} for comparison. We find that the GP-VC algorithm provides a factor of $\sim 3$ improvement in the accuracy of $\Delta z$ and $\Delta z_\textrm{norm}$ over the commonly-used ANNz implementation.
-
+\label{table-GP-ANN-simulated}
+\end{table*}
 
 \begin{figure}
         \centering
        
        \begin{subfigure}[b]{\columnwidth}
-                \includegraphics[width=\columnwidth]{figures/ANN_final.eps}
-        \caption{ANNz}
+                \includegraphics[width=\columnwidth]{figures/ANN_final_euclid.eps}
+        \caption{{\sc ANNz}}
         \end{subfigure}
         ~ 
         \begin{subfigure}[b]{\columnwidth}
-                \includegraphics[width=\columnwidth]{figures/final-1600.eps}
+                \includegraphics[width=\columnwidth]{figures/GPVC_final_euclid.eps}
         \caption{GP-VC}
         \end{subfigure}
 
-       \caption{The density scatter plot for (a) the final ANNz model using a committee of 5 networks with 8:16:16:1 architectures and (b) the final GP-VC model trained using $m=1600$ basis functions with a jointly optimized linear mean function, balanced and normalized weights. }
+       \caption{The density scatter plot for (a) the final {\sc ANNz} model using a committee of 5 networks with 8:16:16:1 architectures and (b) the final GP-VC model trained using $m=1600$ basis functions with a jointly optimized linear mean function on the simulated survey. }
        \label{fig-final-model}
 \end{figure}
+
+\section{Results on SDSS Data}
+\label{sec-experiments-sdss}
+
+In this section we cross compare {\sc ANNz} with GP-VC on a real data set from the SDSS 12th Data Release. The data used for training was selected from the database where photometric and spectoscropic data are available and any sources with missing data was excluded from training. The {\fontfamily{pcr}\selectfont modelMag} magnitude was used with their associated error estimates. Only data collected as part of the SDSS survey but not BOSS with $r<17.7$ was selected for training. The following SQL statement was used to extract the data from the SDSS DR12 database using the CasJobs services provided by SDSS\footnote{\url{casjobs.sdss.org}}.
+
+\begin{verbatim}
+SELECT
+p.objid,
+p.modelMag_u, p.modelMag_g,
+p.modelMag_r, p.modelMag_i,
+p.modelMag_z, p.modelMagerr_u,
+p.modelMagerr_g, p.modelMagerr_r,
+p.modelMagerr_i, p.modelMagerr_z,
+s.z as zspec, s.zErr as zspecErr
+INTO
+mydb.modelmag_dataset
+FROM
+PhotoObjAll as p, SpecObj as s
+WHERE
+p.SpecObjID = s.SpecObjID AND
+s.survey = 'sdss' AND
+s.class = 'GALAXY' AND 
+s.zWarning = 0 AND
+p.mode = 1 AND
+p.modelMag_r < 17.7 AND
+dbo.fPhotoFlags('PEAKCENTER') != 0 AND
+dbo.fPhotoFlags('NOTCHECKED') != 0 AND
+dbo.fPhotoFlags('DEBLEND_NOPEAK') != 0 AND
+dbo.fPhotoFlags('PSF_FLUX_INTERP') != 0 AND
+dbo.fPhotoFlags('BAD_COUNTS_ERROR') != 0 AND
+dbo.fPhotoFlags('INTERP_CENTER') != 0
+\end{verbatim}
+
+The distribution of the spectoscropic redshifts of the training set is shown in figure \ref{fig-zpec-sdss}. The number of sources selected was 577,725. Similar to the simulated data setup, we used 80\% for training, 10\% for validation and 10\% for testing.
+
+
+\subsection{Varying the Degree of Freedom}
+
+To compare GP-VC and {\sc ANNz}, we cross compare the algorithms such that they have equivalent number of hyper-parameters. This is done by setting the number of basis functions for GP-VC such that the number of free parameters are, approximately, equal to the number of free parameters in a two-layer neural network using the following assignment:
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\columnwidth]{figures/zspec_sdss.eps}
+	\caption{The distribution of the spectroscopic redshift in the the dataset extracted from SDSS DR12.}
+	\label{fig-zpec-sdss}
+\end{figure}
+
+\begin{subequations}
+\begin{align}
+\label{eq-gpvc-degree}
+\mathcal{D}_{g}		&=		m_{g}\left(d^{2}+d\right)+d+1,\\
+\label{eq-ann-degree}
+\mathcal{D}_{z}	&=		m_{z}^{2}+dm_{z}+3m_{z}+1,\\
+\label{eq-gpvc-equals-ann}
+m_{g}		&\approx 	\frac{m_{z}^{2}+dm_{z}+3m_{z}-d}{d^{2}+d},
+\end{align}
+\end{subequations}
+where $\mathcal{D}_{g}$ is the degree of freedom in GP-VC, $\mathcal{D}_{z}$ is the degree of freedom in {\sc ANNz}, $m_{g}$ is the number of basis functions in GP-VC and $m_{z}$ is the number of hidden units in {\sc ANNz}. The number of hidden units is set to be equal in both layers. Setting the number of basis functions in GP-VC according to \eqref{eq-gpvc-equals-ann}, ensures that $\mathcal{D}_{g} \approx \mathcal{D}_{z}$.
+
+In this test, we trained a two-layer {\sc ANNz} architecture using various number of hidden units from 10 to 100 and a matching GP-VC model based on Eq. \eqref{eq-gpvc-equals-ann} with joint mean optimization. The number of hidden units was set to be equal in both layers but only a single network was used to generate the predictions not a committee of five networks. The results are shown in Figure \ref{fig-ann-gpvc-sdss}.
+
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\columnwidth]{figures/sdss_final.eps}
+	\caption{A comparison between GP-VC and {\sc ANNz} with two layers on the SDSS DR12 data using various degrees of freedom. The numbers on top of each point is the equivalent number of basis functions.}
+	\label{fig-ann-gpvc-sdss}
+\end{figure}
+
+\subsection{Final Results}
+
+In this experiment, photometric redshifts were generated using a committee of five two-layer architecture, each layer with twice the number of hidden units as the number of filters and compared to the best performing GP-VC model from the previous test. The density scatter plots are shown in Figure \ref{fig-final-model-sdss} and the performance measures are reported in Table \ref{table-final-results}.
+
+\begin{figure}
+        \centering
+       
+       \begin{subfigure}[b]{\columnwidth}
+                \includegraphics[width=\columnwidth]{figures/ANN_final_sdss.eps}
+        \caption{{\sc ANNz}}
+        \end{subfigure}
+        ~ 
+        \begin{subfigure}[b]{\columnwidth}
+                \includegraphics[width=\columnwidth]{figures/GPVC_final_sdss.eps}
+        \caption{GP-VC}
+        \end{subfigure}
+
+       \caption{The density scatter plot for (a) the final {\sc ANNz} model using a committee of 5 networks with 5:10:10:1 architectures and (b) the final GP-VC model trained using $m=103$ basis functions with a jointly optimized linear mean function on SDSS DR12. }
+       \label{fig-final-model-sdss}
+\end{figure}
+
+ \begin{table*}
+\caption{Performance measures of training the GP-VC model using $m=10$ basis functions and different weighting schemes.}
+\begin{center}
+\begin{tabular}{| l | c | c |  c | c |  c | c |  c | c |  c | c | }
+     				&	$\Delta z$	&	$\Delta z_\textrm{norm}$	&	max$_{z}$ & max$_{norm}$		&	$\mu_{z}$&	$\mu_{norm}$	& $\sigma_{z}$ & $\sigma_{norm}$ & out$_{z}$&out$_{norm}$\\	\hline
+	{\sc ANNz}		&	0.0221	&	0.0190		&	0.8710		&	0.4489&	0.0002		&	\textbf{-0.0002}&	0.0221		&	0.0190&	0.0397		&	0.0469\\
+	{\sc GP-VC } 	&	\textbf{0.0209} 	&	\textbf{0.0179}		&	\textbf{0.8562}	&	\textbf{0.4413} & \textbf{0.0001}		&	-0.0003&	\textbf{0.0209}		&	\textbf{0.0179}&	\textbf{0.0386} 	&	\textbf{0.0456}\\\hline
+  \end{tabular}
+\end{center}
+\label{table-final-results}
+\end{table*}
 
 \section{Conclusion}
 \label{sec-conclusion}
 
-In this paper a sparse Gaussian process framework was presented and applied to photometric redshift estimation. The framework was able to out perform Artificial Neural Networks, sparse GP parametrized by a set of global hyper-parameters and low rank approximation GP. The performance increase is attributed to the handling of distribution bias via a weighting scheme integrated as part of the optimization objective, parametrizing each basis function with bespoke covariances, and integrating the learning of the prior mean function to enhance the extrapolation performance of the model. The methods were applied to a simulated dataset and the proposed approach consistently outperformed the other models on all measures. We find that the model scales linearly in time with respect to the size of the data, and generalizes well even when presented with a limited training set. Results show that with only 30 per cent of the data, the model was able to reach accuracy close to that of using the full training set. Even when data were selectively removed based on $RIZ$ magnitudes, the model was able to show the best recovery performance compared to the other models. The cost-sensitive learning component of the framework regularizes the predictions to limit the effect caused by the biased distribution of the output and allows for direct optimization of the survey objective (e.g. $z_{norm} = |z_\textrm{s} - z_\textrm{p}| / (1+z_{\rm s})$). The model consistently outperformed other approaches, including ANNz and stableGP, in all reported experiments. We also investigate how the size of the training set and the basis functions set affects the accuracy of the photometric redshift prediction. We show that for the simulated set of galaxies, based on the work of \cite{jouvel09} that we are able to obtain a photometric redshift accuracy of $\Delta z_\textrm{norm}  = 0.002$ and $max\left(z_\textrm{norm}\right)=0.0432$ using 1600 basis functions which is a factor of three improvement over the standard ANNz implementation.
-
-In this work we have only considered simulated data, and as such the tests performed could be considered slightly idealized. However, the consistent strong performance of the GP-VC algorithm in outperforming the widely used ANNz algorithm is encouraging. In future work we will test the algorithm on a range of real data, and pursue investigations of how the algorithm performs over different redshift regimes and for different galaxy types as a further advantage of GPs over ANN is their natural ability to deliver variance predictions for the photometric redshifts.
+In this paper a sparse Gaussian process framework was presented and applied to photometric redshift estimation. The framework was able to out perform Artificial Neural Networks, sparse GP parametrized by a set of global hyper-parameters and low rank approximation GP. The performance increase is attributed to the handling of distribution bias via a weighting scheme integrated as part of the optimization objective, parametrizing each basis function with bespoke covariances, and integrating the learning of the prior mean function to enhance the extrapolation performance of the model. The methods were applied to a simulated dataset and SDSS DR12 where the proposed approach consistently outperformed the other models on most of the measures. We find that the model scales linearly in time with respect to the size of the data, and generalizes well even when presented with a limited training set. Results show that with only 30 per cent of the data, the model was able to reach accuracy close to that of using the full training set. Even when data were selectively removed based on $RIZ$ magnitudes, the model was able to show the best recovery performance compared to the other models. The cost-sensitive learning component of the framework regularizes the predictions to limit the effect caused by the biased distribution of the output and allows for direct optimization of the survey objective (e.g. $z_{norm} = |z_\textrm{s} - z_\textrm{p}| / (1+z_{\rm s})$). The model consistently outperformed other approaches, including {\sc ANNz} and {\sc stableGP}, in all reported experiments. We also investigate how the size of the training set and the basis functions set affects the accuracy of the photometric redshift prediction. We show that for the simulated set of galaxies, based on the work of \citet{jouvel09} that we are able to obtain a photometric redshift accuracy of $\Delta z_\textrm{norm}  = 0.0026$ and $max\left(z_\textrm{norm}\right)=0.0435$ using 1600 basis functions which is a factor of seven improvement over the standard {\sc ANNz} implementation. The proposed approach was also able to out perform {\sc ANNz} on SDSS DR12 even when restricted to have the same number of free parameters. In future work we will test the algorithm on a range of real data, and pursue investigations of how the algorithm performs over different redshift regimes and for different galaxy types as a further advantage of GPs over ANN is their natural ability to deliver variance predictions for the photometric redshifts.
 
 
 
