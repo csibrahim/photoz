@@ -147,7 +147,7 @@ This requires us to assume a prior, $p\left(\mathbf{f}|\mathbf{X}\right)$, over 
 k\left(\mathbf{x}_{i},\mathbf{x}_{j}\right) = \sigma^{2}\exp\left(-\frac{1}{2\lambda^{2}}\left\|\mathbf{x}_{i}-\mathbf{x}_{j}\right\|^{2}\right),
 \end{equation}
 
-where $\sigma$ and $\lambda$ are referred to as the hight-variance and the length-scale respectively, which we will assume fixed for now. The similarity between two input vectors, under the squared exponential kernel, is a non-linear function of the Euclidean distance between them, which is a reasonable assumption in most applications. Now that we have our likelihood $p\left(\mathbf{y}|\mathbf{f}\right)$ and prior $p\left(\mathbf{f}|\mathbf{X}\right)$, the marginal likelihood $p\left(\mathbf{y}|\mathbf{X}\right)$ can be computed as follows:
+where $\sigma$ and $\lambda$ are referred to as the height (output, or variance) and characteristic length (input) scale respectively, which we will assume fixed for now. The similarity between two input vectors, under the squared exponential kernel, is a non-linear function of the Euclidean distance between them, which is a reasonable assumption in most applications. Now that we have our likelihood $p\left(\mathbf{y}|\mathbf{f}\right)$ and prior $p\left(\mathbf{f}|\mathbf{X}\right)$, the marginal likelihood $p\left(\mathbf{y}|\mathbf{X}\right)$ can be computed as follows:
 
 \begin{equation}
 p\left(\mathbf{y}|\mathbf{X}\right) = \int p\left(\mathbf{y}|\mathbf{f}\right)p\left(\mathbf{f}|\mathbf{X}\right) \mathrm{d}\mathbf{f},
