@@ -7,7 +7,8 @@
 \usepackage{subcaption}
 \usepackage{graphicx,epstopdf}
 \usepackage{times}
-\usepackage{balance}  
+\usepackage{balance} 
+\usepackage{verbatim}
 
   
 \captionsetup{compatibility=false}
@@ -47,9 +48,9 @@ methods: data analysis -- galaxies: distances and redshifts
 The radial component of the position of a distant object is inferred from its cosmological redshift, induced by the expansion of the Universe; the light observed from a distant galaxy appears to us at longer wavelengths than in the rest frame of that galaxy. The most accurate determination of the exact redshift, $z$, comes from directly observing the spectrum of an extragalactic source and measuring a consistent multiplicative shift, relative to the rest frame, of various emission (or absorption) features. The rest-frame wavelengths of these emission lines are known to a high degree of accuracy which can be conferred onto the measured spectroscopic redshifts, $z_\textrm{s}$. However, the demand on telescope time to obtain spectra for every source in deep, wide surveys is prohibitively high, and only relatively small area spectroscopic campaigns can reach faint magnitudes \citep[e.g.][]{Lilly2009,LeFevre2013,LeFevre2015}, or at the other extreme, relatively bright magnitudes over larger areas \citep[e.g.][]{2dfgrs,GAMA,SDSS3}.
 This forces us towards the use of photometric observations to infer the redshift by other means. Rather than individual spectra, the emission from a distant galaxy is observed in several broad filters, facilitating the characterization of the spectral energy distribution (SED) of fainter sources, at the expense of fine spectral resolution.
 
-Photometric redshift methods largely fall into two categories, based on either SED template fitting or machine learning. Template fitting software such as {\sc Hyperz}; \citep[][]{Hyperz}, {\sc ZEBRA}; \citep{ZEBRA}, {\sc EAZY}; \citep[][]{EAZY} and {\sc Le Phare} \citep[][]{Ilbert2006} rely on a library of SED templates for a variety of different galaxy types, which (given the transmission curves for the photometric filters being used) can be redshifted to fit the photometry. This method can be refined in various ways, often with the use of simulated SEDs rather than only those observed at low redshift, composite SEDs, and through calibration using any available spectroscopic redshifts. Machine learning methods such as artificial neural networks \citep[e.g. {\sc ANNz};][]{Firth2003,Collister04}, nearest-neighbour (NN) \citep{Ball2008}, genetic algorithms \citep[e.g.][]{Hogan2015} and self-organized maps \citep[][]{Geach2012}, to name but a few, rely on a significant fraction of sources in a photometric catalogue having spectroscopic redshifts. These `true' redshifts are used to train the algorithm. 
+Photometric redshift methods largely fall into two categories, based on either SED template fitting or machine learning. Template fitting software such as {\sc Hyperz}; \citep[][]{Hyperz}, {\sc ZEBRA}; \citep{ZEBRA}, {\sc EAZY}; \citep[][]{EAZY} and {\sc Le Phare} \citep[][]{Ilbert2006} rely on a library of SED templates for a variety of different galaxy types, which (given the transmission curves for the photometric filters being used) can be redshifted to fit the photometry. This method can be refined in various ways, often with the use of simulated SEDs rather than only those observed at low redshift, composite SEDs, and through calibration using any available spectroscopic redshifts. Machine learning methods such as artificial neural networks \citep[e.g. {\sc ANNz};][]{Firth2003,Collister04}, nearest-neighbour (NN) \citep{Ball2008}, genetic algorithms \citep[e.g.][]{Hogan2015}, self-organized maps \citep[][]{Geach2012} and random forest \citep[][]{kind2013}, to name but a few, rely on a significant fraction of sources in a photometric catalogue having spectroscopic redshifts. These `true' redshifts are used to train the algorithm. 
 
-Both methods have their strengths and weaknesses, with the best performance often depending on the available data and the intended science goals. As such, future surveys may well depend on contributions from both in tandem, but there has been extensive work on comparing the current state of the art in public software using a variety of techniques \citep{hildebrandt10,abdalla11,sanchez14}. Artificial neural networks motivate the most commonly used machine learning software \citep{Firth2003,vanzella2004photometric,brescia2014catalogue}, however Gaussian Processes \citep[e.g.][]{Way2009} have not yet become well established in this area, despite comparison by \citet{bonfield10} suggesting that they may outperform the popular {\sc ANNz} code, using the rms error as a metric. 
+Both methods have their strengths and weaknesses, with the best performance often depending on the available data and the intended science goals. As such, future surveys may well depend on contributions from both in tandem, but there has been extensive work on comparing the current state of the art in public software using a variety of techniques \citep{hildebrandt10,abdalla11,sanchez14,bonnett2015}. Artificial neural networks motivate the most commonly used machine learning software \citep{Firth2003,vanzella2004photometric,brescia2014catalogue}, however Gaussian Processes \citep[e.g.][]{Way2009} have not yet become well established in this area, despite comparison by \citet{bonfield10} suggesting that they may outperform the popular {\sc ANNz} code, using the rms error as a metric. 
 
 
 In this paper, we introduce a novel sparse kernel regression model that greatly reduces the number of basis (kernel) functions required to model the data considered in this paper. This is achieved by allowing each kernel to have its own hyper-parameters, governing its shape. This is in contrast to the standard kernel-based models in which a set of global hyper-parameters are optimized (such as is typical in Gaussian Process (GP) methods). The complexity cost of such a kernel-based regression model is $O\left(n^{3}\right)$, where $n$ is the number of basis functions. This cubic time complexity arise from the cost of inverting an $n$ by $n$ covariance matrix. In a standard Gaussian Process model \citep{rasmussen2006gaussian}, seen as a kernel regression algorithm, we may regard the basis functions, as located at the $n$ points in the training set. This renders such an approach unusable for many large training data applications where scalability is a major concern. Much of the work done to make GPs more scalable is either to make the inverse computation faster or use a smaller representative training data sample or a set to reduce the rank and ease the computation of the training data covariance matrix. Examples of the former include methods such as structuring the covariance matrix such that it is much easier to invert, using Toeplitz  \citep{zhang2005time} or Kronecker decomposition \citep{tsiligkaridis2013}, or inverse approximation as an optimization problem \citep{gibbs97}. To reduce the number of representative points, an $m \ll n$ subset of the training set can be selected which maximizes the accuracy or the numerical stability of the inversion \citep{foster2009}. Alternatively, one may search for ``inducing'' points not necessarily present in the training set, and not necessarily even lying within the data range, to use as the basis set such that the probability of the data being generated from the model is maximized \citep{snelson2005}. Approaches such as Relevance Vector Machines \citep[RVM;][]{tipping2001} and Support Vector Machines \citep[SVM;][]{smola1997} are basis-function models, which unlike sparse GPs, do not learn the basis functions' locations but rather applies shrinkage to a set of kernels in the form of weight-decay on the linear weights that couple the kernels, located at training data points, to the regression. 
@@ -65,6 +66,7 @@ The paper is organised as follows, a brief introduction to Gaussian Processes fo
 %   \item The proposed approach was applied to a simulated catalogue and achieved  a mean $\Delta z = 0.0026(1+z_\textrm{s})$ on the simulated survey, and  $\Delta z = 0.0179(1+z_\textrm{s})$ on SDSS DR12, exceeding the requirement for most future cosmology experiments based on photometric redshifts, and outperformed other machine learning algorithms such as {\sc ANNz} and {\sc stableGP}.
 % \end{enumerate}
 
+\begin{comment}
 \section{Gaussian Processes}
 \label{sec-gaussian-process}
 In many modelling problems, we have little prior knowledge of the explicit functional form of the function that maps our observables onto the variable of interest. Imposing, albeit sensible, parametric models, such as polynomials, makes a tacit bias. For this reason, much of modern function modelling is performed using \emph{non-parametric} techniques. For regression, the most widely used approach is that of \emph{Gaussian Processes} \citep{rasmussen2006gaussian}.
@@ -117,6 +119,80 @@ The hyper-parameters of the squared exponential kernel $\sigma^{2}$ and $\lambda
 &\qquad -\frac{1}{2} \log\left | \mathbf{K}+\mathbf{I}\sigma_{n}^{2}\right|-\frac{n}{2}\log(2\pi).
 \end{align}
 We search for the optimal set of hyper-parameters using gradient search optimization, hence we require the derivatives of the log marginal likelihood with respect to each hyper-parameter. In this paper, the L-BFGS algorithm was used to optimize the objective which uses a Quasi-Newton method to compute the search direction in each step by approximating the inverse of the Hessian matrix from the history of gradients in previous steps \citep{jorge1980,schmidt2005}. It is worth mentioning that non-parametric models require the optimization of few hyper-parameters that do not grow with the size of the data and are less prone to overfitting, the parameters of the models are inferred analytically. The distinction between parameters and hyper-parameters of a model is that the former directly influence the input-output mapping, for example the linear coupling weights in a basis function model, whereas the latter affect properties of distributions in the probabilistic model, for example the widths of kernels. Although this distinction is somewhat semantic, we keep to this nomenclature as it is standard in the statistical machine learning literature.
+\end{comment}
+
+\section{Gaussian Processes}
+\label{sec-gaussian-process}
+In many modelling problems, we have little prior knowledge of the explicit functional form of the function that maps our observables onto the variable of interest. Imposing, albeit sensible, parametric models, such as polynomials, makes a tacit bias. For this reason, much of modern function modelling is performed using \emph{non-parametric} techniques. For regression, the most widely used approach is that of \emph{Gaussian Processes} \citep{rasmussen2006gaussian}.
+A Gaussian Process is a supervised non-linear regression algorithm that makes few explicit \emph{parametric} assumptions about the nature of the function fit. For this reason, Gaussian Processes are seen as lying within the class of Bayesian non-parametric models. The underlying assumption in a GP is that, given a set of input $\mathbf{X}=\left\{\mathbf{x}_{i}\right\}_{i=1}^{n}\in \mathbb{R}^{n\times d}$ and a set of target outputs $\mathbf{y}=\left\{y_{i}\right\}_{i=1}^{n}\in \mathbb{R}^{n}$, where $n$ is the number of samples in the dataset and $d$ is the dimensionality of the input, that the observed target $y_{i}$ is generated by a function $\mathbf{f}$ of the input $\mathbf{x}_{i}$ plus additive noise $\epsilon_{i}$:
+
+\begin{equation}
+y_{i} = \mathbf{f}\left(\mathbf{x}_{i}\right)+\epsilon_{i}.
+\end{equation}
+
+It is further assumed that the noise $\epsilon$ is normally distributed with a mean of zero and variance $\sigma_{n}^{2}$, or $\epsilon\sim\mathcal{N} \left(0,\sigma_{n}^{2}\right)$. To simplify the notation, it is assumed that $y\sim\mathcal{N} \left(0,1\right)$ (this can readily be achieved without loss of generality) and univariate, although the derivation can be easily extended to multivariable problems. Therefore, the conditional probability of the observed variable given the function is distributed as follows:
+\begin{equation}
+p\left(\mathbf{y}|\mathbf{f}\right)\sim\mathcal{N} \left(\mathbf{f},\sigma_{n}^{2}\right).
+\end{equation}
+
+A GP then proceeds by applying a \emph{Bayesian} treatment to the problem, namely by using Bayes' rule and the rules of probability to fit a probability distribution over the space of possible functions $\mathbf{f}$ given the data:
+ 
+\begin{equation}
+p\left(\mathbf{f}|\mathbf{y},\mathbf{X}\right) = \frac{p\left(\mathbf{y}|\mathbf{f}\right)p\left(\mathbf{f}|\mathbf{X}\right)}{p\left(\mathbf{y}|\mathbf{X}\right)}.
+\end{equation}
+
+This requires us to assume a prior, $p\left(\mathbf{f}|\mathbf{X}\right)$, over our space of functions. A reasonable prior, is to assume that the function is normally distributed with a mean of zero, to match the mean of the normalized variable $\mathbf{y}$, and a covariance \emph{function} $\mathbf{K}$, or $p\left(\mathbf{f}|\mathbf{X}\right)\sim\mathcal{N} \left(0,\mathbf{K}\right)$. The covariance function has to capture some of our prior knowledge about the relationships between the observables. A sensible assumption, is that inputs that are similar in the input space, should also be similar in the output space. The definition of similarity is a modelling decision that can differ across different domains and applications, but generally, $\mathbf{K}$ has to reflect that by assigning higher values to more similar pairs. $\mathbf{K}$ therefore can be modelled as a function of the input $\mathbf{X}$, $\mathbf{K}=k\left(\mathbf{X},\mathbf{X}\right)$, where each element $\mathbf{K}_{ij}=k\left(\mathbf{x}_{i},\mathbf{x}_{j}\right)$ and $k$ is some function of similarity between two inputs. For $\mathbf{K}$ to be a proper covariance, it has to be symmetric and positive-definite matrix, not any arbitrary function $k$ can guarantee that. A class of functions that guarantees the structural constraints of the covariance matrix are called \emph{kernels} \citep{mercer1909}. A commonly used kernel function, which is the focus of this work, is the squared exponential kernel, defined as follows:
+
+\begin{equation}
+k\left(\mathbf{x}_{i},\mathbf{x}_{j}\right) = \sigma^{2}\exp\left(-\frac{1}{2\lambda^{2}}\left\|\mathbf{x}_{i}-\mathbf{x}_{j}\right\|^{2}\right),
+\end{equation}
+
+where $\sigma$ and $\lambda$ are referred to as the hight-variance and the length-scale respectively, which we will assume fixed for now. The similarity between two input vectors, under the squared exponential kernel, is a non-linear function of the Euclidean distance between them, which is a reasonable assumption in most applications. Now that we have our likelihood $p\left(\mathbf{y}|\mathbf{f}\right)$ and prior $p\left(\mathbf{f}|\mathbf{X}\right)$, the marginal likelihood $p\left(\mathbf{y}|\mathbf{X}\right)$ can be computed as follows:
+
+\begin{equation}
+p\left(\mathbf{y}|\mathbf{X}\right) = \int p\left(\mathbf{y}|\mathbf{f}\right)p\left(\mathbf{f}|\mathbf{X}\right) \mathrm{d}\mathbf{f},
+\end{equation}
+
+By multiplying the likelihood and the prior and completing the square over $\mathbf{f}$, we can express the integration as a normal distribution independent of $\mathbf{f}$ multiplied by a another normal distribution over $\mathbf{f}$. The distribution independent of $\mathbf{f}$ can then be taken out of the integral, and the integration of the second normal distribution with respect to $\mathbf{f}$ will be equal to one. The resulting distribution of the marginal likelihood is distributed as follows \citep{rasmussen2006gaussian}:
+
+\begin{equation}
+p\left(\mathbf{y}|\mathbf{X}\right) \sim\mathcal{N} \left(0,\mathbf{K}+\sigma_{n}^{2}\mathbf{I}\right).
+\label{eq-marginal-likelihood}
+\end{equation}
+
+If we assume that the data are independent and identically distributed (iid), the marginal likelihood can be computed as follows:
+\begin{equation}
+p\left(\mathbf{y}|\mathbf{X}\right) = \prod_{i=1}^{n}\frac{1}{\sqrt{2\pi\left |\mathbf{K}+\sigma_{n}^{2}\mathbf{I}\right |}}\exp\left({-\frac{1}{2}y_{i}^{T}\left(\mathbf{K}+\sigma_{n}^{2}\mathbf{I}\right)^{-1}y_{i}}\right).
+\label{eq-marginal-likelihood-complete}
+\end{equation}
+
+The aim of a GP, is to maximize the probability of observing the target $\mathbf{y}$ given the input $\mathbf{X}$, Eq. \eqref{eq-marginal-likelihood-complete}. Note that the only free parameters to optimize in the marginal likelihood are the parameters of the kernel and the noise variance, collectively referred to as the \emph{hyper-parameters} of the model. It is more convenient however to maximize the log of the marginal likelihood, Eq. \eqref{eq-log-marginal-likelihood}, since the log function is a monotonically increasing function, maximizing the log of a function is equivalent to maximizing the original function. 
+
+\begin{align}
+\label{eq-log-marginal-likelihood}
+\log\text{ }p(\mathbf{y}|\mathbf{X}) &= -\frac{1}{2}\mathbf{y}^{T}\left(\mathbf{K}+\mathbf{I}\sigma_{n}^{2} \right)^{-1}\mathbf{y} \nonumber \\
+&\qquad -\frac{1}{2} \log\left | \mathbf{K}+\mathbf{I}\sigma_{n}^{2}\right|-\frac{n}{2}\log(2\pi).
+\end{align}
+
+We search for the optimal set of hyper-parameters using gradient search optimization, hence we require the derivatives of the log marginal likelihood with respect to each hyper-parameter. In this paper, the L-BFGS algorithm was used to optimize the objective which uses a Quasi-Newton method to compute the search direction in each step by approximating the inverse of the Hessian matrix from the history of gradients in previous steps \citep{jorge1980,schmidt2005}. It is worth mentioning that non-parametric models require the optimization of few hyper-parameters that do not grow with the size of the data and are less prone to overfitting, the parameters of the models are inferred analytically. The distinction between parameters and hyper-parameters of a model is that the former directly influence the input-output mapping, for example the linear coupling weights in a basis function model, whereas the latter affect properties of distributions in the probabilistic model, for example the widths of kernels. Although this distinction is somewhat semantic, we keep to this nomenclature as it is standard in the statistical machine learning literature.
+
+Once the hyper-parameters have been learned, the conditional distribution of future predictions $\mathbf{f}_{*}$ for test cases $\mathbf{X}_{*}$ given the training set can be inferred from the joint distribution of $\mathbf{f}_{*}$ and the observed targets $\mathbf{y}$. If we assume that the joint distribution is a multivariate Gaussian, then the joint probability is distributed as follows:
+
+\begin{equation}
+p\left ( \mathbf{y},\mathbf{f}_{*}|\mathbf{X},\mathbf{X}_{*}\right) \sim \mathcal{N} \left ( \mathbf{0}, \begin{bmatrix}\mathbf{K_{xx}}+\sigma_{n}^{2}\mathbf{I} & \mathbf{K_{x*}}\\\mathbf{K_{*x}} & \mathbf{K_{**}} \end{bmatrix}\right ),
+\end{equation}
+where we introduce the shorthand notations $\mathbf{K_{xx}}=k\left(\mathbf{X},\mathbf{X}\right)$, $\mathbf{K_{x*}}=k\left(\mathbf{X},\mathbf{X}_{*}\right)$, $\mathbf{K_{*x}}=k\left(\mathbf{X}_{*},\mathbf{X}\right)$ and $\mathbf{K_{**}}=k\left(\mathbf{X}_{*},\mathbf{X}_{*}\right)$. The conditional distribution $p\left(\mathbf{f}_{*}|\mathbf{y},\mathbf{X},\mathbf{X}_{*}\right)$ is therefore distributed as follows:
+
+\begin{equation}
+\begin{array}{rcl}
+p\left(\mathbf{f}_{*}|\mathbf{y},\mathbf{X},\mathbf{X}_{*}\right)		&	\sim		&	\mathcal{N} \left ( \bmu, \mathbf\Sigma \right ),\\
+\bmu			&	=		&	\mathbf{K_{*x}}\left(\mathbf{K_{xx}}+\sigma_{n}^{2}\mathbf{I}\right)^{-1}\mathbf{y},\\
+\mathbf\Sigma		&	=		&	\mathbf{K_{**}}-\mathbf{K_{*x}}\left(\mathbf{K_{xx}}+\sigma_{n}^{2}\mathbf{I}\right)^{-1}\mathbf{K_{x*}}.
+\end{array}
+\label{eq-posterior-of-f}
+\end{equation}
+
+The main draw back of GPs is the $O\left(n^{3}\right)$ computational cost required to invert the $n\times n$ matrix $\mathbf{K_{xx}}+\sigma_{n}^{2}\mathbf{I}$. Here where the sparse Gaussian Process approximation come in to reduce the computation cost of GP inference, which will be discussed in the following section.
 
 \section{Sparse Gaussian Processes}
 \label{sec-sparse-gaussian-processes}
@@ -651,54 +727,67 @@ In this experiment, photometric redshifts were generated using a committee of fi
 
 Although not as stark as for the simulated data set, our GP-VC algorithm consistently out performed {\sc ANNz} on the important metrics ($\Delta z$ and $\Delta z_{norm}$) and from examining the plots, the outliers are less extreme in the GP-VC case, with an increase in accuracy of around 5~per cent for the full SDSS+BOSS data set. However, we note that given the overall performance of GP-VC on the simulated data set, we expect the real power of our GP-VC to algorithm to be shown in the sparse data regime, and we reserve such an analysis to a future paper.
 
-
- \begin{table*}
-\caption{Performance measures for the final {\sc ANNz} model using a committee of 5 networks with 5:10:10:1 architectures and the final GP-VC model using $m=103$ basis functions with a jointly optimized linear function on the SDSS data set.}
 \begin{center}
+\begin{table*}
+
+
+\begin{subtable}{\textwidth}
+\centering
+
 \begin{tabular}{| l | c | c |  c | c |  c | c |  c | c |  c | c | }
      				&	$\Delta z$	&	$\Delta z_\textrm{norm}$	&	max$_{z}$ & max$_{norm}$		&	$\mu_{z}$&	$\mu_{norm}$	& $\sigma_{z}$ & $\sigma_{norm}$ & out$_{z}$&out$_{norm}$\\	\hline
 	{\sc ANNz}		&	0.0308	&	0.0249		&	0.8689		&	\textbf{0.4478}&	0.0000		&	-0.0007 &	0.0308		&	0.0249&	0.0327		&	0.0378\\
 	{\sc GP-VC } 	&	\textbf{0.0302} 	&	\textbf{0.0244}		&	\textbf{0.8678}	&	0.5017 & 0.0000		&	\textbf{-0.0006}&	\textbf{0.0302}		&	\textbf{0.0244}&	\textbf{0.0316} 	&	\textbf{0.0365}\\\hline
   \end{tabular}
-\end{center}
-\label{table-final-results-sdss}
-\end{table*}
 
- \begin{table*}
-\caption{Performance measures for the final {\sc ANNz} model using a committee of 5 networks with 5:10:10:1 architectures and the final GP-VC model using $m=103$ basis functions with a jointly optimized linear function on the SDSS+cut data set.}
-\begin{center}
+\caption{SDSS}
+\label{table-final-results-sdss}
+\end{subtable}
+
+\begin{subtable}{\textwidth}\
+\centering
 \begin{tabular}{| l | c | c |  c | c |  c | c |  c | c |  c | c | }
      				&	$\Delta z$	&	$\Delta z_\textrm{norm}$	&	max$_{z}$ & max$_{norm}$		&	$\mu_{z}$&	$\mu_{norm}$	& $\sigma_{z}$ & $\sigma_{norm}$ & out$_{z}$&out$_{norm}$\\	\hline
 	{\sc ANNz}		&	0.0221	&	0.0190		&	0.8710		&	0.4489&	0.0002		&	\textbf{-0.0002}&	0.0221		&	0.0190&	0.0397		&	0.0469\\
 	{\sc GP-VC } 	&	\textbf{0.0209} 	&	\textbf{0.0179}		&	\textbf{0.8562}	&	\textbf{0.4413} & \textbf{0.0001}		&	-0.0003&	\textbf{0.0209}		&	\textbf{0.0179}&	\textbf{0.0386} 	&	\textbf{0.0456}\\\hline
   \end{tabular}
-\end{center}
-\label{table-final-results-sdss-cut}
-\end{table*}
 
- \begin{table*}
-\caption{Performance measures for the final {\sc ANNz} model using a committee of 5 networks with 5:10:10:1 architectures and the final GP-VC model using $m=103$ basis functions with a jointly optimized linear function on the FULL data set.}
-\begin{center}
+\caption{SDSS+cut}
+\label{table-final-results-sdss-cut}
+\end{subtable}
+
+\begin{subtable}{\textwidth}
+\centering
+
 \begin{tabular}{| l | c | c |  c | c |  c | c |  c | c |  c | c | }
      				&	$\Delta z$	&	$\Delta z_\textrm{norm}$	&	max$_{z}$ & max$_{norm}$		&	$\mu_{z}$&	$\mu_{norm}$	& $\sigma_{z}$ & $\sigma_{norm}$ & out$_{z}$&out$_{norm}$\\	\hline
 	{\sc ANNz}		&	0.0539	&	0.0386		&	\textbf{1.3113}		&	\textbf{0.7457}&	\textbf{-0.0000}		&	-0.0015 &	0.0539		&	0.0386&	0.0393		&	0.0346\\
 	{\sc GP-VC } 	&	\textbf{0.0513} 	&	\textbf{0.0366}		&	1.4284	&	0.8601 & -0.0001		&	\textbf{-0.0013}&	\textbf{0.0513}		&	\textbf{0.0366}&	\textbf{0.0385} 	&	\textbf{0.0340}\\\hline
   \end{tabular}
-\end{center}
-\label{table-final-results-boss}
-\end{table*}
 
- \begin{table*}
-\caption{Performance measures for the final {\sc ANNz} model using a committee of 5 networks with 5:10:10:1 architectures and the final GP-VC model using $m=103$ basis functions with a jointly optimized linear function on the FULL+cut data set.}
-\begin{center}
+\caption{FULL}
+\label{table-final-results-boss}
+\end{subtable}
+
+\begin{subtable}{\textwidth}
+\centering
+
 \begin{tabular}{| l | c | c |  c | c |  c | c |  c | c |  c | c | }
      				&	$\Delta z$	&	$\Delta z_\textrm{norm}$	&	max$_{z}$ & max$_{norm}$		&	$\mu_{z}$&	$\mu_{norm}$	& $\sigma_{z}$ & $\sigma_{norm}$ & out$_{z}$&out$_{norm}$\\	\hline
 	{\sc ANNz}		&	0.0222	&	0.0188		&	\textbf{0.8523}		&	\textbf{0.4421}&	-0.0000		&	-0.0004 &	0.0222		&	0.0188&	\textbf{0.0367}		&	0.0445\\
 	{\sc GP-VC } 	&	\textbf{0.0207} 	&	\textbf{0.0178}		&	0.9831	&	0.5043 & -0.0000		&	\textbf{-0.0003}&	\textbf{0.0207}		&	\textbf{0.0178}&	0.0376 	&	0.0445\\\hline
   \end{tabular}
-\end{center}
+
+\caption{FULL+cut}
 \label{table-final-results-boss-cut}
+\end{subtable}
+
+
+\caption{Performance measures for the final {\sc ANNz} model using a committee of 5 networks with 5:10:10:1 architectures and the final GP-VC model using $m=103$ basis functions with a jointly optimized linear function on all the data sets.}
+\label{table-final-results}
 \end{table*}
+\end{center}
+
 
 \begin{figure*}
         \centering
