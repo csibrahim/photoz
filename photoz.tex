@@ -145,6 +145,7 @@ This requires us to assume a prior, $p\left(\mathbf{f}|\mathbf{X}\right)$, over 
 
 \begin{equation}
 k\left(\mathbf{x}_{i},\mathbf{x}_{j}\right) = \sigma^{2}\exp\left(-\frac{1}{2\lambda^{2}}\left\|\mathbf{x}_{i}-\mathbf{x}_{j}\right\|^{2}\right),
+\label{eq-squared-exponential}
 \end{equation}
 
 where $\sigma$ and $\lambda$ are referred to as the height (output, or variance) and characteristic length (input) scale respectively, which we will assume fixed for now. The similarity between two input vectors, under the squared exponential kernel, is a non-linear function of the Euclidean distance between them, which is a reasonable assumption in most applications. Now that we have our likelihood $p\left(\mathbf{y}|\mathbf{f}\right)$ and prior $p\left(\mathbf{f}|\mathbf{X}\right)$, the marginal likelihood $p\left(\mathbf{y}|\mathbf{X}\right)$ can be computed as follows:
@@ -190,6 +191,12 @@ p\left(\mathbf{f}_{*}|\mathbf{y},\mathbf{X},\mathbf{X}_{*}\right)		&	\sim		&	\ma
 \mathbf\Sigma		&	=		&	\mathbf{K_{**}}-\mathbf{K_{*x}}\left(\mathbf{K_{xx}}+\sigma_{n}^{2}\mathbf{I}\right)^{-1}\mathbf{K_{x*}}.
 \end{array}
 \label{eq-posterior-of-f}
+\end{equation}
+
+If we assume a non-zero prior mean $\bmu_{\mathbf{f}}$ over the function, $p(\mathbf{f})\sim\mathcal{N}\left(\bmu_{\mathbf{f}},\mathbf{K}\right)$, and an un-normalized $\mathbf{y}$ with mean $\bmu_{\mathbf{y}}$, the mean of the posterior distribution will be equal to:
+\begin{equation}
+\bmu	 = \bmu_{\mathbf{f}}+\mathbf{K_{*x}}\left(\mathbf{K_{xx}}+\sigma_{n}^{2}\mathbf{I}\right)^{-1}\left(\mathbf{y}-\bmu_{\mathbf{y}}\right),
+\label{eq-conditional-distribution}
 \end{equation}
 
 The main draw back of GPs is the $O\left(n^{3}\right)$ computational cost required to invert the $n\times n$ matrix $\mathbf{K_{xx}}+\sigma_{n}^{2}\mathbf{I}$. Here where the sparse Gaussian Process approximation come in to reduce the computation cost of GP inference, which will be discussed in the following section.
@@ -271,7 +278,7 @@ Setting up the problem in this manner allows the setting of matrix $\mathbf\Lamb
 
 \subsection{Prior Mean Functions}
 
-In the absence of observations, all Bayesian models, Gaussian processes included, rely on their priors to provide function estimation. For the case of Gaussian processes this requires us to consider the prior over the function, especially the prior mean. For example, the first term in the mean prediction in Eq. \eqref{eq-conditional-distribution}, $\bmu_{\mathbf{x}}$, is our prior mean in which we learn the deviation from using a GP. Similarly, we may consider a mean \emph{function} that is itself a simple linear regression from the independent to dependent variable. The parameters of this function are then inferred and the GP infers non-linear deviations. In the absence of data, e.g. in extrapolative regions, the GP will fall back to the linear regression prediction \citep{roberts2012rs}. We can incorporate this directly into the optimization objective instead of having it as a separate preprocessing step by redefining $\mathbf{K}$ as a concatenation of the linear and non-linear features, or setting $\mathbf{\hat K}=[\mathbf{K}|\mathbf{X}|\vec{\mathbf{1}}_{n}]$ and $\mathbf{\hat w} = \left [\mathbf{w}|\mathbf{w}_{L}|b \right]$, where $\mathbf{w}_{L}$ is the linear regression's coefficients and $b$ is the bias. The prediction can then be formulated as follows:
+In the absence of observations, all Bayesian models, Gaussian processes included, rely on their priors to provide function estimation. For the case of Gaussian processes this requires us to consider the prior over the function, especially the prior mean. For example, the first term in the mean prediction in Eq. \eqref{eq-conditional-distribution}, $\bmu_{\mathbf{f}}$, is our prior mean in which we learn the deviation from using a GP. Similarly, we may consider a mean \emph{function} that is itself a simple linear regression from the independent to dependent variable. The parameters of this function are then inferred and the GP infers non-linear deviations. In the absence of data, e.g. in extrapolative regions, the GP will fall back to the linear regression prediction \citep{roberts2012rs}. We can incorporate this directly into the optimization objective instead of having it as a separate preprocessing step by redefining $\mathbf{K}$ as a concatenation of the linear and non-linear features, or setting $\mathbf{\hat K}=[\mathbf{K}|\mathbf{X}|\vec{\mathbf{1}}_{n}]$ and $\mathbf{\hat w} = \left [\mathbf{w}|\mathbf{w}_{L}|b \right]$, where $\mathbf{w}_{L}$ is the linear regression's coefficients and $b$ is the bias. The prediction can then be formulated as follows:
 
 \begin{equation}
 \label{eq-joint-concatenation}
@@ -287,7 +294,7 @@ Thus far in the discussion, we make the tacit assumption that the objective of t
 \label{eq-balanced-weights}
 w_{i} = \frac{\mbox{max}\left(\left \{f_{1},\hdots,f_{B}\right\}\right)}{\left\{f_{b}:i\in S_{b}\right\}},
 \end{equation}
-where $w_{i}$ is the error cost for sample $i$, $f_{b}$ is the frequency of samples in bin number number $i$, $B$ is the number of bins and $S_{b}$ is the set of samples in set number $b$. Eq. \ref{eq-balanced-weights} assigns a weight to each training point which is the maximum bin frequency over the frequency of the bin where the source belongs to, this ensures that the error cost of source $i$ is inversely proportional to its spectroscopic redshift frequency in the training set. The normalized weights are assigned as follows:
+where $w_{i}$ is the error cost for sample $i$, $f_{b}$ is the frequency of samples in bin number number $i$, $B$ is the number of bins and $S_{b}$ is the set of samples in set number $b$. Eq. \eqref{eq-balanced-weights} assigns a weight to each training point which is the maximum bin frequency over the frequency of the bin where the source belongs to, this ensures that the error cost of source $i$ is inversely proportional to its spectroscopic redshift frequency in the training set. The normalized weights are assigned as follows:
 
 \begin{equation}
 \label{eq-normalized-weights}
