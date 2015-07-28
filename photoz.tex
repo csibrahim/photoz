@@ -57,69 +57,7 @@ In this paper, we introduce a novel sparse kernel regression model that greatly 
 
 In this paper, we propose a non-stationary sparse Gaussian model to target photometric redshift estimation. The key difference between the proposed approach and other basis function models, is that our model does not use shrinkage (automatic relevance determination) external to the kernel, but instead has a length-scale parameter in each kernel. This allows for parts of the input-output regression mapping to have different characteristic length-scales. We can see this as allowing for shrinkage and reducing the need for more basis functions, as well as allowing for non-stationary mappings. A regular GP, sparse GP or RVM does not do this, and we demonstrate that this is advantageous to photometric redshift estimation. Furthermore, the model is presented within a framework with components that address other challenges in photometric redshift estimation such as incorporating a weighting scheme as an integral part of the process to remove, or introduce, any systematic bias, and a prior mean function to enhance the extrapolation performance of the model. The results are demonstrated on photometric redshift estimation for a {\em Euclid}-like survey \citep{laureijs2011} and on the 12th Data Release of the Sloan Digital Sky Survey (SDSS) \citep{SDSS3}\footnote{\url{www.sdss.org}} . In particular, we use the weighting scheme to remove any distribution bias and introduce a linear bias to directly target the mission's requirement. 
 
-The paper is organised as follows, a brief introduction to Gaussian Processes for regression is presented in Section \ref{sec-gaussian-process} followed by an introduction to sparse GPs in Section \ref{sec-sparse-gaussian-processes}. The proposed approach is described in Section \ref{sec-proposed-approach} followed by an application to photometric redshift estimation in Section \ref{sec-application}, where the details of the mock dataset are described. The experiments and results are discussed in Section \ref{sec-experiments} on the simulated survey, and in Section \ref{sec-experiments-sdss} we demonstrate the performance of the proposed model and compare it to ANNz on the SDSS 12th Data Release. Finally, we summarize and conclude in Section \ref{sec-conclusion}. % The contributions of this paper are as follows:
-% \begin{enumerate}
-%   \item Increasing the modelling capability of sparse GPs via the use of more flexible kernels and fewer basis functions, thereby enhancing computational complexity without sacrificing accuracy.
-%   \item Development of an efficient computational procedure to compute the gradients for both, the full covariance matrix and its low rank approximations.
-%   \item Incorporating a weighting scheme directly to the objective in order to counteract any undesired bias and/or to control the bias of the model. 
-%   \item A linear regression prior mean function is jointly optimized to enhance the model's extrapolation performance.
-%   \item The proposed approach was applied to a simulated catalogue and achieved  a mean $\Delta z = 0.0026(1+z_\textrm{s})$ on the simulated survey, and  $\Delta z = 0.0179(1+z_\textrm{s})$ on SDSS DR12, exceeding the requirement for most future cosmology experiments based on photometric redshifts, and outperformed other machine learning algorithms such as {\sc ANNz} and {\sc stableGP}.
-% \end{enumerate}
-
-\begin{comment}
-\section{Gaussian Processes}
-\label{sec-gaussian-process}
-In many modelling problems, we have little prior knowledge of the explicit functional form of the function that maps our observables onto the variable of interest. Imposing, albeit sensible, parametric models, such as polynomials, makes a tacit bias. For this reason, much of modern function modelling is performed using \emph{non-parametric} techniques. For regression, the most widely used approach is that of \emph{Gaussian Processes} \citep{rasmussen2006gaussian}.
-A Gaussian Process is a supervised non-linear regression algorithm that makes few explicit \emph{parametric} assumptions about the nature of the function fit. For this reason, Gaussian Processes are seen as lying within the class of Bayesian non-parametric models. The main underlying assumption in a GP is that the joint probability of the input variable $\mathbf{x}$ and the output variable $\mathbf{y}$ is a multivariate Gaussian with mean $\bmu=\begin{bmatrix} \bmu_{\mathbf{x}} & \bmu_{\mathbf{y}}\end{bmatrix}^{T}$ and covariance $\mathbf\Sigma=\begin{bmatrix}\mathbf\Sigma_{\mathbf{x}\mathbf{x}} & \mathbf\Sigma_{\mathbf{x}\mathbf{y}} \\ \mathbf\Sigma_{\mathbf{y}\mathbf{x}} & \mathbf\Sigma_{\mathbf{y}\mathbf{y}} \end{bmatrix}$, where $\mathbf\Sigma_{\mathbf{x}\mathbf{y}}=(\mathbf{x}-\bmu_{\mathbf{x}})(\mathbf{y}-\bmu_{\mathbf{y}})^{T}$. The input variables $\mathbf{x}$ is an $n$ by $d$ matrix, where $n$ is the number of data points and $d$ is the dimensionality of the input. Without loss of generality, the output variable $\mathbf{y}$ is assumed to be a vector of length $n$ of target outputs but the same concept holds for multiple output variables. The joint distribution is hence:
-
-\begin{equation}
-p\left ( \mathbf{x},\mathbf{y}\right) \sim \mathcal{N} \left ( \begin{bmatrix}\bmu_{\mathbf{x}}\\\bmu_{\mathbf{y}} \end{bmatrix}, \begin{bmatrix}\mathbf\Sigma_{\mathbf{x}\mathbf{x}} & \mathbf\Sigma_{\mathbf{x}\mathbf{y}}\\\mathbf\Sigma_{\mathbf{y}\mathbf{x}} & \mathbf\Sigma_{\mathbf{y}\mathbf{y}} \end{bmatrix}\right ).
-\end{equation}
-
-The mean and covariance of the conditional probability $p(\mathbf{y}|\mathbf{x})$ therefore is Gaussian distributed as follows:
-\begin{equation}
-\begin{array}{rcl}
-p(\mathbf{y}|\mathbf{x})		&	\sim		&	\mathcal{N} \left ( \bmu, \mathbf\Sigma \right ),\\
-\bmu			&	=		&	\bmu_{\mathbf{x}}+\mathbf\Sigma_{\mathbf{y}\mathbf{x}}\mathbf\Sigma_{\mathbf{x}\mathbf{x}}^{-1}\left ( \mathbf{y}-\bmu_{\mathbf{y}}\right ),\\
-\mathbf\Sigma		&	=		&	\mathbf\Sigma_{\mathbf{y}\mathbf{y}}-\mathbf\Sigma_{\mathbf{y}\mathbf{x}}\mathbf\Sigma_{\mathbf{x}\mathbf{x}}^{-1}\mathbf\Sigma_{\mathbf{x}\mathbf{y}}.
-\end{array}
-\label{eq-conditional-distribution}
-\end{equation}
-
-The calculation can be simplified by subtracting the mean of the input and the output variables and assuming a prior mean $\bmu_{\mathbf{x}}=\bmu_{\mathbf{y}}=0$ and $\mathbf\Sigma_{\mathbf{x}\mathbf{y}}$ redefined as $\mathbf{x}\mathbf{y}^{T}$. The mean and covariance of the conditional probability $p(\mathbf{y}|\mathbf{x})$ can then be rewritten as:
-\begin{equation}
-\label{eq-conditional-zero-mean}
-\begin{array}{rcl}
-\bmu 		&=&		\mathbf\Sigma_{\mathbf{y}\mathbf{\mathbf{x}}}\mathbf\Sigma_{\mathbf{x}\mathbf{x}}^{-1}\mathbf{y},\\
-\mathbf\Sigma 	&=& 	\mathbf\Sigma_{\mathbf{y}\mathbf{y}}-\mathbf\Sigma_{\mathbf{y}\mathbf{x}}\mathbf\Sigma_{\mathbf{x}\mathbf{x}}^{-1}\mathbf\Sigma_{\mathbf{x}\mathbf{y}}.
-\end{array}
-\end{equation}
-
-For the rest of this paper, the prior mean is assumed to be zero unless otherwise stated (this can readily be achieved without loss of generality). Thus far, the analysis has assumed that no noise (uncertainty) exists in the set of observed $\mathbf{y}$ data. It is readily shown that assuming some noise $\epsilon \sim \mathcal{N}\left(0,\sigma_{n}^{2}\right)$ on the output variable $\mathbf{y}$, yields the following updated mean and covariance \citep{rasmussen2006gaussian}:
-\begin{equation}
-\label{eq-mean-variance-noise}
-\begin{array}{rcl}
-\bmu &=& \mathbf\Sigma_{\mathbf{y}\mathbf{x}}\left(\mathbf\Sigma_{\mathbf{x}\mathbf{x}}+\mathbf{I}\sigma_{n}^{2}\right)^{-1}\mathbf{y},\\
-\mathbf\Sigma &=& \mathbf\Sigma_{\mathbf{y}\mathbf{y}}-\mathbf\Sigma_{\mathbf{y}\mathbf{x}}\left(\mathbf\Sigma_{\mathbf{x}\mathbf{x}}+\mathbf{I}\sigma_{n}^{2}\right)^{-1}\mathbf\Sigma_{\mathbf{x}\mathbf{y}}+\sigma_{n}^{2}.
-\end{array}
-\end{equation}
-For this definition of the covariance matrix $\mathbf\Sigma$, the predictive mean is equivalent to a linear regression model, indeed, the same regression solution may be found by evaluating the regression model that minimizes the sum of squared errors. For an in depth discussion on Gaussian processes for regression and its Bayesian interpretation, the reader is referred to \citet{rasmussen2006gaussian}. The specific use of Gaussian processes for time series modelling is discussed in \citet{roberts2012rs}.
-
-Since the solution is entirely defined in terms of inner products of the input space, one can utilize the so-called ``kernel trick'' to learn non-linear models by replacing the covariance matrix $\mathbf\Sigma$ with a covariance function $\mathbf{K}$, where $\mathbf{K}_{i,j} = k(\mathbf{x}_{i},\mathbf{x}_{j})$.
-
-The kernel function $k$ is defined such that the matrix $\mathbf{K}$ will be symmetric and positive-definite. The kernel trick allows the computation of the covariance matrix of some high dimensional mapping of the input into a higher dimensional space without explicitly requiring the mapping of the data to that space. The choice of kernel is largely a modelling decision based on the definition of similarity for a given application. In this paper, the squared exponential kernel defined in  Eq. \eqref{eq-squared-exponential} below is used, but the concepts introduced here apply to any other kernel function. We note that the basis functions' internal dimensionality is that of the input space, thus they can be interpreted as functions local to ``inducing points''. As we show later in this paper, the flexibility of the squared exponential kernel can be enhanced allowing us to learn more complex patterns using fewer basis functions.
-\begin{equation}
-\label{eq-squared-exponential}
-k(\mathbf{x}_{i},\mathbf{x}_{j}) = \sigma^{2} \exp \left ( -\frac{1} {2\lambda^{2}} \left \|\mathbf{x}_{i}-\mathbf{x}_{j}\right\|^{2}\right ).
-\end{equation}
-The hyper-parameters of the squared exponential kernel $\sigma^{2}$ and $\lambda^{2}$ are referred to as the height (output, or variance) and characteristic length (input) scale respectively. Together with the noise variance $\sigma_{n}^{2}$, they define the set of hyper-parameters for the GP model. The optimal set of hyper-parameters are the set of values that maximizes the probability of the data given the model, which can be achieved by maximizing the log marginal likelihood \citep{rasmussen2006gaussian} defined in Eq. \eqref{eq-log-marginal-likelihood} below:
-\begin{align}
-\label{eq-log-marginal-likelihood}
-\log\text{ }p(\mathbf{y}|\mathbf{x}) &= -\frac{1}{2}\mathbf{y}^{T}\left(\mathbf{K}+\mathbf{I}\sigma_{n}^{2} \right)^{-1}\mathbf{y} \nonumber \\
-&\qquad -\frac{1}{2} \log\left | \mathbf{K}+\mathbf{I}\sigma_{n}^{2}\right|-\frac{n}{2}\log(2\pi).
-\end{align}
-We search for the optimal set of hyper-parameters using gradient search optimization, hence we require the derivatives of the log marginal likelihood with respect to each hyper-parameter. In this paper, the L-BFGS algorithm was used to optimize the objective which uses a Quasi-Newton method to compute the search direction in each step by approximating the inverse of the Hessian matrix from the history of gradients in previous steps \citep{jorge1980,schmidt2005}. It is worth mentioning that non-parametric models require the optimization of few hyper-parameters that do not grow with the size of the data and are less prone to overfitting, the parameters of the models are inferred analytically. The distinction between parameters and hyper-parameters of a model is that the former directly influence the input-output mapping, for example the linear coupling weights in a basis function model, whereas the latter affect properties of distributions in the probabilistic model, for example the widths of kernels. Although this distinction is somewhat semantic, we keep to this nomenclature as it is standard in the statistical machine learning literature.
-\end{comment}
+The paper is organised as follows, a brief introduction to Gaussian Processes for regression is presented in Section \ref{sec-gaussian-process} followed by an introduction to sparse GPs in Section \ref{sec-sparse-gaussian-processes}. The proposed approach is described in Section \ref{sec-proposed-approach} followed by an application to photometric redshift estimation in Section \ref{sec-application}, where the details of the mock dataset are described. The experiments and results are discussed in Section \ref{sec-experiments} on the simulated survey, and in Section \ref{sec-experiments-sdss} we demonstrate the performance of the proposed model and compare it to ANNz on the SDSS 12th Data Release. Finally, we summarize and conclude in Section \ref{sec-conclusion}.
 
 \section{Gaussian Processes}
 \label{sec-gaussian-process}
@@ -128,7 +66,7 @@ A Gaussian Process is a supervised non-linear regression algorithm that makes fe
 \begin{equation}
 y_{i} = \mathbf{f}\left(\mathbf{x}_{i}\right)+\epsilon_{i}.
 \end{equation}
-The noise $\epsilon$ is taken to be normally distributed with a mean of zero and variance $\sigma_{n}^{2}$, or $\epsilon\sim\mathcal{N} \left(0,\sigma_{n}^{2}\right)$. To simplify the notation, it is assumed that $y\sim\mathcal{N} \left(0,1\right)$ (this can readily be achieved without loss of generality, via a linear whitening process) and univariate, although the derivation can be readily extended to multivariable problems. The conditional probability of the observed variable given the function is hence distributed as follows:
+The noise $\epsilon$ is taken to be normally distributed with a mean of zero and variance $\sigma_{n}^{2}$, or $\epsilon\sim\mathcal{N} \left(0,\sigma_{n}^{2}\right)$. To simplify the notation, it is assumed that $\mathbf{y}\sim\mathcal{N} \left(0,1\right)$ (this can readily be achieved without loss of generality, via a linear whitening process) and univariate, although the derivation can be readily extended to multivariable problems. The conditional probability of the observed variable given the function is hence distributed as follows:
 \begin{equation}
 p\left(\mathbf{y}|\mathbf{f}\right)\sim\mathcal{N} \left(\mathbf{f},\sigma_{n}^{2}\right).
 \end{equation}
@@ -651,12 +589,12 @@ dbo.fPhotoFlags('BAD_COUNTS_ERROR') != 0 AND
 dbo.fPhotoFlags('INTERP_CENTER') != 0
 \end{verbatim}
 
-We use similar image flags to the ones used in \citet{brescia2014catalogue}. Four different data sets were created from the retrieved data:
+We use similar image flags to the ones used in \citet{brescia2014catalogue}. To target the original spectroscopic limit of the SDSS, the models will also be tested on a cutoff of $r<17.7$. Four different data sets were created from the retrieved data:
 \begin{enumerate}
   \item SDSS: This data set includes only sources from the SDSS but not the BOSS survey (817,604 sources) 
-  \item SDSS+cut: This data set includes only the sources from the SDSS data set with $r<17.7$ (577,725 sources).
-  \item FULL: This data set includes all sources from the BOSS and the SDSS survys (2,120,465 sources). 
-  \item FULL+cut: This data set includes only the sources from the FULL data set with $r<17.7$ (629,117 sources). 
+  \item SDSS with cut: This data set includes only the sources from the SDSS data set with $r<17.7$ (577,725 sources).
+  \item SDSS+BOSS: This data set includes all sources from the BOSS and the SDSS surveys (2,120,465 sources). 
+  \item SDSS+BOSS with cut: This data set includes only the sources from the SDSS+BOSS data set with $r<17.7$ (629,117 sources). 
 \end{enumerate}
 
 
@@ -680,11 +618,11 @@ The distribution of the spectroscopic redshifts of the data sets are shown in Fi
         ~
         \begin{subfigure}[b]{0.45\textwidth}
                 \includegraphics[width=\textwidth]{figures/zspec_boss.eps}
-                \caption{FULL}
+                \caption{SDSS+BOSS}
         \end{subfigure}
 
         
-        \caption{The distribution of the spectroscopic redshift in the (a) SDSS and (b) FULL datasets. The top figures show the distributions with the $r<17.7$ cut while the bottom figures show the distributions without the cut.}
+        \caption{The distribution of the spectroscopic redshift in the (a) SDSS and (b) SDSS+BOSS datasets. The top figures show the distributions with the $r<17.7$ cut while the bottom figures show the distributions without the cut.}
         \label{fig-zpec-sdss}
 \end{figure*}
 
@@ -716,7 +654,7 @@ In this test, we trained a two-layer {\sc ANNz} architecture using various numbe
 
 \subsection{Final Results}
 
-In this experiment, photometric redshifts were generated using a committee of five two-layer architectures, each layer with twice the number of hidden units as the number of filters and compared to the best performing GP-VC model from the previous test. The experiment was carried out on the four data sets, the performance measures are reported in tables \ref{table-final-results-sdss}, \ref{table-final-results-sdss-cut}, \ref{table-final-results-boss} and \ref{table-final-results-boss-cut} for the SDSS, SDSS+cut, FULL and FULL+cut respectively. The density scatter plots for the SDSS and FULL data sets are shown in Figure \ref{fig-final-model-sdss} and \ref{fig-final-model-boss} respectively. 
+In this experiment, photometric redshifts were generated using a committee of five two-layer architectures, each layer with twice the number of hidden units as the number of filters and compared to the best performing GP-VC model from the previous test. The experiment was carried out on the four data sets, the performance measures are reported in tables \ref{table-final-results-sdss}, \ref{table-final-results-sdss-cut}, \ref{table-final-results-boss} and \ref{table-final-results-boss-cut} for the SDSS, SDSS with cut, SDSS+BOSS and SDSS+BOSS with cut respectively. The density scatter plots for the SDSS and SDSS+BOSS data sets are shown in Figure \ref{fig-final-model-sdss} and \ref{fig-final-model-boss} respectively. 
 
 Although not as stark as for the simulated data set, our GP-VC algorithm consistently out performed {\sc ANNz} on the important metrics ($\Delta z$ and $\Delta z_{norm}$) and from examining the plots, the outliers are less extreme in the GP-VC case, with an increase in accuracy of around 5~per cent for the full SDSS+BOSS data set. However, we note that given the overall performance of GP-VC on the simulated data set, we expect the real power of our GP-VC to algorithm to be shown in the sparse data regime, and we reserve such an analysis to a future paper.
 
@@ -745,7 +683,7 @@ Although not as stark as for the simulated data set, our GP-VC algorithm consist
 	{\sc GP-VC } 	&	\textbf{0.0209} 	&	\textbf{0.0179}		&	\textbf{0.8562}	&	\textbf{0.4413} & \textbf{0.0001}		&	-0.0003&	\textbf{0.0209}		&	\textbf{0.0179}&	\textbf{0.0386} 	&	\textbf{0.0456}\\\hline
   \end{tabular}
 
-\caption{SDSS+cut}
+\caption{SDSS with cut}
 \label{table-final-results-sdss-cut}
 \end{subtable}
 
@@ -758,7 +696,7 @@ Although not as stark as for the simulated data set, our GP-VC algorithm consist
 	{\sc GP-VC } 	&	\textbf{0.0513} 	&	\textbf{0.0366}		&	1.4284	&	0.8601 & -0.0001		&	\textbf{-0.0013}&	\textbf{0.0513}		&	\textbf{0.0366}&	\textbf{0.0385} 	&	\textbf{0.0340}\\\hline
   \end{tabular}
 
-\caption{FULL}
+\caption{SDSS+BOSS}
 \label{table-final-results-boss}
 \end{subtable}
 
@@ -771,7 +709,7 @@ Although not as stark as for the simulated data set, our GP-VC algorithm consist
 	{\sc GP-VC } 	&	\textbf{0.0207} 	&	\textbf{0.0178}		&	0.9831	&	0.5043 & -0.0000		&	\textbf{-0.0003}&	\textbf{0.0207}		&	\textbf{0.0178}&	0.0376 	&	0.0445\\\hline
   \end{tabular}
 
-\caption{FULL+cut}
+\caption{SDSS+BOSS with cut}
 \label{table-final-results-boss-cut}
 \end{subtable}
 
@@ -805,7 +743,7 @@ Although not as stark as for the simulated data set, our GP-VC algorithm consist
         \end{subfigure}
 
         
-       \caption{The density scatter plot for (a) the final {\sc ANNz} model using a committee of 5 networks with 5:10:10:1 architectures and (b) the final GP-VC model trained using $m=103$ basis functions with a jointly optimized linear mean function. The top figures show the plots for the SDSS data set with out the $r<17.7$ cut, while the bottom figures show the plots for the SDSS+cut.}
+       \caption{The density scatter plot for (a) the final {\sc ANNz} model using a committee of 5 networks with 5:10:10:1 architectures and (b) the final GP-VC model trained using $m=103$ basis functions with a jointly optimized linear mean function. The top figures show the plots for the SDSS data set with out the $r<17.7$ cut, while the bottom figures show the plots for the SDSS with cut.}
        \label{fig-final-model-sdss}
 \end{figure*}
 
@@ -832,7 +770,7 @@ Although not as stark as for the simulated data set, our GP-VC algorithm consist
         \caption{GP-VC}
         \end{subfigure}
         
-       \caption{The density scatter plot for (a) the final {\sc ANNz} model using a committee of 5 networks with 5:10:10:1 architectures and (b) the final GP-VC model trained using $m=103$ basis functions with a jointly optimized linear mean function. The top figures show the plots for the FULL data set with out the $r<17.7$ cut, while the bottom figures show the plots for the FULL+cut. }
+       \caption{The density scatter plot for (a) the final {\sc ANNz} model using a committee of 5 networks with 5:10:10:1 architectures and (b) the final GP-VC model trained using $m=103$ basis functions with a jointly optimized linear mean function. The top figures show the plots for the SDSS+BOSS data set with out the $r<17.7$ cut, while the bottom figures show the plots for the SDSS+BOSS with cut. }
        \label{fig-final-model-boss}
 \end{figure*}
 
